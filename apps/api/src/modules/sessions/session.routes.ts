@@ -1,0 +1,146 @@
+import type { FastifyPluginAsync } from 'fastify';
+import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import * as sessionService from './session.service.js';
+import { importSession } from './session-import.service.js';
+import { listLocalSessions, syncSessions } from './local-session.service.js';
+import { sessionFilterSchema, updateSessionSchema } from './session.schema.js';
+
+export const sessionRoutes: FastifyPluginAsync = async (app) => {
+  app.addHook('preHandler', app.authenticate);
+
+  app.post<{ Params: { projectId: string } }>(
+    '/projects/:projectId/sessions/import',
+    async (request, reply) => {
+      const file = await request.file();
+      if (!file) {
+        return reply.status(400).send({ success: false, data: null, error: 'No file uploaded' });
+      }
+
+      const buffer = await file.toBuffer();
+      const content = buffer.toString('utf-8');
+
+      const result = await importSession(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+        file.filename,
+        content,
+      );
+
+      return reply.status(201).send(ok(result));
+    },
+  );
+
+  app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
+    '/projects/:projectId/sessions',
+    async (request, reply) => {
+      const filter = sessionFilterSchema.parse(request.query);
+      const result = await sessionService.getSessionsByProject(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+        filter,
+      );
+
+      const meta = buildPaginationMeta(result.total, filter.page, filter.limit);
+      return reply.send(paginated(result.sessions, meta));
+    },
+  );
+
+  app.get<{ Params: { sessionId: string } }>(
+    '/sessions/:sessionId',
+    async (request, reply) => {
+      const session = await sessionService.getSessionDetail(
+        app.db,
+        request.params.sessionId,
+        request.user.userId,
+      );
+      return reply.send(ok(session));
+    },
+  );
+
+  app.patch<{ Params: { sessionId: string }; Body: unknown }>(
+    '/sessions/:sessionId',
+    async (request, reply) => {
+      const input = updateSessionSchema.parse(request.body);
+      const session = await sessionService.updateSession(
+        app.db,
+        request.params.sessionId,
+        request.user.userId,
+        input,
+      );
+      return reply.send(ok(session));
+    },
+  );
+
+  app.delete<{ Params: { sessionId: string } }>(
+    '/sessions/:sessionId',
+    async (request, reply) => {
+      await sessionService.deleteSession(
+        app.db,
+        request.params.sessionId,
+        request.user.userId,
+      );
+      return reply.send(ok({ deleted: true }));
+    },
+  );
+
+  app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
+    '/projects/:projectId/timeline',
+    async (request, reply) => {
+      const filter = sessionFilterSchema.parse(request.query);
+      const result = await sessionService.getTimeline(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+        filter,
+      );
+
+      const meta = buildPaginationMeta(result.total, filter.page, filter.limit);
+      return reply.send(paginated(result.entries, meta));
+    },
+  );
+
+  app.get<{ Params: { projectId: string } }>(
+    '/projects/:projectId/stats',
+    async (request, reply) => {
+      const stats = await sessionService.getDashboardStats(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+      return reply.send(ok(stats));
+    },
+  );
+
+  app.get<{ Querystring: { projectId: string } }>(
+    '/sessions/local',
+    async (request, reply) => {
+      const { projectId } = request.query;
+      if (!projectId) {
+        return reply.status(400).send({ success: false, data: null, error: 'projectId is required' });
+      }
+      const sessions = await listLocalSessions(app.db, projectId);
+      return reply.send(ok(sessions));
+    },
+  );
+
+  app.post<{ Params: { projectId: string }; Body: { sessionIds: readonly string[] } }>(
+    '/projects/:projectId/sessions/sync',
+    async (request, reply) => {
+      const { sessionIds } = request.body;
+      if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
+        return reply.status(400).send({ success: false, data: null, error: 'sessionIds must be a non-empty array' });
+      }
+
+      const result = await syncSessions(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+        sessionIds,
+      );
+
+      return reply.status(201).send(ok(result));
+    },
+  );
+};
