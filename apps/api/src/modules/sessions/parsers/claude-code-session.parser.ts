@@ -1,4 +1,5 @@
 import type { SessionImportData } from '@context-sync/shared';
+import { generateTitle } from './title.utils.js';
 
 interface ClaudeCodeRecord {
   readonly type?: string;
@@ -94,7 +95,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
 
   const firstUserMsg = messages.find((m) => m.role === 'user');
   const title = firstUserMsg
-    ? firstUserMsg.content.slice(0, 100).replace(/\n/g, ' ').trim()
+    ? generateTitle(firstUserMsg.content)
     : 'Untitled Session';
 
   return {
@@ -186,7 +187,7 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
 
   const firstUserMsg = messages.find((m) => m.role === 'user');
   const title = firstUserMsg
-    ? firstUserMsg.content.slice(0, 100).replace(/\n/g, ' ').trim()
+    ? generateTitle(firstUserMsg.content)
     : 'Untitled Session';
 
   return {
@@ -223,7 +224,7 @@ export function previewClaudeCodeSession(raw: string, maxLines = 200): {
 
     if (record.type === 'user' && typeof record.message?.content === 'string') {
       if (!firstMessage) {
-        firstMessage = record.message.content.slice(0, 100).replace(/\n/g, ' ').trim();
+        firstMessage = generateTitle(record.message.content);
       }
       messageCount++;
     }

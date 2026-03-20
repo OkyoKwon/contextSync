@@ -1,4 +1,5 @@
 import type { SessionImportData } from '@context-sync/shared';
+import { generateTitle } from './title.utils.js';
 
 interface RawJsonSession {
   readonly title?: string;
@@ -102,7 +103,7 @@ function normalizeRole(role: string): string {
 function deriveTitle(messages: readonly { readonly content: string }[]): string {
   const firstUserMsg = messages.find((m) => m.content && m.content.length > 0);
   if (firstUserMsg) {
-    return firstUserMsg.content.slice(0, 100).replace(/\n/g, ' ').trim();
+    return generateTitle(firstUserMsg.content);
   }
   return 'Untitled Session';
 }

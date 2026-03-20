@@ -1,4 +1,5 @@
 import type { SessionImportData } from '@context-sync/shared';
+import { generateTitle } from './title.utils.js';
 
 interface ParsedBlock {
   readonly role: string;
@@ -91,7 +92,7 @@ function deriveMarkdownTitle(raw: string, blocks: readonly ParsedBlock[]): strin
   if (h1Match) return h1Match[1]!.trim().slice(0, 100);
 
   const first = blocks[0];
-  if (first) return first.content.slice(0, 100).replace(/\n/g, ' ').trim();
+  if (first) return generateTitle(first.content);
 
   return 'Untitled Session';
 }
