@@ -5,6 +5,6 @@ export function useCollaborators(projectId: string | null) {
   return useQuery({
     queryKey: ['collaborators', projectId],
     queryFn: () => projectsApi.listCollaborators(projectId!),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }

@@ -8,7 +8,7 @@ export function useLocalSessions(activeOnly = true) {
   return useQuery({
     queryKey: ['local-sessions', projectId, activeOnly],
     queryFn: () => sessionsApi.listLocal(projectId!, activeOnly),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 

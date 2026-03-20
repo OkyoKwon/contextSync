@@ -15,6 +15,6 @@ export function useActivity(page = 1, limit = 20) {
   return useQuery({
     queryKey: ['activity', projectId, page, limit],
     queryFn: () => getActivity(projectId!, page, limit),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }

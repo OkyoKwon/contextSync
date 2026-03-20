@@ -9,7 +9,7 @@ export function useSessions(filter?: SessionFilterQuery) {
   return useQuery({
     queryKey: ['sessions', projectId, filter],
     queryFn: () => sessionsApi.list(projectId!, filter),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
@@ -43,7 +43,7 @@ export function useTimeline(filter?: SessionFilterQuery) {
   return useQuery({
     queryKey: ['timeline', projectId, filter],
     queryFn: () => sessionsApi.timeline(projectId!, filter),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
@@ -53,7 +53,7 @@ export function useTokenUsage(period: TokenUsagePeriod = '30d') {
   return useQuery({
     queryKey: ['token-usage', projectId, period],
     queryFn: () => sessionsApi.tokenUsage(projectId!, period),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
@@ -76,7 +76,7 @@ export function useDashboardStats() {
   return useQuery({
     queryKey: ['stats', projectId],
     queryFn: () => sessionsApi.stats(projectId!),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
@@ -86,6 +86,6 @@ export function useTeamStats() {
   return useQuery({
     queryKey: ['team-stats', projectId],
     queryFn: () => sessionsApi.teamStats(projectId!),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }

@@ -9,7 +9,7 @@ export function useConflicts(filter?: ConflictFilterQuery) {
   return useQuery({
     queryKey: ['conflicts', projectId, filter],
     queryFn: () => conflictsApi.list(projectId!, filter),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 

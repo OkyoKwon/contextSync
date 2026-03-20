@@ -1,15 +1,38 @@
 import { useState } from 'react';
 import type { ConflictSeverity, ConflictStatus } from '@context-sync/shared';
 import { useConflicts } from '../hooks/use-conflicts';
+import { useRequireProject } from '../hooks/use-require-project';
 import { ConflictList } from '../components/conflicts/ConflictList';
+import { NoProjectState } from '../components/shared/NoProjectState';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
+import { Spinner } from '../components/ui/Spinner';
 
 export function ConflictsPage() {
+  const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
   const [severity, setSeverity] = useState<ConflictSeverity | undefined>();
   const [status, setStatus] = useState<ConflictStatus | undefined>();
 
   const { data, isLoading } = useConflicts({ severity, status });
   const conflicts = data?.data ?? [];
+
+  if (isProjectLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isProjectSelected) {
+    return (
+      <div>
+        <div className="mb-6">
+          <PageBreadcrumb pageName="Conflicts" />
+        </div>
+        <NoProjectState pageName="Conflicts" />
+      </div>
+    );
+  }
 
   return (
     <div>

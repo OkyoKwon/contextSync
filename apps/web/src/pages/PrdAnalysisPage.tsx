@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useStartAnalysis, useLatestPrdAnalysis, usePrdAnalysisDetail, usePrdDocuments, usePrdAnalysisHistory } from '../hooks/use-prd-analysis';
+import { useRequireProject } from '../hooks/use-require-project';
 import { PrdDocumentSection } from '../components/prd-analysis/PrdDocumentSection';
 import { PrdStickyDocumentBar } from '../components/prd-analysis/PrdStickyDocumentBar';
 import { PrdDashboard } from '../components/prd-analysis/PrdDashboard';
 import { PrdRequirementList } from '../components/prd-analysis/PrdRequirementList';
 import { PrdAnalysisHistory } from '../components/prd-analysis/PrdAnalysisHistory';
 import { AnalyzingOverlay } from '../components/prd-analysis/AnalyzingOverlay';
+import { NoProjectState } from '../components/shared/NoProjectState';
 import { Card } from '../components/ui/Card';
+import { Spinner } from '../components/ui/Spinner';
 
 export function PrdAnalysisPage() {
+  const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
   const startAnalysisMutation = useStartAnalysis();
   const { data: latestData, isLoading: isLoadingLatest } = useLatestPrdAnalysis();
   const { data: documentsData } = usePrdDocuments();
@@ -47,6 +51,28 @@ export function PrdAnalysisPage() {
       onError: (err) => toast.error(err.message),
     });
   };
+
+  if (isProjectLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isProjectSelected) {
+    return (
+      <div className="mx-auto max-w-4xl space-y-6 p-6">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">PRD Tracker</h1>
+          <p className="mt-1 text-sm text-text-tertiary">
+            Upload a PRD document and track your codebase achievement rate
+          </p>
+        </div>
+        <NoProjectState pageName="PRD Tracker" />
+      </div>
+    );
+  }
 
   return (
     <>

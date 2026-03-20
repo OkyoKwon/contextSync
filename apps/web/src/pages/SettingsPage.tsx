@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
+import { useRequireProject } from '../hooks/use-require-project';
 import { usePermissions } from '../hooks/use-permissions';
 import { projectsApi } from '../api/projects.api';
 import { CollaboratorList } from '../components/projects/CollaboratorList';
+import { NoProjectState } from '../components/shared/NoProjectState';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -14,19 +16,23 @@ import { Spinner } from '../components/ui/Spinner';
 
 export function SettingsPage() {
   const currentProjectId = useAuthStore((s) => s.currentProjectId);
+  const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
 
-  if (!currentProjectId || currentProjectId === 'skipped') {
+  if (isProjectLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isProjectSelected || !currentProjectId) {
     return (
       <div>
         <div className="mb-6">
           <PageBreadcrumb pageName="Settings" />
         </div>
-        <div className="flex flex-col items-center justify-center py-20">
-          <p className="text-lg font-semibold text-text-primary">No project selected</p>
-          <p className="mt-2 text-sm text-text-tertiary">
-            Select or create a project to manage its settings.
-          </p>
-        </div>
+        <NoProjectState pageName="Settings" />
       </div>
     );
   }

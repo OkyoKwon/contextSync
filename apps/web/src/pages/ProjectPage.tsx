@@ -12,9 +12,11 @@ import { Badge } from '../components/ui/Badge';
 import { shortPath } from '../lib/format';
 import { timeAgo } from '../lib/date';
 import { useAuthStore } from '../stores/auth.store';
+import { useRequireProject } from '../hooks/use-require-project';
 import { sessionsApi } from '../api/sessions.api';
 import { showToast } from '../lib/toast';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
+import { NoProjectState } from '../components/shared/NoProjectState';
 
 type Selection =
   | { readonly type: 'none' }
@@ -26,6 +28,7 @@ export function ProjectPage() {
   const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
   const [isChangeDirectoryOpen, setIsChangeDirectoryOpen] = useState(false);
 
+  const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
   const projectId = useAuthStore((s) => s.currentProjectId);
   const { data: projectData } = useCurrentProject();
   const currentProject = projectData?.data ?? null;
@@ -124,7 +127,26 @@ export function ProjectPage() {
   const selectedSessionId = selection.type === 'session' ? selection.sessionId : null;
   const selectedProjectPath = selection.type === 'project' ? selection.projectPath : null;
 
-  const linkedDirectory = currentProject?.localDirectory ?? null;
+  const myDirectory = currentProject?.myLocalDirectory ?? null;
+
+  if (isProjectLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!isProjectSelected) {
+    return (
+      <div>
+        <div className="mb-6">
+          <PageBreadcrumb pageName="Conversations" />
+        </div>
+        <NoProjectState pageName="Conversations" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -132,12 +154,12 @@ export function ProjectPage() {
       <div className="flex items-center justify-between border-b border-border-default px-6 py-3">
         <div className="flex items-center gap-3">
           <PageBreadcrumb pageName="Conversations" />
-          {linkedDirectory && (
+          {myDirectory && (
             <span className="flex items-center gap-1.5 text-sm text-text-tertiary">
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
               </svg>
-              {shortPath(linkedDirectory)}
+              {shortPath(myDirectory)}
             </span>
           )}
         </div>
@@ -158,27 +180,24 @@ export function ProjectPage() {
             Export Markdown
           </button>
           <Button variant="secondary" onClick={() => setIsChangeDirectoryOpen(true)}>
-            {linkedDirectory ? 'Change Directory' : 'Link Directory'}
+            {myDirectory ? 'Change My Directory' : 'Link My Directory'}
           </Button>
         </div>
       </div>
 
       {/* Content */}
-      {!linkedDirectory ? (
+      {!myDirectory ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
           <div className="text-center">
             <svg className="mx-auto mb-3 h-12 w-12 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
             </svg>
             <p className="text-sm text-text-tertiary">
-              No directory linked to this project.
-            </p>
-            <p className="mt-1 text-xs text-text-muted">
-              Link a local directory to see its Claude Code sessions here.
+              Link your local working directory to see your Claude Code sessions here.
             </p>
           </div>
           <Button onClick={() => setIsChangeDirectoryOpen(true)}>
-            Link Directory
+            Link My Directory
           </Button>
         </div>
       ) : isLoading ? (
@@ -332,7 +351,7 @@ export function ProjectPage() {
           isOpen={isChangeDirectoryOpen}
           onClose={() => setIsChangeDirectoryOpen(false)}
           projectId={projectId}
-          currentDirectory={linkedDirectory}
+          currentDirectory={myDirectory}
         />
       )}
     </div>

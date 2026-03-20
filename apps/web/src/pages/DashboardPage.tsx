@@ -4,6 +4,7 @@ import type { SessionSource } from '@context-sync/shared';
 import { useTimeline, useDashboardStats } from '../hooks/use-sessions';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
+import { useRequireProject } from '../hooks/use-require-project';
 import { DashboardStatsView } from '../components/dashboard/DashboardStats';
 import { Timeline } from '../components/dashboard/Timeline';
 import { TimelineFilters } from '../components/dashboard/TimelineFilters';
@@ -13,6 +14,7 @@ import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
 import { TeamActivityPanel } from '../components/dashboard/TeamActivityPanel';
 import { ActivityFeed } from '../components/dashboard/ActivityFeed';
 import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
+import { NoProjectState } from '../components/shared/NoProjectState';
 import { Spinner } from '../components/ui/Spinner';
 import { getGreeting } from '../lib/date';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
@@ -26,9 +28,7 @@ function parseSourceParam(value: string | null): SessionSource | null {
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
-  const currentProjectId = useAuthStore((s) => s.currentProjectId);
-
-  const isProjectSelected = currentProjectId !== null && currentProjectId !== 'skipped';
+  const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
 
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   const { data: timelineData, isLoading: timelineLoading } = useTimeline();
@@ -65,6 +65,14 @@ export function DashboardPage() {
   const greeting = getGreeting(new Date().getHours());
   const displayName = user?.name?.split(' ')[0] ?? 'there';
 
+  if (isProjectLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
   if (!isProjectSelected) {
     return (
       <div>
@@ -72,7 +80,7 @@ export function DashboardPage() {
           <PageBreadcrumb pageName="Dashboard" />
           <p className="mt-1 text-sm text-text-secondary">{greeting}, {displayName}</p>
         </div>
-        <EmptyDashboard hasProject={false} hasSessions={false} />
+        <NoProjectState pageName="Dashboard" />
       </div>
     );
   }

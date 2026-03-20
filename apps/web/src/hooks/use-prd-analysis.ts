@@ -8,7 +8,7 @@ export function usePrdDocuments() {
   return useQuery({
     queryKey: ['prd-documents', projectId],
     queryFn: () => prdAnalysisApi.listDocuments(projectId!),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
@@ -57,7 +57,7 @@ export function useLatestPrdAnalysis() {
   return useQuery({
     queryKey: ['prd-analysis-latest', projectId],
     queryFn: () => prdAnalysisApi.getLatestAnalysis(projectId!),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
@@ -67,7 +67,7 @@ export function usePrdAnalysisHistory(page = 1) {
   return useQuery({
     queryKey: ['prd-analysis-history', projectId, page],
     queryFn: () => prdAnalysisApi.getAnalysisHistory(projectId!, page),
-    enabled: !!projectId,
+    enabled: !!projectId && projectId !== 'skipped',
   });
 }
 
