@@ -139,20 +139,20 @@ function ProjectGroup({
       <button
         type="button"
         onClick={() => onSelectProject(group.projectPath)}
-        className={`mb-1.5 flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors ${
+        className={`mb-1.5 flex w-full items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
           isProjectSelected
             ? 'border-blue-500 bg-blue-500/10'
-            : 'border-border-default bg-surface hover:border-border-input hover:bg-surface-hover'
+            : 'border-border-default bg-zinc-800/50 hover:border-border-input hover:bg-surface-hover'
         }`}
       >
         <FolderIcon className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className={`truncate text-sm font-medium ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}>
+            <span className={`truncate text-sm font-semibold ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}>
               {shortPath(group.projectPath)}
             </span>
             {group.isActive && (
-              <Badge variant="info">Active</Badge>
+              <Badge variant="default" className="whitespace-nowrap">Current</Badge>
             )}
           </div>
           <span className="text-xs text-text-muted">
@@ -161,7 +161,7 @@ function ProjectGroup({
         </div>
       </button>
 
-      <div className="space-y-1">
+      <div className="space-y-1 pl-3 border-l border-border-default ml-2">
         {group.sessions.map((session) => (
           <SessionRow
             key={session.sessionId}
