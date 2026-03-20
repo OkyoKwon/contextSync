@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useStartAnalysis, useLatestPrdAnalysis, usePrdAnalysisDetail, usePrdDocuments } from '../hooks/use-prd-analysis';
+import { useStartAnalysis, useLatestPrdAnalysis, usePrdAnalysisDetail, usePrdDocuments, usePrdAnalysisHistory } from '../hooks/use-prd-analysis';
 import { PrdDocumentSection } from '../components/prd-analysis/PrdDocumentSection';
-import { PrdAnalysisResults } from '../components/prd-analysis/PrdAnalysisResults';
+import { PrdStickyDocumentBar } from '../components/prd-analysis/PrdStickyDocumentBar';
+import { PrdDashboard } from '../components/prd-analysis/PrdDashboard';
 import { PrdRequirementList } from '../components/prd-analysis/PrdRequirementList';
 import { PrdAnalysisHistory } from '../components/prd-analysis/PrdAnalysisHistory';
 import { AnalyzingOverlay } from '../components/prd-analysis/AnalyzingOverlay';
@@ -15,11 +16,20 @@ export function PrdAnalysisPage() {
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
   const { data: detailData } = usePrdAnalysisDetail(selectedAnalysisId);
 
+  const { data: historyData } = usePrdAnalysisHistory(1);
+  const historyEntries = historyData?.data ?? [];
+
   const displayAnalysis = selectedAnalysisId
     ? detailData?.data ?? null
     : latestData?.data ?? null;
 
-  const hasDocument = (documentsData?.data ?? []).length > 0;
+  const currentDocument = (documentsData?.data ?? [])[0] ?? null;
+  const hasDocument = currentDocument !== null;
+
+  const completedEntries = historyEntries.filter((e) => e.status === 'completed');
+  const previousRate = completedEntries.length >= 2
+    ? completedEntries[1]?.overallRate ?? null
+    : null;
 
   const handleStartAnalysis = (documentId: string) => {
     startAnalysisMutation.mutate(documentId, {
@@ -32,53 +42,69 @@ export function PrdAnalysisPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary">PRD Tracker</h1>
-        <p className="mt-1 text-sm text-text-tertiary">
-          Upload a PRD document and track your codebase achievement rate
-        </p>
-      </div>
-
-      <Card>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
-          PRD Document
-        </h2>
-        <PrdDocumentSection
-          onStartAnalysis={handleStartAnalysis}
+    <>
+      {hasDocument && (
+        <PrdStickyDocumentBar
+          document={currentDocument}
+          lastAnalysis={latestData?.data ?? null}
           isAnalyzing={startAnalysisMutation.isPending}
-          latestAnalysis={latestData?.data ?? null}
+          onStartAnalysis={handleStartAnalysis}
         />
-      </Card>
-
-      {startAnalysisMutation.isPending && <AnalyzingOverlay />}
-
-      {!startAnalysisMutation.isPending && displayAnalysis && (
-        <>
-          <Card>
-            <PrdAnalysisResults analysis={displayAnalysis} />
-          </Card>
-
-          <Card>
-            <PrdRequirementList requirements={displayAnalysis.requirements} />
-          </Card>
-        </>
       )}
+      <div className="mx-auto max-w-4xl space-y-6 p-6">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">PRD Tracker</h1>
+          <p className="mt-1 text-sm text-text-tertiary">
+            Upload a PRD document and track your codebase achievement rate
+          </p>
+        </div>
 
-      {!startAnalysisMutation.isPending && !displayAnalysis && !isLoadingLatest && (
-        <Card padding="lg" className="text-center text-sm text-text-tertiary">
-          {hasDocument
-            ? 'Document uploaded. Click Re-analyze to start.'
-            : 'Upload a PRD document to get started.'}
+        {!hasDocument && (
+          <Card>
+            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
+              PRD Document
+            </h2>
+            <PrdDocumentSection
+              onStartAnalysis={handleStartAnalysis}
+              isAnalyzing={startAnalysisMutation.isPending}
+              latestAnalysis={latestData?.data ?? null}
+            />
+          </Card>
+        )}
+
+        {startAnalysisMutation.isPending && <AnalyzingOverlay />}
+
+        {!startAnalysisMutation.isPending && displayAnalysis && (
+          <>
+            <Card>
+              <PrdDashboard
+                analysis={displayAnalysis}
+                previousRate={previousRate}
+                historyEntries={historyEntries}
+              />
+            </Card>
+
+            <Card>
+              <PrdRequirementList requirements={displayAnalysis.requirements} />
+            </Card>
+          </>
+        )}
+
+        {!startAnalysisMutation.isPending && !displayAnalysis && !isLoadingLatest && (
+          <Card padding="lg" className="text-center text-sm text-text-tertiary">
+            {hasDocument
+              ? 'Document uploaded. Click Re-analyze to start.'
+              : 'Upload a PRD document to get started.'}
+          </Card>
+        )}
+
+        <Card>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
+            Analysis History
+          </h2>
+          <PrdAnalysisHistory onSelectAnalysis={setSelectedAnalysisId} />
         </Card>
-      )}
-
-      <Card>
-        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
-          Analysis History
-        </h2>
-        <PrdAnalysisHistory onSelectAnalysis={setSelectedAnalysisId} />
-      </Card>
-    </div>
+      </div>
+    </>
   );
 }
