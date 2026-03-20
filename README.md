@@ -1,6 +1,6 @@
 # ContextSync
 
-[![CI](https://github.com/context-sync/contextSync/actions/workflows/ci.yml/badge.svg)](https://github.com/context-sync/contextSync/actions/workflows/ci.yml)
+[![CI](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml/badge.svg)](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 AI session context management platform — archive, sync, search, and detect conflicts across Claude Code sessions for teams.
