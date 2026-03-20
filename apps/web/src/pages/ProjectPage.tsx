@@ -90,26 +90,23 @@ export function ProjectPage() {
   }, []);
 
   const handleSyncProject = useCallback(
-    async (group: { readonly sessions: readonly { readonly sessionId: string; readonly isSynced: boolean }[] }) => {
-      const unsyncedIds = group.sessions
-        .filter((s) => !s.isSynced)
-        .map((s) => s.sessionId);
+    async (group: {
+      readonly sessions: readonly { readonly sessionId: string; readonly isSynced: boolean }[];
+    }) => {
+      const unsyncedIds = group.sessions.filter((s) => !s.isSynced).map((s) => s.sessionId);
       if (unsyncedIds.length === 0) return;
       await syncMutation.mutateAsync(unsyncedIds);
     },
     [syncMutation],
   );
 
-  // Auto-sync: projects that have been synced before get new sessions synced automatically
+  // Auto-sync: automatically sync unsynced local sessions
   const autoSyncedRef = useRef<ReadonlySet<string>>(new Set());
   useEffect(() => {
     if (syncMutation.isPending) return;
 
     const unsyncedIds: string[] = [];
     for (const group of groups) {
-      const hasSynced = group.sessions.some((s) => s.isSynced);
-      if (!hasSynced) continue;
-
       for (const session of group.sessions) {
         if (!session.isSynced && !autoSyncedRef.current.has(session.sessionId)) {
           unsyncedIds.push(session.sessionId);
@@ -119,7 +116,6 @@ export function ProjectPage() {
 
     if (unsyncedIds.length === 0) return;
 
-    // Mark as attempted before triggering to prevent re-entry
     autoSyncedRef.current = new Set([...autoSyncedRef.current, ...unsyncedIds]);
     syncMutation.mutateAsync(unsyncedIds);
   }, [groups, syncMutation]);
@@ -156,7 +152,15 @@ export function ProjectPage() {
           <PageBreadcrumb pageName="Conversations" />
           {myDirectory && (
             <span className="flex items-center gap-1.5 text-sm text-text-tertiary">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
               </svg>
               {shortPath(myDirectory)}
@@ -172,7 +176,12 @@ export function ProjectPage() {
             {exporting ? (
               <Spinner size="sm" />
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-4 w-4"
+              >
                 <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
                 <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
               </svg>
@@ -189,16 +198,22 @@ export function ProjectPage() {
       {!myDirectory ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-4">
           <div className="text-center">
-            <svg className="mx-auto mb-3 h-12 w-12 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              className="mx-auto mb-3 h-12 w-12 text-text-muted"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
             </svg>
             <p className="text-sm text-text-tertiary">
               Link your local working directory to see your Claude Code sessions here.
             </p>
           </div>
-          <Button onClick={() => setIsChangeDirectoryOpen(true)}>
-            Link My Directory
-          </Button>
+          <Button onClick={() => setIsChangeDirectoryOpen(true)}>Link My Directory</Button>
         </div>
       ) : isLoading ? (
         <div className="flex flex-1 items-center justify-center">
@@ -301,7 +316,8 @@ export function ProjectPage() {
             Synced {syncMutation.data.data.syncedCount} session(s).
             {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
               <>
-                {' '}Conflicts detected —{' '}
+                {' '}
+                Conflicts detected —{' '}
                 <Link to="/conflicts" className="underline hover:text-green-300">
                   view conflicts
                 </Link>
@@ -321,7 +337,13 @@ export function ProjectPage() {
             className="ml-4 text-green-400 hover:text-green-300"
             aria-label="Dismiss"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -339,7 +361,13 @@ export function ProjectPage() {
             className="ml-4 text-red-400 hover:text-red-300"
             aria-label="Dismiss"
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
