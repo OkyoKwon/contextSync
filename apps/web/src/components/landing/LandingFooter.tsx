@@ -92,7 +92,7 @@ function handleLogin() {
   window.location.href = '/api/auth/github';
 }
 
-export function LandingFooter() {
+export function LandingFooter({ isAuthenticated }: { readonly isAuthenticated: boolean }) {
   const t = useT();
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -104,14 +104,23 @@ export function LandingFooter() {
             {t('footer.cta.title')}
           </h2>
           <p className="mt-3 font-mono text-sm text-text-tertiary">{t('footer.cta.subtitle')}</p>
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-          >
-            <GitHubIcon />
-            {t('footer.cta.button')}
-          </button>
+          {isAuthenticated ? (
+            <a
+              href="/dashboard"
+              className="mt-8 inline-flex items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+            >
+              Go to Dashboard
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogin}
+              className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+            >
+              <GitHubIcon />
+              {t('footer.cta.button')}
+            </button>
+          )}
         </div>
       </div>
 

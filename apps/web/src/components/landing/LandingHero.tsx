@@ -33,7 +33,7 @@ function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 }
 
-export function LandingHero() {
+export function LandingHero({ isAuthenticated }: { readonly isAuthenticated: boolean }) {
   const t = useT();
 
   return (
@@ -58,14 +58,23 @@ export function LandingHero() {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-          >
-            <GitHubIcon />
-            {t('hero.cta.github')}
-          </button>
+          {isAuthenticated ? (
+            <a
+              href="/dashboard"
+              className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+            >
+              Go to Dashboard
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogin}
+              className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+            >
+              <GitHubIcon />
+              {t('hero.cta.github')}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => scrollToSection('features')}

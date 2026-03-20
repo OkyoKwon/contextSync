@@ -5,11 +5,15 @@ import { DocsHero } from '../components/docs/DocsHero';
 import { GettingStartedSection } from '../components/docs/GettingStartedSection';
 import { FeatureSection } from '../components/docs/FeatureSection';
 import { FaqSection } from '../components/docs/FaqSection';
+import { useAuthStore } from '../stores/auth.store';
 
 export function DocsPage() {
+  const token = useAuthStore((s) => s.token);
+  const isAuthenticated = token !== null;
+
   return (
     <div className="min-h-screen bg-page font-mono" style={{ scrollBehavior: 'smooth' }}>
-      <LandingNav />
+      <LandingNav isAuthenticated={isAuthenticated} />
       <div className="mx-auto flex max-w-5xl gap-10 px-6 pt-24">
         <DocsSidebar />
         <main className="min-w-0 flex-1">
@@ -20,7 +24,7 @@ export function DocsPage() {
         </main>
       </div>
       <MobileTocButton />
-      <LandingFooter />
+      <LandingFooter isAuthenticated={isAuthenticated} />
     </div>
   );
 }

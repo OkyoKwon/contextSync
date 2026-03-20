@@ -1,4 +1,3 @@
-import { Navigate } from 'react-router';
 import { useAuthStore } from '../stores/auth.store';
 import { LandingNav } from '../components/landing/LandingNav';
 import { LandingHero } from '../components/landing/LandingHero';
@@ -11,19 +10,18 @@ import { LandingFooter } from '../components/landing/LandingFooter';
 
 export function LoginPage() {
   const token = useAuthStore((s) => s.token);
-
-  if (token) return <Navigate to="/dashboard" replace />;
+  const isAuthenticated = token !== null;
 
   return (
     <div className="min-h-screen bg-page font-mono">
-      <LandingNav />
-      <LandingHero />
+      <LandingNav isAuthenticated={isAuthenticated} />
+      <LandingHero isAuthenticated={isAuthenticated} />
       <ProblemStatement />
       <FeatureShowcase />
       <HowItWorks />
       <TerminalDemo />
       <SocialProof />
-      <LandingFooter />
+      <LandingFooter isAuthenticated={isAuthenticated} />
     </div>
   );
 }

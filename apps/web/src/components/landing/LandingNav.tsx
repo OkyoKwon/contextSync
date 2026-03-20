@@ -6,7 +6,7 @@ function handleLogin() {
   window.location.href = '/api/auth/github';
 }
 
-export function LandingNav() {
+export function LandingNav({ isAuthenticated }: { readonly isAuthenticated: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const t = useT();
 
@@ -28,13 +28,22 @@ export function LandingNav() {
         </a>
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
-          <button
-            type="button"
-            onClick={handleLogin}
-            className="cursor-pointer rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
-          >
-            {t('nav.login')}
-          </button>
+          {isAuthenticated ? (
+            <a
+              href="/dashboard"
+              className="rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
+            >
+              Dashboard
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={handleLogin}
+              className="cursor-pointer rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
+            >
+              {t('nav.login')}
+            </button>
+          )}
         </div>
       </div>
     </nav>
