@@ -83,10 +83,12 @@ export async function listLocalDirectories(): Promise<readonly LocalDirectory[]>
     }
   }
 
+  const now = Date.now();
   const directories: LocalDirectory[] = [...dirMap.entries()].map(([dirName, info]) => ({
     path: decodeProjectPath(dirName),
     sessionCount: info.count,
     lastActivityAt: new Date(info.latestMs).toISOString(),
+    isActive: now - info.latestMs < ACTIVE_THRESHOLD_MS,
   }));
 
   // Sort by most recent activity first

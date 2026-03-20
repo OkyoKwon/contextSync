@@ -2,6 +2,7 @@ export interface LocalDirectory {
   readonly path: string;
   readonly sessionCount: number;
   readonly lastActivityAt: string;
+  readonly isActive: boolean;
 }
 
 export interface LocalSessionInfo {

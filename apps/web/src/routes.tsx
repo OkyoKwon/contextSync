@@ -17,7 +17,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const status = useOnboardingStatus();
 
   if (!token) return <Navigate to="/login" replace />;
-  if (status !== 'ready') return <Navigate to="/onboarding" replace />;
+  if (status === 'loading') return null;
+  if (status === 'needs-project') return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 }
 
