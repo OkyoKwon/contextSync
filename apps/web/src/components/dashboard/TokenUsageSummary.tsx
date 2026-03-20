@@ -37,7 +37,8 @@ export function TokenUsageSummary({ stats }: TokenUsageSummaryProps) {
       color: 'text-emerald-400',
       bgTint: 'bg-emerald-500/5',
       icon: DollarIcon,
-      tooltip: 'Estimated using average blended input/output rates per model. Actual costs depend on your Anthropic plan and token split.',
+      tooltip:
+        "Estimated using average blended input/output rates per model. If you're on a Pro or Max plan, this does not reflect your actual spending.",
     },
     {
       key: 'model',
