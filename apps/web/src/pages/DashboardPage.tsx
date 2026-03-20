@@ -7,11 +7,17 @@ import { Timeline } from '../components/dashboard/Timeline';
 import { TimelineFilters } from '../components/dashboard/TimelineFilters';
 import { ActiveConflictsSidebar } from '../components/dashboard/ActiveConflictsSidebar';
 import { HotFiles } from '../components/dashboard/HotFiles';
+import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
+import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
 import { Spinner } from '../components/ui/Spinner';
 import { getGreeting } from '../lib/date';
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const currentProjectId = useAuthStore((s) => s.currentProjectId);
+
+  const isProjectSelected = currentProjectId !== null && currentProjectId !== 'skipped';
+
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   const { data: timelineData, isLoading: timelineLoading } = useTimeline();
   const [activeSource, setActiveSource] = useState<SessionSource | null>(null);
@@ -26,6 +32,19 @@ export function DashboardPage() {
 
   const greeting = getGreeting(new Date().getHours());
   const displayName = user?.name?.split(' ')[0] ?? 'there';
+
+  if (!isProjectSelected) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-text-primary">
+            {greeting}, {displayName}
+          </h1>
+        </div>
+        <EmptyDashboard />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -45,6 +64,10 @@ export function DashboardPage() {
       ) : stats ? (
         <DashboardStatsView stats={stats} />
       ) : null}
+
+      <div className="mt-6">
+        <TokenUsagePanel />
+      </div>
 
       <div className="mt-6 grid grid-cols-3 gap-6">
         <div className="col-span-2">

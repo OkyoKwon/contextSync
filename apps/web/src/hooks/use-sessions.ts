@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { SessionFilterQuery } from '@context-sync/shared';
+import type { SessionFilterQuery, TokenUsagePeriod } from '@context-sync/shared';
 import { sessionsApi } from '../api/sessions.api';
 import { useAuthStore } from '../stores/auth.store';
 
@@ -32,6 +32,7 @@ export function useImportSession() {
       queryClient.invalidateQueries({ queryKey: ['timeline'] });
       queryClient.invalidateQueries({ queryKey: ['conflicts'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['token-usage'] });
     },
   });
 }
@@ -42,6 +43,16 @@ export function useTimeline(filter?: SessionFilterQuery) {
   return useQuery({
     queryKey: ['timeline', projectId, filter],
     queryFn: () => sessionsApi.timeline(projectId!, filter),
+    enabled: !!projectId,
+  });
+}
+
+export function useTokenUsage(period: TokenUsagePeriod = '30d') {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useQuery({
+    queryKey: ['token-usage', projectId, period],
+    queryFn: () => sessionsApi.tokenUsage(projectId!, period),
     enabled: !!projectId,
   });
 }

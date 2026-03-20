@@ -5,6 +5,8 @@ import type {
   SessionFilterQuery,
   TimelineEntry,
   DashboardStats,
+  TokenUsageStats,
+  TokenUsagePeriod,
   LocalProjectGroup,
   LocalSessionDetail,
   SyncSessionResult,
@@ -46,6 +48,9 @@ export const sessionsApi = {
   },
 
   stats: (projectId: string) => api.get<DashboardStats>(`/projects/${projectId}/stats`),
+
+  tokenUsage: (projectId: string, period: TokenUsagePeriod = '30d') =>
+    api.get<TokenUsageStats>(`/projects/${projectId}/token-usage?period=${period}`),
 
   listLocal: (projectId: string, activeOnly = true) =>
     api.get<readonly LocalProjectGroup[]>(

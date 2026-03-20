@@ -9,7 +9,7 @@ export type {
   UpdateTeamInput,
   AddMemberInput,
 } from './types/team.js';
-export type { Project, CreateProjectInput, UpdateProjectInput } from './types/project.js';
+export type { Project, PersonalProject, TeamProject, CreateProjectInput, CreatePersonalProjectInput, UpdateProjectInput } from './types/project.js';
 export type {
   Session,
   SessionSource,
@@ -24,6 +24,13 @@ export type {
   DashboardStats,
 } from './types/session.js';
 export type { LocalSessionInfo, LocalProjectGroup, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, UnifiedMessage, ProjectConversation } from './types/sync.js';
+export type {
+  TokenUsagePeriod,
+  TokenUsageStats,
+  ModelUsageBreakdown,
+  DailyTokenUsage,
+  DailyModelUsage,
+} from './types/token-usage.js';
 export type {
   Conflict,
   ConflictType,
@@ -44,6 +51,8 @@ export {
   SEVERITY_THRESHOLDS,
   CONFLICT_DETECTION_WINDOW_DAYS,
 } from './constants/conflict-severity.js';
+
+export { MODEL_PRICING, DEFAULT_PRICE_PER_MILLION } from './constants/model-pricing.js';
 
 // Validators
 export { validateSessionImport } from './validators/session.validator.js';

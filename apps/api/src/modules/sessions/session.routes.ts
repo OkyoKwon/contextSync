@@ -3,7 +3,8 @@ import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
 import { listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions } from './local-session.service.js';
-import { sessionFilterSchema, updateSessionSchema } from './session.schema.js';
+import { sessionFilterSchema, updateSessionSchema, tokenUsageQuerySchema } from './session.schema.js';
+import * as tokenUsageService from './token-usage.service.js';
 
 export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -108,6 +109,20 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
         app.db,
         request.params.projectId,
         request.user.userId,
+      );
+      return reply.send(ok(stats));
+    },
+  );
+
+  app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
+    '/projects/:projectId/token-usage',
+    async (request, reply) => {
+      const { period } = tokenUsageQuerySchema.parse(request.query);
+      const stats = await tokenUsageService.getTokenUsageStats(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+        period,
       );
       return reply.send(ok(stats));
     },

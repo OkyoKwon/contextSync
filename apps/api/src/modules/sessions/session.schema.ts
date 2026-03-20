@@ -11,6 +11,10 @@ export const sessionFilterSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+export const tokenUsageQuerySchema = z.object({
+  period: z.enum(['7d', '30d', '90d']).default('30d'),
+});
+
 export const updateSessionSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   status: z.enum(['active', 'completed', 'archived']).optional(),
