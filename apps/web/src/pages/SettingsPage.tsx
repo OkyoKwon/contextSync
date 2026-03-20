@@ -168,7 +168,7 @@ function DangerZoneSection({ projectId }: { readonly projectId: string }) {
           className="mt-4"
           onClick={() => setShowDeleteModal(true)}
         >
-          Delete Project
+          Delete {project?.name} Project
         </Button>
       </Card>
 
