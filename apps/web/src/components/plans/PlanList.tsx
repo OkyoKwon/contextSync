@@ -5,10 +5,7 @@ import { Badge } from '../ui/Badge';
 interface PlanListProps {
   readonly plans: readonly PlanSummary[];
   readonly selectedFilename: string | null;
-  readonly selectedProject: string | null;
-  readonly projectOptions: readonly string[];
   readonly onSelect: (filename: string) => void;
-  readonly onProjectFilterChange: (project: string | null) => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -38,37 +35,17 @@ function getProjectLabel(directory: string): string {
   return parts[parts.length - 1] || directory;
 }
 
-export function PlanList({
-  plans,
-  selectedFilename,
-  selectedProject,
-  projectOptions,
-  onSelect,
-  onProjectFilterChange,
-}: PlanListProps) {
+export function PlanList({ plans, selectedFilename, onSelect }: PlanListProps) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
-    let result = plans;
+    if (!search.trim()) return plans;
 
-    if (selectedProject) {
-      result = result.filter((p) =>
-        p.projects.some(
-          (proj) =>
-            proj.projectName === selectedProject || proj.projectDirectory === selectedProject,
-        ),
-      );
-    }
-
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (p) => p.title.toLowerCase().includes(query) || p.filename.toLowerCase().includes(query),
-      );
-    }
-
-    return result;
-  }, [plans, search, selectedProject]);
+    const query = search.toLowerCase();
+    return plans.filter(
+      (p) => p.title.toLowerCase().includes(query) || p.filename.toLowerCase().includes(query),
+    );
+  }, [plans, search]);
 
   return (
     <div className="flex h-full flex-col">
@@ -80,20 +57,6 @@ export function PlanList({
           placeholder="Search plans..."
           className="w-full rounded-lg border border-border-default bg-surface-raised px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-blue-500 focus:outline-none"
         />
-        {projectOptions.length > 0 && (
-          <select
-            value={selectedProject ?? ''}
-            onChange={(e) => onProjectFilterChange(e.target.value || null)}
-            className="w-full rounded-lg border border-border-default bg-surface-raised px-3 py-2 text-sm text-text-primary focus:border-blue-500 focus:outline-none"
-          >
-            <option value="">All projects</option>
-            {projectOptions.map((proj) => (
-              <option key={proj} value={proj}>
-                {proj}
-              </option>
-            ))}
-          </select>
-        )}
         <p className="text-xs text-text-tertiary">
           {filtered.length} plan{filtered.length !== 1 ? 's' : ''}
         </p>
@@ -129,7 +92,7 @@ export function PlanList({
         ))}
         {filtered.length === 0 && (
           <div className="px-4 py-8 text-center text-sm text-text-tertiary">
-            {search || selectedProject ? 'No plans match your filters' : 'No plans found'}
+            {search ? 'No plans match your search' : 'No plans found'}
           </div>
         )}
       </div>

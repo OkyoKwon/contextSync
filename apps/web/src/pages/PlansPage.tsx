@@ -3,26 +3,25 @@ import { toast } from 'sonner';
 import { usePlans, usePlanDetail, useDeletePlan } from '../hooks/use-plans';
 import { PlanList } from '../components/plans/PlanList';
 import { PlanViewer } from '../components/plans/PlanViewer';
+import { useAuthStore } from '../stores/auth.store';
 
 export function PlansPage() {
   const [selectedFilename, setSelectedFilename] = useState<string | null>(null);
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const currentProjectId = useAuthStore((s) => s.currentProjectId);
   const { data: plansData, isLoading } = usePlans();
   const { data: planDetailData } = usePlanDetail(selectedFilename);
   const deleteMutation = useDeletePlan();
 
-  const plans = plansData?.data ?? [];
+  const allPlans = plansData?.data ?? [];
   const planDetail = planDetailData?.data ?? null;
 
-  const projectOptions = useMemo(() => {
-    const seen = new Set<string>();
-    for (const plan of plans) {
-      for (const proj of plan.projects) {
-        seen.add(proj.projectName ?? proj.projectDirectory);
-      }
-    }
-    return [...seen].sort();
-  }, [plans]);
+  const plans = useMemo(
+    () =>
+      currentProjectId
+        ? allPlans.filter((p) => p.projects.some((proj) => proj.projectId === currentProjectId))
+        : allPlans,
+    [allPlans, currentProjectId],
+  );
 
   const handleDelete = (filename: string) => {
     deleteMutation.mutate(filename, {
@@ -48,10 +47,7 @@ export function PlansPage() {
         <PlanList
           plans={plans}
           selectedFilename={selectedFilename}
-          selectedProject={selectedProject}
-          projectOptions={projectOptions}
           onSelect={setSelectedFilename}
-          onProjectFilterChange={setSelectedProject}
         />
       </div>
       <div className="flex-1">
