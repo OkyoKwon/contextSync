@@ -112,18 +112,19 @@ Client → Routes (Zod validation) → Service (authorization) → Repository (K
 Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (object mapping) ← DB
 ```
 
-### 8 Modules
+### 9 Modules
 
-| Module          | Route Prefix                      | Purpose                                                             |
-| --------------- | --------------------------------- | ------------------------------------------------------------------- |
-| `auth`          | `/api/auth`                       | GitHub OAuth, JWT issuance/refresh                                  |
-| `projects`      | `/api/projects`                   | Project CRUD, collaborator management                               |
-| `sessions`      | `/api/projects/:id/sessions`      | Session management, import/export, local sync, token usage          |
-| `conflicts`     | `/api/projects/:id/conflicts`     | Conflict detection, status management (detected→reviewing→resolved) |
-| `search`        | `/api/projects/:id/search`        | PostgreSQL tsvector full-text search                                |
-| `notifications` | `/api/projects/:id/notifications` | Email/Slack notifications                                           |
-| `prd-analysis`  | `/api/projects/:id/prd`           | PRD upload, Claude API analysis, requirement tracking               |
-| `users`         | `/api/users`                      | User profiles                                                       |
+| Module          | Route Prefix                                        | Purpose                                                             |
+| --------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
+| `auth`          | `/api/auth`                                         | GitHub OAuth, JWT issuance/refresh                                  |
+| `projects`      | `/api/projects`                                     | Project CRUD, collaborator management                               |
+| `sessions`      | `/api/projects/:id/sessions`                        | Session management, import/export, local sync, token usage          |
+| `conflicts`     | `/api/projects/:id/conflicts`                       | Conflict detection, status management (detected→reviewing→resolved) |
+| `search`        | `/api/projects/:id/search`                          | PostgreSQL tsvector full-text search                                |
+| `notifications` | `/api/projects/:id/notifications`                   | Email/Slack notifications                                           |
+| `prd-analysis`  | `/api/projects/:id/prd`                             | PRD upload, Claude API analysis, requirement tracking               |
+| `invitations`   | `/api/invitations`, `/api/projects/:id/invitations` | Project invitation with token/link, accept/decline workflow         |
+| `users`         | `/api/users`                                        | User profiles                                                       |
 
 ### Service Conventions
 
@@ -182,7 +183,7 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 - Pool: max 20 connections, 30s idle timeout, 5s connect timeout
 - Types: `Db = Kysely<Database>` (`apps/api/src/database/types.ts`)
 
-### Tables (11)
+### Tables (12)
 
 | Table                   | Purpose                   | Key Columns                                                                |
 | ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
@@ -197,6 +198,7 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 | `prd_documents`         | PRD document uploads      | title, content, file_name                                                  |
 | `prd_analyses`          | PRD analysis results      | status, overall_rate, achievement analysis                                 |
 | `prd_requirements`      | Individual requirements   | category, status, confidence, evidence, file_paths[]                       |
+| `project_invitations`   | Invitation token/workflow | project_id, inviter_id, email, token, role, status, expires_at             |
 
 ### Full-Text Search
 
@@ -277,6 +279,8 @@ sequenceDiagram
 /docs                           → DocsPage (public)
 /auth/callback                  → OAuth callback
 /onboarding                     → OnboardingPage
+/invitations/accept?token=...   → InvitationAcceptPage (public, stores token for post-login)
+/invitations/expired            → InvitationExpiredPage (public)
 / (Protected + AppLayout)
   ├── /dashboard                → DashboardPage
   ├── /project                  → ProjectPage (session list)
@@ -345,7 +349,7 @@ components/
 
 Imported as `@context-sync/shared` by both API and Web.
 
-### Types (9 files)
+### Types (10 files)
 
 | File              | Key Types                                                                      |
 | ----------------- | ------------------------------------------------------------------------------ |
@@ -357,9 +361,10 @@ Imported as `@context-sync/shared` by both API and Web.
 | `prd-analysis.ts` | `PrdDocument`, `PrdAnalysis`, `PrdRequirement`, `PrdAnalysisWithRequirements`  |
 | `token-usage.ts`  | `ModelUsageBreakdown`, `TokenUsageStats`, `DailyTokenUsage`                    |
 | `collaborator.ts` | `Collaborator`, `AddCollaboratorInput`                                         |
+| `invitation.ts`   | `Invitation`, `InvitationStatus`, `CreateInvitationInput`                      |
 | `sync.ts`         | Sync-related types                                                             |
 
-### Constants (5 files)
+### Constants (6 files)
 
 | File                   | Contents                                        |
 | ---------------------- | ----------------------------------------------- |
@@ -368,6 +373,7 @@ Imported as `@context-sync/shared` by both API and Web.
 | `conflict-severity.ts` | Conflict severity enumerations                  |
 | `model-pricing.ts`     | Per-model token pricing                         |
 | `prd-analysis.ts`      | `SUPPORTED_PRD_EXTENSIONS`, `MAX_PRD_FILE_SIZE` |
+| `invitation-status.ts` | `INVITATION_STATUSES`, `INVITATION_EXPIRY_DAYS` |
 
 ### Validators (2 files)
 

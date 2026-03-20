@@ -4,6 +4,7 @@ export interface Database {
   users: UsersTable;
   projects: ProjectsTable;
   project_collaborators: ProjectCollaboratorsTable;
+  project_invitations: ProjectInvitationsTable;
   sessions: SessionsTable;
   messages: MessagesTable;
   conflicts: ConflictsTable;
@@ -145,6 +146,21 @@ export interface PrdRequirementsTable {
   file_paths: Generated<string[]>;
   sort_order: Generated<number>;
   created_at: Generated<Date>;
+}
+
+export interface ProjectInvitationsTable {
+  id: Generated<string>;
+  project_id: string;
+  inviter_id: string;
+  email: string;
+  token: string;
+  role: Generated<string>;
+  status: Generated<string>;
+  expires_at: Date;
+  accepted_at: Date | null;
+  declined_at: Date | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
 }
 
 export interface ActivityLogTable {

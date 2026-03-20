@@ -13,6 +13,8 @@ import { SettingsPage } from './pages/SettingsPage';
 import { PrdAnalysisPage } from './pages/PrdAnalysisPage';
 import { PlansPage } from './pages/PlansPage';
 import { DocsPage } from './pages/DocsPage';
+import { InvitationAcceptPage } from './pages/InvitationAcceptPage';
+import { InvitationExpiredPage } from './pages/InvitationExpiredPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -36,6 +38,8 @@ export function AppRoutes() {
       <Route path="/docs" element={<DocsPage />} />
       <Route path="/auth/callback" element={<OAuthCallbackPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
+      <Route path="/invitations/accept" element={<InvitationAcceptPage />} />
+      <Route path="/invitations/expired" element={<InvitationExpiredPage />} />
       <Route
         path="/"
         element={

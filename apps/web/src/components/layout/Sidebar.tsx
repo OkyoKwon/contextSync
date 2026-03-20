@@ -3,6 +3,7 @@ import { NavLink } from 'react-router';
 import { ProjectSelector } from './ProjectSelector';
 import { CreateProjectModal } from '../projects/CreateProjectModal';
 import { useConflicts } from '../../hooks/use-conflicts';
+import { useMyInvitations } from '../../hooks/use-invitations';
 
 interface NavItem {
   readonly to: string;
@@ -15,9 +16,11 @@ export function Sidebar() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { data: conflictsData } = useConflicts({ status: 'detected' });
   const activeConflictCount = conflictsData?.data?.length ?? 0;
+  const { data: invitationsData } = useMyInvitations();
+  const pendingInvitationCount = invitationsData?.data?.length ?? 0;
 
   const navItems: readonly NavItem[] = [
-    { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
+    { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon, badge: pendingInvitationCount },
     { to: '/project', label: 'Conversations', icon: ConversationsIcon },
     { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
     { to: '/prd-analysis', label: 'PRD Tracker', icon: PrdAnalysisIcon },

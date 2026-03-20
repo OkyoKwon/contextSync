@@ -99,7 +99,7 @@ interface ApiResponse<T> {
 ### Database
 
 - **Kysely** query builder (full ORM 아님), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–013)
+- **Migrations:** `apps/api/src/database/migrations/` (001–017)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **스키마 타입:** `apps/api/src/database/types.ts`
 

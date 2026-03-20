@@ -18,6 +18,7 @@ import { NoProjectState } from '../components/shared/NoProjectState';
 import { Spinner } from '../components/ui/Spinner';
 import { getGreeting } from '../lib/date';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
+import { PendingInvitations } from '../components/dashboard/PendingInvitations';
 
 const VALID_SOURCES: ReadonlySet<string> = new Set(['claude_code', 'claude_ai', 'api', 'manual']);
 
@@ -120,6 +121,8 @@ export function DashboardPage() {
           )}
         </p>
       </div>
+
+      <PendingInvitations />
 
       {statsLoading ? <Spinner /> : stats ? <DashboardStatsView stats={stats} /> : null}
 

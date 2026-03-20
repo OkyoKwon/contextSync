@@ -4,7 +4,6 @@ import type {
   Collaborator,
   CreateProjectInput,
   UpdateProjectInput,
-  AddCollaboratorInput,
 } from '@context-sync/shared';
 import { api } from './client';
 
@@ -17,8 +16,6 @@ export const projectsApi = {
   delete: (projectId: string) => api.delete<void>(`/projects/${projectId}`),
   listCollaborators: (projectId: string) =>
     api.get<readonly Collaborator[]>(`/projects/${projectId}/collaborators`),
-  addCollaborator: (projectId: string, input: AddCollaboratorInput) =>
-    api.post<void>(`/projects/${projectId}/collaborators`, input),
   removeCollaborator: (projectId: string, userId: string) =>
     api.delete<void>(`/projects/${projectId}/collaborators/${userId}`),
   setMyDirectory: (projectId: string, localDirectory: string | null) =>

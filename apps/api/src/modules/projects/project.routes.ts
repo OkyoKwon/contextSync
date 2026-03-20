@@ -6,8 +6,6 @@ import {
   updateProjectSchema,
   setMyDirectorySchema,
 } from './project.schema.js';
-import { addCollaboratorSchema } from './collaborator.schema.js';
-import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 
 export const projectRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -77,30 +75,6 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
         request.user.userId,
       );
       return reply.send(ok(collaborators));
-    },
-  );
-
-  app.post<{ Params: { projectId: string }; Body: unknown }>(
-    '/projects/:projectId/collaborators',
-    async (request, reply) => {
-      const { email, role } = addCollaboratorSchema.parse(request.body);
-
-      const targetUser = await app.db
-        .selectFrom('users')
-        .select('id')
-        .where('email', '=', email)
-        .executeTakeFirst();
-
-      if (!targetUser) throw new NotFoundError('User');
-
-      await projectService.addCollaborator(
-        app.db,
-        request.params.projectId,
-        request.user.userId,
-        targetUser.id,
-        role,
-      );
-      return reply.status(201).send(ok(null));
     },
   );
 

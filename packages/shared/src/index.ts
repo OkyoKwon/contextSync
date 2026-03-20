@@ -63,6 +63,7 @@ export type {
 
 export type { ActivityAction, ActivityEntry } from './types/activity.js';
 export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
+export type { Invitation, InvitationStatus, CreateInvitationInput } from './types/invitation.js';
 
 // Constants
 export { USER_ROLES } from './constants/roles.js';
@@ -87,6 +88,7 @@ export {
   SUPPORTED_PRD_EXTENSIONS,
   MAX_PRD_FILE_SIZE,
 } from './constants/prd-analysis.js';
+export { INVITATION_STATUSES, INVITATION_EXPIRY_DAYS } from './constants/invitation-status.js';
 
 // Validators
 export { validateSessionImport } from './validators/session.validator.js';

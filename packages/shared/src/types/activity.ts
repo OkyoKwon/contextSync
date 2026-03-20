@@ -5,7 +5,11 @@ export type ActivityAction =
   | 'conflict_resolved'
   | 'collaborator_added'
   | 'collaborator_removed'
-  | 'directory_updated';
+  | 'directory_updated'
+  | 'invitation_sent'
+  | 'invitation_accepted'
+  | 'invitation_declined'
+  | 'invitation_cancelled';
 
 export interface ActivityEntry {
   readonly id: string;
