@@ -12,6 +12,8 @@ import { Badge } from '../components/ui/Badge';
 import { shortPath } from '../lib/format';
 import { timeAgo } from '../lib/date';
 import { useAuthStore } from '../stores/auth.store';
+import { sessionsApi } from '../api/sessions.api';
+import { showToast } from '../lib/toast';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 
 type Selection =
@@ -30,9 +32,31 @@ export function ProjectPage() {
   const { data: projectData } = useCurrentProject();
   const currentProject = projectData?.data ?? null;
 
+  const [exporting, setExporting] = useState(false);
+
   const activeOnly = !showAll;
   const { data, isLoading } = useLocalSessions(activeOnly);
   const syncMutation = useSyncSessions();
+
+  const handleExport = useCallback(async () => {
+    if (!projectId || exporting) return;
+    setExporting(true);
+    try {
+      const blob = await sessionsApi.exportMarkdown(projectId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sessions-export.md';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast.success('Markdown exported successfully');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Export failed';
+      showToast.error(message);
+    } finally {
+      setExporting(false);
+    }
+  }, [projectId, exporting]);
 
   const groups = useMemo(() => data?.data ?? [], [data]);
 
@@ -157,6 +181,21 @@ export function ProjectPage() {
               )}
             </Button>
           )}
+          <button
+            onClick={handleExport}
+            disabled={exporting || !projectId}
+            className="flex items-center gap-1.5 rounded-md border border-border-primary bg-bg-secondary px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-tertiary disabled:opacity-50"
+          >
+            {exporting ? (
+              <Spinner size="sm" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
+                <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
+              </svg>
+            )}
+            Export Markdown
+          </button>
           <Button variant="secondary" onClick={() => setIsChangeDirectoryOpen(true)}>
             {linkedDirectory ? 'Change Directory' : 'Link Directory'}
           </Button>

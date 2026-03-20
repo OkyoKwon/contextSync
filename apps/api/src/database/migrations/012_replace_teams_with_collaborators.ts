@@ -17,7 +17,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
   await sql`CREATE INDEX idx_project_collaborators_project_id ON project_collaborators(project_id)`.execute(db);
   await sql`CREATE INDEX idx_project_collaborators_user_id ON project_collaborators(user_id)`.execute(db);
 
-  // 2. For team projects, set owner_id from team_members (role='owner', or earliest joined)
+  // 2. Drop chk_project_ownership constraint before updating owner_id
+  await sql`ALTER TABLE projects DROP CONSTRAINT IF EXISTS chk_project_ownership`.execute(db);
+
+  // 3. For team projects, set owner_id from team_members (role='owner', or earliest joined)
   await sql`
     UPDATE projects
     SET owner_id = sub.user_id
@@ -40,10 +43,7 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     ON CONFLICT (project_id, user_id) DO NOTHING
   `.execute(db);
 
-  // 4. Drop chk_project_ownership constraint
-  await sql`ALTER TABLE projects DROP CONSTRAINT IF EXISTS chk_project_ownership`.execute(db);
-
-  // 5. Drop team_id column from projects
+  // 4. Drop team_id column from projects
   await sql`ALTER TABLE projects DROP COLUMN IF EXISTS team_id`.execute(db);
 
   // 6. Add NOT NULL constraint on owner_id
