@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useThemeStore } from '../../stores/theme.store';
 
 export interface DisplayMessage {
   readonly role: 'user' | 'assistant';
@@ -23,6 +24,7 @@ export function MessageThread({ messages }: MessageThreadProps) {
 
 function MessageBubble({ message }: { readonly message: DisplayMessage }) {
   const isUser = message.role === 'user';
+  const theme = useThemeStore((s) => s.theme);
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -30,7 +32,7 @@ function MessageBubble({ message }: { readonly message: DisplayMessage }) {
         className={`max-w-[80%] rounded-xl px-4 py-3 ${
           isUser
             ? 'bg-blue-600 text-white'
-            : 'border border-zinc-800 bg-[#1C1C1C] text-[#FAFAFA]'
+            : 'border border-border-default bg-surface text-text-primary'
         }`}
       >
         <div className="mb-1 text-xs font-medium opacity-70">
@@ -39,7 +41,7 @@ function MessageBubble({ message }: { readonly message: DisplayMessage }) {
             <span className="ml-1 opacity-50">({message.modelUsed})</span>
           )}
         </div>
-        <div className={`prose prose-sm max-w-none prose-invert`}>
+        <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''}`}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
         </div>
       </div>

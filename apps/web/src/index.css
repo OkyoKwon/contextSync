@@ -4,9 +4,41 @@
 @theme {
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --color-page: #141414;
+  --color-surface: #1C1C1C;
+  --color-surface-hover: #252525;
+  --color-surface-sunken: #111111;
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #D4D4D8;
+  --color-text-tertiary: #A1A1AA;
+  --color-text-muted: #71717A;
+  --color-border-default: #27272A;
+  --color-border-input: #3F3F46;
+  --color-btn-primary-bg: #FAFAFA;
+  --color-btn-primary-text: #141414;
+  --color-btn-primary-hover: #E4E4E7;
+  --color-interactive-hover: #27272A;
+}
+
+:root[data-theme="light"] {
+  --color-page: #F9FAFB;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F3F4F6;
+  --color-surface-sunken: #F3F4F6;
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-border-default: #E5E7EB;
+  --color-border-input: #D1D5DB;
+  --color-btn-primary-bg: #2563EB;
+  --color-btn-primary-text: #FFFFFF;
+  --color-btn-primary-hover: #1D4ED8;
+  --color-interactive-hover: #F3F4F6;
 }
 
 body {
-  background-color: #141414;
-  color: #fafafa;
+  background-color: var(--color-page);
+  color: var(--color-text-primary);
 }

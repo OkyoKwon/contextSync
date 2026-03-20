@@ -17,7 +17,7 @@ interface SearchResultsProps {
 
 export function SearchResults({ results }: SearchResultsProps) {
   if (results.length === 0) {
-    return <p className="py-8 text-center text-sm text-[#A1A1AA]">No results found</p>;
+    return <p className="py-8 text-center text-sm text-text-tertiary">No results found</p>;
   }
 
   return (
@@ -26,17 +26,17 @@ export function SearchResults({ results }: SearchResultsProps) {
         <Link
           key={result.id}
           to={`/sessions/${result.sessionId}`}
-          className="block rounded-lg border border-zinc-800 p-3 hover:bg-[#252525]"
+          className="block rounded-lg border border-border-default p-3 hover:bg-surface-hover"
         >
           <div className="flex items-center gap-2">
             <Badge variant={result.type === 'session' ? 'info' : 'default'}>
               {result.type}
             </Badge>
-            <span className="text-sm font-medium text-[#FAFAFA]">{result.title}</span>
-            <span className="ml-auto text-xs text-[#71717A]">{timeAgo(result.createdAt)}</span>
+            <span className="text-sm font-medium text-text-primary">{result.title}</span>
+            <span className="ml-auto text-xs text-text-muted">{timeAgo(result.createdAt)}</span>
           </div>
           <div
-            className="mt-1 text-xs text-[#A1A1AA]"
+            className="mt-1 text-xs text-text-tertiary"
             dangerouslySetInnerHTML={{ __html: result.highlight }}
           />
         </Link>

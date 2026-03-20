@@ -18,7 +18,7 @@ function ProjectSettingsInline() {
 export function ProjectSettingsPage() {
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold text-[#FAFAFA]">Project Settings</h1>
+      <h1 className="mb-6 text-xl font-bold text-text-primary">Project Settings</h1>
       <ProjectSettingsContent />
     </div>
   );
@@ -57,7 +57,7 @@ function ProjectSettingsContent() {
 
   if (!teamId) {
     return (
-      <div className="py-12 text-center text-sm text-[#A1A1AA]">
+      <div className="py-12 text-center text-sm text-text-tertiary">
         Please create or select a team first.
       </div>
     );
@@ -99,14 +99,14 @@ function ProjectSettingsContent() {
                 <div
                   key={project.id}
                   className={`flex items-center justify-between rounded-lg border p-3 ${
-                    isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-zinc-800'
+                    isSelected ? 'border-blue-500 bg-blue-500/10' : 'border-border-default'
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     <div>
-                      <p className="text-sm font-medium text-[#FAFAFA]">{project.name}</p>
+                      <p className="text-sm font-medium text-text-primary">{project.name}</p>
                       {project.repoUrl && (
-                        <p className="text-xs text-[#A1A1AA]">{project.repoUrl}</p>
+                        <p className="text-xs text-text-tertiary">{project.repoUrl}</p>
                       )}
                     </div>
                     {isSelected && <Badge variant="info">Selected</Badge>}

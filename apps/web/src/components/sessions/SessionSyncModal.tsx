@@ -84,7 +84,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
       {isLoading && (
         <div className="flex items-center justify-center py-8">
           <Spinner size="md" />
-          <span className="ml-2 text-sm text-[#A1A1AA]">Scanning local sessions...</span>
+          <span className="ml-2 text-sm text-text-tertiary">Scanning local sessions...</span>
         </div>
       )}
 
@@ -102,7 +102,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
 
       {!isLoading && groups.length === 0 && !fetchError && projectId && (
         <div className="py-8 text-center">
-          <p className="text-sm text-[#A1A1AA]">
+          <p className="text-sm text-text-tertiary">
             {activeOnly
               ? 'No active Claude Code sessions found.'
               : 'No Claude Code sessions found in ~/.claude/projects/'}
@@ -143,14 +143,14 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                   onClick={() => handleSyncProject(group)}
                   className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
                     allSynced
-                      ? 'cursor-default border-zinc-800 bg-[#1C1C1C] opacity-50'
-                      : 'border-zinc-800 bg-[#1C1C1C] hover:border-zinc-700 hover:bg-[#252525]'
+                      ? 'cursor-default border-border-default bg-surface opacity-50'
+                      : 'border-border-default bg-surface hover:border-border-input hover:bg-surface-hover'
                   }`}
                 >
-                  <FolderIcon className={`h-5 w-5 flex-shrink-0 ${allSynced ? 'text-[#52525B]' : 'text-[#71717A]'}`} />
+                  <FolderIcon className={`h-5 w-5 flex-shrink-0 ${allSynced ? 'text-text-muted' : 'text-text-muted'}`} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-[#D4D4D8]">
+                      <span className="truncate text-sm font-medium text-text-secondary">
                         {shortPath(group.projectPath)}
                       </span>
                       {group.isActive && (
@@ -160,7 +160,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                         <Badge variant="success">All synced</Badge>
                       )}
                     </div>
-                    <span className="text-xs text-[#71717A]">
+                    <span className="text-xs text-text-muted">
                       {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
                       {!allSynced && (
                         <> · <span className="text-blue-400">{unsyncedCount} to sync</span></>
@@ -178,8 +178,8 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
       {view.type === 'syncing' && (
         <div className="flex flex-col items-center justify-center py-8">
           <Spinner size="md" />
-          <p className="mt-3 text-sm text-[#A1A1AA]">
-            Syncing sessions from <span className="font-medium text-[#D4D4D8]">{shortPath(view.projectPath)}</span>...
+          <p className="mt-3 text-sm text-text-tertiary">
+            Syncing sessions from <span className="font-medium text-text-secondary">{shortPath(view.projectPath)}</span>...
           </p>
         </div>
       )}
@@ -188,8 +188,8 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
       {view.type === 'result' && (
         <div>
           <div className="mb-3 flex items-center gap-2">
-            <FolderIcon className="h-4 w-4 text-[#71717A]" />
-            <span className="text-sm font-medium text-[#D4D4D8]">
+            <FolderIcon className="h-4 w-4 text-text-muted" />
+            <span className="text-sm font-medium text-text-secondary">
               {shortPath(view.projectPath)}
             </span>
           </div>
@@ -202,16 +202,16 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                   r.success
                     ? (r.detectedConflicts ?? 0) > 0
                       ? 'border-yellow-500/30 bg-yellow-500/5'
-                      : 'border-zinc-800 bg-[#1C1C1C]'
+                      : 'border-border-default bg-surface'
                     : 'border-red-500/30 bg-red-500/5'
                 }`}
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-[#D4D4D8]">
+                  <p className="truncate text-sm text-text-secondary">
                     {r.sessionId.slice(0, 8)}...
                   </p>
                   {r.messageCount !== undefined && (
-                    <p className="text-xs text-[#71717A]">{r.messageCount} messages</p>
+                    <p className="text-xs text-text-muted">{r.messageCount} messages</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">

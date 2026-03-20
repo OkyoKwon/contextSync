@@ -17,7 +17,7 @@ export function DashboardStatsView({ stats }: DashboardStatsProps) {
     <div className="grid grid-cols-4 gap-4">
       {items.map((item) => (
         <Card key={item.label}>
-          <p className="text-xs font-medium uppercase text-[#A1A1AA]">{item.label}</p>
+          <p className="text-xs font-medium uppercase text-text-tertiary">{item.label}</p>
           <p className={`mt-1 text-2xl font-bold ${item.color}`}>{item.value}</p>
         </Card>
       ))}

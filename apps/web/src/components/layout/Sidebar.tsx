@@ -9,9 +9,9 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="flex w-60 flex-col border-r border-zinc-800 bg-[#1C1C1C]">
-      <div className="flex h-14 items-center border-b border-zinc-800 px-4">
-        <h1 className="text-lg font-bold text-[#FAFAFA]">ContextSync</h1>
+    <aside className="flex w-60 flex-col border-r border-border-default bg-surface">
+      <div className="flex h-14 items-center border-b border-border-default px-4">
+        <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => (
@@ -22,7 +22,7 @@ export function Sidebar() {
               `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-500/10 text-blue-400'
-                  : 'text-[#A1A1AA] hover:bg-zinc-800 hover:text-[#FAFAFA]'
+                  : 'text-text-tertiary hover:bg-interactive-hover hover:text-text-primary'
               }`
             }
           >

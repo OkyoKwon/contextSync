@@ -18,7 +18,7 @@ export function SessionList({ sessions, isLoading }: SessionListProps) {
 
   if (sessions.length === 0) {
     return (
-      <div className="py-12 text-center text-sm text-[#A1A1AA]">
+      <div className="py-12 text-center text-sm text-text-tertiary">
         No sessions yet. Upload a session to get started.
       </div>
     );

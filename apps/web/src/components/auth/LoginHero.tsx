@@ -32,24 +32,24 @@ export function LoginHero({ compact = false }: LoginHeroProps) {
   return (
     <div className="flex flex-col items-center gap-8 font-mono">
       <pre
-        className="hidden select-none text-[#FAFAFA] leading-tight sm:block sm:text-[0.55rem] md:text-xs"
+        className="hidden select-none text-text-primary leading-tight sm:block sm:text-[0.55rem] md:text-xs"
         aria-label="ContextSync"
       >
         {CONTEXT_SYNC_ASCII}
       </pre>
       <pre
-        className="block select-none text-[#FAFAFA] leading-tight text-[0.55rem] sm:hidden"
+        className="block select-none text-text-primary leading-tight text-[0.55rem] sm:hidden"
         aria-label="ContextSync"
       >
         {CONTEXT_SYNC_ASCII_COMPACT}
       </pre>
 
       <div className="flex flex-col items-center gap-2">
-        <p className="text-sm text-[#A1A1AA]">
+        <p className="text-sm text-text-tertiary">
           Keep your team's Claude sessions in sync
         </p>
         {!compact && (
-          <p className="text-xs text-[#A1A1AA]/80">
+          <p className="text-xs text-text-tertiary/80">
             Sync CLAUDE.md across your team in real-time
           </p>
         )}
@@ -59,7 +59,7 @@ export function LoginHero({ compact = false }: LoginHeroProps) {
         type="button"
         aria-label="Continue with GitHub"
         onClick={handleLogin}
-        className="flex cursor-pointer items-center gap-2 rounded-md bg-[#FAFAFA] px-6 py-3 font-mono text-sm font-medium text-[#141414] transition-colors hover:bg-[#E4E4E7]"
+        className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
       >
         <GitHubIcon />
         Continue with GitHub
@@ -69,7 +69,7 @@ export function LoginHero({ compact = false }: LoginHeroProps) {
         type="button"
         aria-label="Scroll to features"
         onClick={scrollToFeatures}
-        className="mt-4 animate-bounce text-[#A1A1AA]/60 transition-colors hover:text-[#A1A1AA]"
+        className="mt-4 animate-bounce text-text-tertiary/60 transition-colors hover:text-text-tertiary"
       >
         <ChevronDownIcon />
       </button>

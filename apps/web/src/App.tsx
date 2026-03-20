@@ -2,6 +2,7 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppRoutes } from './routes';
 import { LoginModal } from './components/auth/LoginModal';
+import { useThemeSync } from './hooks/use-theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,6 +14,8 @@ const queryClient = new QueryClient({
 });
 
 export function App() {
+  useThemeSync();
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

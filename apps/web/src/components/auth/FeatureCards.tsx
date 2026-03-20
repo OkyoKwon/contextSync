@@ -58,12 +58,12 @@ interface FeatureCardProps {
 
 function FeatureCard({ title, description, icon }: FeatureCardProps) {
   return (
-    <div className="rounded-lg border border-zinc-800 bg-[#1C1C1C] p-6">
-      <div className="mb-3 text-[#A1A1AA]">{icon}</div>
-      <h3 className="mb-2 font-mono text-sm font-medium text-[#FAFAFA]">
+    <div className="rounded-lg border border-border-default bg-surface p-6">
+      <div className="mb-3 text-text-tertiary">{icon}</div>
+      <h3 className="mb-2 font-mono text-sm font-medium text-text-primary">
         {title}
       </h3>
-      <p className="font-mono text-xs leading-relaxed text-[#A1A1AA]">
+      <p className="font-mono text-xs leading-relaxed text-text-tertiary">
         {description}
       </p>
     </div>
@@ -72,9 +72,9 @@ function FeatureCard({ title, description, icon }: FeatureCardProps) {
 
 export function FeatureCards() {
   return (
-    <section id="features" className="border-t border-zinc-800 bg-[#111111]">
+    <section id="features" className="border-t border-border-default bg-surface-sunken">
       <div className="mx-auto w-full max-w-2xl px-6 py-24">
-        <p className="mb-10 text-center font-mono text-xs uppercase tracking-widest text-[#A1A1AA]">
+        <p className="mb-10 text-center font-mono text-xs uppercase tracking-widest text-text-tertiary">
           What ContextSync does
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

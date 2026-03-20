@@ -19,7 +19,7 @@ export function ProjectSelector() {
     <select
       value={currentProjectId ?? ''}
       onChange={(e) => setCurrentProject(e.target.value)}
-      className="rounded-lg border border-zinc-700 bg-[#141414] px-3 py-1.5 text-sm text-[#FAFAFA] focus:border-blue-500 focus:outline-none"
+      className="rounded-lg border border-border-input bg-page px-3 py-1.5 text-sm text-text-primary focus:border-blue-500 focus:outline-none"
     >
       <option value="">Select project</option>
       {projects.map((project) => (

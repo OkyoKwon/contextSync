@@ -8,7 +8,7 @@ export function TeamSettingsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold text-[#FAFAFA]">Settings</h1>
+      <h1 className="mb-6 text-xl font-bold text-text-primary">Settings</h1>
       <div className="space-y-6">
         {!teamId && <TeamSettings />}
         {teamId && (

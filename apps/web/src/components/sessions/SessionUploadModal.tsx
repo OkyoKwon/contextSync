@@ -43,23 +43,23 @@ export function SessionUploadModal({ isOpen, onClose }: SessionUploadModalProps)
       <div
         {...getRootProps()}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-          isDragActive ? 'border-blue-400 bg-blue-500/10' : 'border-zinc-700 hover:border-zinc-600'
+          isDragActive ? 'border-blue-400 bg-blue-500/10' : 'border-border-input hover:border-zinc-600'
         }`}
       >
         <input {...getInputProps()} />
         {selectedFile ? (
           <div>
-            <p className="text-sm font-medium text-[#FAFAFA]">{selectedFile.name}</p>
-            <p className="text-xs text-[#A1A1AA]">
+            <p className="text-sm font-medium text-text-primary">{selectedFile.name}</p>
+            <p className="text-xs text-text-tertiary">
               {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
           </div>
         ) : (
           <div>
-            <p className="text-sm text-[#A1A1AA]">
+            <p className="text-sm text-text-tertiary">
               Drop a .json, .jsonl, or .md file here, or click to browse
             </p>
-            <p className="mt-1 text-xs text-[#71717A]">Max 10MB</p>
+            <p className="mt-1 text-xs text-text-muted">Max 10MB</p>
           </div>
         )}
       </div>

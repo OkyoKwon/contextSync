@@ -11,12 +11,12 @@ interface SessionDetailProps {
 export function SessionDetail({ session }: SessionDetailProps) {
   return (
     <div>
-      <div className="mb-6 rounded-xl border border-zinc-800 bg-[#1C1C1C] p-5">
+      <div className="mb-6 rounded-xl border border-border-default bg-surface p-5">
         <div className="flex items-center gap-3">
           <Avatar src={session.userAvatarUrl} name={session.userName ?? 'User'} />
           <div>
-            <h2 className="text-lg font-semibold text-[#FAFAFA]">{session.title}</h2>
-            <p className="text-sm text-[#A1A1AA]">
+            <h2 className="text-lg font-semibold text-text-primary">{session.title}</h2>
+            <p className="text-sm text-text-tertiary">
               {session.userName} &middot; {formatDate(session.createdAt)}
             </p>
           </div>
@@ -35,7 +35,7 @@ export function SessionDetail({ session }: SessionDetailProps) {
             {session.filePaths.map((path) => (
               <span
                 key={path}
-                className="rounded bg-[#252525] px-2 py-0.5 text-xs text-[#A1A1AA] font-mono"
+                className="rounded bg-surface-hover px-2 py-0.5 text-xs text-text-tertiary font-mono"
               >
                 {path}
               </span>
