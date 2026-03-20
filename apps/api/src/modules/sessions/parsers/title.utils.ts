@@ -36,35 +36,38 @@ export function stripSystemXmlContent(rawContent: string): string {
 }
 
 export function generateTitle(rawContent: string): string {
-  // 1. Strip XML tags and their content
-  let content = stripSystemXmlContent(rawContent);
+  // 1. Strip XML tags (preserve newlines for plan header detection)
+  let content = rawContent;
+  content = content.replace(XML_TAG_PATTERN, '');
+  content = content.replace(SELF_CLOSING_TAG_PATTERN, '');
 
-  // 2. Extract plan name from markdown header
-  const planMatch = IMPLEMENT_PLAN_PREFIX.test(content)
-    ? PLAN_HEADER_PATTERN.exec(content)
-    : null;
+  // 2. Try to extract plan name from markdown header (needs newlines intact)
+  const planMatch = IMPLEMENT_PLAN_PREFIX.test(content) ? PLAN_HEADER_PATTERN.exec(content) : null;
 
   if (planMatch) {
     content = planMatch[1]!.trim();
   } else {
-    // 3. Strip "Implement the following plan:" prefix
+    // 3. Strip markdown header prefixes (e.g. "# Title", "## Title")
+    content = content.replace(/^#{1,6}\s+/gm, '');
+
+    // 4. Strip "Implement the following plan:" prefix
     content = content.replace(IMPLEMENT_PLAN_PREFIX, '');
 
-    // 4. Strip boilerplate prefixes
+    // 5. Strip boilerplate prefixes
     for (const prefix of BOILERPLATE_PREFIXES) {
       content = content.replace(prefix, '');
     }
   }
 
-  // 5. Clean whitespace — collapse multiple spaces/newlines into single space
+  // 6. Clean whitespace — collapse multiple spaces/newlines into single space
   content = content.replace(/\s+/g, ' ').trim();
 
-  // 6. Fallback for empty content
+  // 7. Fallback for empty content
   if (!content) {
     return 'Untitled Session';
   }
 
-  // 7. Truncate smartly at word boundary
+  // 8. Truncate smartly at word boundary
   if (content.length > MAX_TITLE_LENGTH) {
     const truncated = content.slice(0, MAX_TITLE_LENGTH);
     const lastSpace = truncated.lastIndexOf(' ');

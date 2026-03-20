@@ -3,7 +3,8 @@ import { findFirstMeaningfulTitle, generateTitle } from '../title.utils.js';
 
 describe('generateTitle', () => {
   it('should strip XML tags and their content', () => {
-    const input = '<local-command-caveat>Caveat: The messages below may reference tools.</local-command-caveat>Fix the login bug';
+    const input =
+      '<local-command-caveat>Caveat: The messages below may reference tools.</local-command-caveat>Fix the login bug';
     expect(generateTitle(input)).toBe('Fix the login bug');
   });
 
@@ -13,17 +14,20 @@ describe('generateTitle', () => {
   });
 
   it('should strip command-name tags', () => {
-    const input = '<command-name>commit</command-name><command-message>Create a commit</command-message>Add tests for utils';
+    const input =
+      '<command-name>commit</command-name><command-message>Create a commit</command-message>Add tests for utils';
     expect(generateTitle(input)).toBe('Add tests for utils');
   });
 
   it('should extract plan name from markdown header', () => {
-    const input = 'Implement the following plan:\n\n# Plan: Remove "Show All" filter\n\n## Context\n\nSome details here';
+    const input =
+      'Implement the following plan:\n\n# Plan: Remove "Show All" filter\n\n## Context\n\nSome details here';
     expect(generateTitle(input)).toBe('Remove "Show All" filter');
   });
 
   it('should extract plan name without "Plan:" prefix', () => {
-    const input = 'Implement the following plan:\n\n# Improve Session Title Generation\n\n## Context';
+    const input =
+      'Implement the following plan:\n\n# Improve Session Title Generation\n\n## Context';
     expect(generateTitle(input)).toBe('Improve Session Title Generation');
   });
 
@@ -45,7 +49,8 @@ describe('generateTitle', () => {
   });
 
   it('should truncate at word boundary at 100 chars', () => {
-    const input = 'Implement a comprehensive authentication system with OAuth2 support including Google GitHub and Microsoft providers with proper token refresh';
+    const input =
+      'Implement a comprehensive authentication system with OAuth2 support including Google GitHub and Microsoft providers with proper token refresh';
     const result = generateTitle(input);
     expect(result.length).toBeLessThanOrEqual(100);
     expect(result).not.toMatch(/\s$/);
@@ -61,7 +66,9 @@ describe('generateTitle', () => {
   });
 
   it('should return "Untitled Session" when only XML tags remain', () => {
-    expect(generateTitle('<system-reminder>Only system content</system-reminder>')).toBe('Untitled Session');
+    expect(generateTitle('<system-reminder>Only system content</system-reminder>')).toBe(
+      'Untitled Session',
+    );
   });
 
   it('should handle normal short messages unchanged', () => {
@@ -69,7 +76,8 @@ describe('generateTitle', () => {
   });
 
   it('should handle messages with mixed XML and useful content', () => {
-    const input = '<local-command-caveat>Some caveat</local-command-caveat>\n\nAdd pagination to the sessions list';
+    const input =
+      '<local-command-caveat>Some caveat</local-command-caveat>\n\nAdd pagination to the sessions list';
     expect(generateTitle(input)).toBe('Add pagination to the sessions list');
   });
 
@@ -79,8 +87,15 @@ describe('generateTitle', () => {
   });
 
   it('should handle plan with "Plan:" prefix in header', () => {
-    const input = 'Implement the following plan:\n\n# Plan: CLAUDE.md 작성\n\n## Context\nSome context';
+    const input =
+      'Implement the following plan:\n\n# Plan: CLAUDE.md 작성\n\n## Context\nSome context';
     expect(generateTitle(input)).toBe('CLAUDE.md 작성');
+  });
+
+  it('should strip markdown header prefixes from non-plan content', () => {
+    expect(generateTitle('# Fix login bug')).toBe('Fix login bug');
+    expect(generateTitle('## Refactor auth module')).toBe('Refactor auth module');
+    expect(generateTitle('### Add dark mode support')).toBe('Add dark mode support');
   });
 
   it('should handle content that is exactly 100 chars', () => {
