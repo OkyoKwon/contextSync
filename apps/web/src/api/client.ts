@@ -1,7 +1,52 @@
 import type { ApiResponse } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
+import { useLoginModal } from '../hooks/use-login-modal';
 
 const BASE_URL = '/api';
+
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
+
+async function tryRefreshToken(): Promise<boolean> {
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    try {
+      const token = useAuthStore.getState().token;
+      if (!token) return false;
+
+      const response = await fetch(`${BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      if (data.success && data.data?.token) {
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser) {
+          useAuthStore.getState().setAuth(data.data.token, currentUser);
+        }
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      isRefreshing = false;
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
 
 async function request<T>(
   path: string,
@@ -26,10 +71,31 @@ async function request<T>(
     headers,
   });
 
-  if (response.status === 401) {
-    useAuthStore.getState().logout();
-    window.location.href = '/login';
-    throw new Error('Unauthorized');
+  if (response.status === 401 && path !== '/auth/refresh') {
+    const refreshed = await tryRefreshToken();
+
+    if (refreshed) {
+      const newToken = useAuthStore.getState().token;
+      const retryHeaders = { ...headers };
+      if (newToken) {
+        retryHeaders['Authorization'] = `Bearer ${newToken}`;
+      }
+      const retryResponse = await fetch(`${BASE_URL}${path}`, {
+        ...options,
+        headers: retryHeaders,
+      });
+
+      if (retryResponse.ok) {
+        const data = (await retryResponse.json()) as ApiResponse<T>;
+        if (!data.success && data.error) {
+          throw new Error(data.error);
+        }
+        return data;
+      }
+    }
+
+    useLoginModal.getState().openLoginModal();
+    throw new Error('Session expired. Please log in again.');
   }
 
   if (!response.ok) {

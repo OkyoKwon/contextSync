@@ -18,49 +18,57 @@ export function ProjectSelector() {
   const currentTeamId = useAuthStore((s) => s.currentTeamId);
   const currentTeamName = teams.find((t) => t.id === currentTeamId)?.name;
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (!value) return;
-
-    const personalMatch = personalProjects.find((p) => p.id === value);
-    if (personalMatch) {
-      setCurrentTeam(null);
-      setCurrentProject(value);
-      return;
-    }
-
-    const teamMatch = teamProjects.find((p) => p.id === value);
-    if (teamMatch && teamMatch.teamId) {
-      setCurrentTeam(teamMatch.teamId);
-      setCurrentProject(value);
-    }
+  const handleSelect = (projectId: string, teamId: string | null) => {
+    if (!projectId) return;
+    setCurrentTeam(teamId);
+    setCurrentProject(projectId);
   };
 
   return (
-    <select
-      value={currentProjectId ?? ''}
-      onChange={handleChange}
-      className="rounded-lg border border-border-input bg-page px-3 py-1.5 text-sm text-text-primary focus:border-blue-500 focus:outline-none"
-    >
-      <option value="">Select project</option>
+    <div className="max-h-48 overflow-y-auto">
       {personalProjects.length > 0 && (
-        <optgroup label="Personal Projects">
+        <div>
+          <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            Personal Projects
+          </p>
           {personalProjects.map((project) => (
-            <option key={project.id} value={project.id}>
+            <button
+              key={project.id}
+              onClick={() => handleSelect(project.id, null)}
+              className={`w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
+                currentProjectId === project.id
+                  ? 'bg-blue-500/10 font-medium text-blue-400'
+                  : 'text-text-secondary hover:bg-interactive-hover hover:text-text-primary'
+              }`}
+            >
               {project.name}
-            </option>
+            </button>
           ))}
-        </optgroup>
+        </div>
       )}
       {teamProjects.length > 0 && (
-        <optgroup label={currentTeamName ? `Team: ${currentTeamName}` : 'Team Projects'}>
+        <div className={personalProjects.length > 0 ? 'mt-2' : ''}>
+          <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            {currentTeamName ? `Team: ${currentTeamName}` : 'Team Projects'}
+          </p>
           {teamProjects.map((project) => (
-            <option key={project.id} value={project.id}>
+            <button
+              key={project.id}
+              onClick={() => handleSelect(project.id, project.teamId ?? null)}
+              className={`w-full rounded-md px-3 py-1.5 text-left text-sm transition-colors ${
+                currentProjectId === project.id
+                  ? 'bg-blue-500/10 font-medium text-blue-400'
+                  : 'text-text-secondary hover:bg-interactive-hover hover:text-text-primary'
+              }`}
+            >
               {project.name}
-            </option>
+            </button>
           ))}
-        </optgroup>
+        </div>
       )}
-    </select>
+      {personalProjects.length === 0 && teamProjects.length === 0 && (
+        <p className="px-3 py-2 text-sm text-text-tertiary">No projects</p>
+      )}
+    </div>
   );
 }

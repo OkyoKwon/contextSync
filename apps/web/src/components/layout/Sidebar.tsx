@@ -1,18 +1,36 @@
 import { NavLink } from 'react-router';
+import { ProjectSelector } from './ProjectSelector';
+import { useConflicts } from '../../hooks/use-conflicts';
 
-const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
-  { to: '/project', label: 'Project', icon: ProjectIcon },
-  { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon },
-  { to: '/settings/team', label: 'Settings', icon: SettingsIcon },
-];
+interface NavItem {
+  readonly to: string;
+  readonly label: string;
+  readonly icon: () => React.ReactNode;
+  readonly badge?: number;
+}
 
 export function Sidebar() {
+  const { data: conflictsData } = useConflicts({ status: 'detected' });
+  const activeConflictCount = conflictsData?.data?.length ?? 0;
+
+  const navItems: readonly NavItem[] = [
+    { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
+    { to: '/project', label: 'Conversations', icon: ConversationsIcon },
+    { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
+    { to: '/settings/team', label: 'Settings', icon: SettingsIcon },
+  ];
+
   return (
     <aside className="flex w-60 flex-col border-r border-border-default bg-surface">
       <div className="flex h-14 items-center gap-2 border-b border-border-default px-4">
         <img src="/logo.png" alt="ContextSync" className="h-7 w-7" />
         <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>
+      </div>
+      <div className="border-b border-border-default p-3">
+        <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+          Projects
+        </p>
+        <ProjectSelector />
       </div>
       <nav className="flex-1 space-y-1 p-3">
         {navItems.map((item) => (
@@ -28,7 +46,12 @@ export function Sidebar() {
             }
           >
             <item.icon />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {item.badge != null && item.badge > 0 && (
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500/20 px-1.5 text-xs font-semibold text-red-400">
+                {item.badge > 99 ? '99+' : item.badge}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -44,10 +67,11 @@ function DashboardIcon() {
   );
 }
 
-function ProjectIcon() {
+function ConversationsIcon() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 2H4a2 2 0 00-2 2v12a2 2 0 002 2h3l3 3 3-3h7a2 2 0 002-2V4a2 2 0 00-2-2z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9h8M8 13h5" />
     </svg>
   );
 }

@@ -1,7 +1,6 @@
 import { useAuthStore } from '../../stores/auth.store';
 import { useThemeStore } from '../../stores/theme.store';
 import { Avatar } from '../ui/Avatar';
-import { ProjectSelector } from './ProjectSelector';
 import { SearchBar } from '../search/SearchBar';
 
 function ThemeToggle() {
@@ -34,7 +33,6 @@ export function Header() {
   return (
     <header className="flex h-14 items-center justify-between border-b border-border-default bg-surface px-6">
       <div className="flex items-center gap-4">
-        <ProjectSelector />
         <SearchBar />
       </div>
       <div className="flex items-center gap-3">

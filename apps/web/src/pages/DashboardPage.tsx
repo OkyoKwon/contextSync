@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import type { SessionSource } from '@context-sync/shared';
 import { useTimeline, useDashboardStats } from '../hooks/use-sessions';
 import { useAuthStore } from '../stores/auth.store';
@@ -12,6 +13,14 @@ import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
 import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
 import { Spinner } from '../components/ui/Spinner';
 import { getGreeting } from '../lib/date';
+import { showToast } from '../lib/toast';
+
+const VALID_SOURCES: ReadonlySet<string> = new Set(['claude_code', 'claude_ai', 'api', 'manual']);
+
+function parseSourceParam(value: string | null): SessionSource | null {
+  if (value && VALID_SOURCES.has(value)) return value as SessionSource;
+  return null;
+}
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
@@ -21,7 +30,25 @@ export function DashboardPage() {
 
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   const { data: timelineData, isLoading: timelineLoading } = useTimeline();
-  const [activeSource, setActiveSource] = useState<SessionSource | null>(null);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeSource = parseSourceParam(searchParams.get('source'));
+
+  const handleFilterChange = useCallback(
+    (source: SessionSource | null) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (source) {
+          next.set('source', source);
+        } else {
+          next.delete('source');
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams],
+  );
+
   const [exporting, setExporting] = useState(false);
 
   const handleExport = useCallback(async () => {
@@ -35,8 +62,10 @@ export function DashboardPage() {
       a.download = 'sessions-export.md';
       a.click();
       URL.revokeObjectURL(url);
+      showToast.success('Markdown exported successfully');
     } catch (err) {
-      console.error('Export failed:', err);
+      const message = err instanceof Error ? err.message : 'Export failed';
+      showToast.error(message);
     } finally {
       setExporting(false);
     }
@@ -61,7 +90,22 @@ export function DashboardPage() {
             {greeting}, {displayName}
           </h1>
         </div>
-        <EmptyDashboard />
+        <EmptyDashboard hasProject={false} hasSessions={false} />
+      </div>
+    );
+  }
+
+  const hasSessions = allEntries.length > 0 || timelineLoading;
+
+  if (!timelineLoading && !hasSessions) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-text-primary">
+            {greeting}, {displayName}
+          </h1>
+        </div>
+        <EmptyDashboard hasProject hasSessions={false} />
       </div>
     );
   }
@@ -110,7 +154,7 @@ export function DashboardPage() {
         <div className="col-span-2">
           <div className="mb-3 flex items-center justify-between gap-4">
             <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
-            <TimelineFilters activeSource={activeSource} onFilterChange={setActiveSource} />
+            <TimelineFilters activeSource={activeSource} onFilterChange={handleFilterChange} />
           </div>
           <Timeline entries={filteredEntries} isLoading={timelineLoading} />
         </div>

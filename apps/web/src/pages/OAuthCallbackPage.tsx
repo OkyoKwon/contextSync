@@ -21,10 +21,15 @@ export function OAuthCallbackPage() {
     try {
       const user = JSON.parse(userStr);
       setAuth(token, user);
+
+      // Remove sensitive data from URL immediately
+      window.history.replaceState({}, '', '/auth/callback');
+
       const { currentProjectId } = useAuthStore.getState();
       const destination = currentProjectId ? '/dashboard' : '/onboarding';
       navigate(destination, { replace: true });
     } catch {
+      window.history.replaceState({}, '', '/auth/callback');
       setError('Authentication failed - invalid data');
     }
   }, [searchParams, setAuth, navigate]);
