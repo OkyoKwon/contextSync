@@ -5,6 +5,7 @@ import { parseJsonSession, parseJsonlSession, extractFilePathsFromMessages } fro
 import { parseMarkdownSession } from './parsers/markdown-session.parser.js';
 import { createSession, createMessages } from './session.repository.js';
 import { detectConflicts, saveDetectedConflicts } from '../conflicts/conflict.service.js';
+import { logActivity } from '../activity/activity.service.js';
 import { AppError } from '../../plugins/error-handler.plugin.js';
 
 export async function importParsedSession(
@@ -30,6 +31,15 @@ export async function importParsedSession(
 
   const conflicts = await detectConflicts(db, session);
   const savedConflicts = await saveDetectedConflicts(db, projectId, conflicts);
+
+  logActivity(db, {
+    projectId,
+    userId,
+    action: 'session_created',
+    entityType: 'session',
+    entityId: session.id,
+    metadata: { title: parsed.title, source: parsed.source ?? 'manual' },
+  });
 
   return {
     session: { ...session, filePaths: resolvedPaths },

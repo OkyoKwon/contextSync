@@ -17,4 +17,10 @@ export const conflictsApi = {
 
   update: (conflictId: string, input: UpdateConflictInput) =>
     api.patch<Conflict>(`/conflicts/${conflictId}`, input),
+
+  assignReviewer: (conflictId: string, reviewerId: string) =>
+    api.patch<Conflict>(`/conflicts/${conflictId}/assign`, { reviewerId }),
+
+  addReviewNotes: (conflictId: string, reviewNotes: string) =>
+    api.patch<Conflict>(`/conflicts/${conflictId}/review-notes`, { reviewNotes }),
 };

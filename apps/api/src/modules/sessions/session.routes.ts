@@ -3,7 +3,7 @@ import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
 import { exportProjectAsMarkdown } from './session-export.service.js';
-import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions, recalculateTokenUsage } from './local-session.service.js';
+import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions, recalculateTokenUsage, browseDirectory } from './local-session.service.js';
 import { sessionFilterSchema, updateSessionSchema, tokenUsageQuerySchema } from './session.schema.js';
 import * as tokenUsageService from './token-usage.service.js';
 
@@ -133,6 +133,18 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
+  app.get<{ Params: { projectId: string } }>(
+    '/projects/:projectId/team-stats',
+    async (request, reply) => {
+      const stats = await sessionService.getTeamStats(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+      return reply.send(ok(stats));
+    },
+  );
+
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/token-usage',
     async (request, reply) => {
@@ -144,6 +156,21 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
         period,
       );
       return reply.send(ok(stats));
+    },
+  );
+
+  app.get<{ Querystring: { path?: string } }>(
+    '/sessions/local/browse',
+    async (request, reply) => {
+      try {
+        const entries = await browseDirectory(request.query.path || undefined);
+        return reply.send(ok(entries));
+      } catch (err) {
+        if (err instanceof Error && (err as { statusCode?: number }).statusCode === 400) {
+          return reply.status(400).send({ success: false, data: null, error: err.message });
+        }
+        throw err;
+      }
     },
   );
 

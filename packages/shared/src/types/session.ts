@@ -72,3 +72,11 @@ export interface DashboardStats {
   readonly activeMembers: number;
   readonly hotFilePaths: readonly { readonly path: string; readonly count: number }[];
 }
+
+export interface MemberActivity {
+  readonly userId: string;
+  readonly userName: string;
+  readonly userAvatarUrl: string | null;
+  readonly sessionCount: number;
+  readonly lastActiveAt: string;
+}

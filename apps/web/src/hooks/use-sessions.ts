@@ -79,3 +79,13 @@ export function useDashboardStats() {
     enabled: !!projectId,
   });
 }
+
+export function useTeamStats() {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useQuery({
+    queryKey: ['team-stats', projectId],
+    queryFn: () => sessionsApi.teamStats(projectId!),
+    enabled: !!projectId,
+  });
+}

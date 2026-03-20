@@ -12,6 +12,7 @@ export interface Database {
   prd_documents: PrdDocumentsTable;
   prd_analyses: PrdAnalysesTable;
   prd_requirements: PrdRequirementsTable;
+  activity_log: ActivityLogTable;
 }
 
 export interface UsersTable {
@@ -89,6 +90,9 @@ export interface ConflictsTable {
   resolved_by: string | null;
   created_at: Generated<Date>;
   resolved_at: Date | null;
+  reviewer_id: string | null;
+  review_notes: string | null;
+  assigned_at: Date | null;
 }
 
 export interface SyncedSessionsTable {
@@ -139,6 +143,17 @@ export interface PrdRequirementsTable {
   evidence: string | null;
   file_paths: Generated<string[]>;
   sort_order: Generated<number>;
+  created_at: Generated<Date>;
+}
+
+export interface ActivityLogTable {
+  id: Generated<string>;
+  project_id: string;
+  user_id: string;
+  action: string;
+  entity_type: string;
+  entity_id: string | null;
+  metadata: Generated<string>;
   created_at: Generated<Date>;
 }
 

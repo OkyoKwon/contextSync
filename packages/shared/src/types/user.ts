@@ -16,4 +16,5 @@ export interface NotificationSettings {
   readonly slack: boolean;
   readonly slackWebhookUrl: string | null;
   readonly severityThreshold: 'info' | 'warning' | 'critical';
+  readonly teamEvents: boolean;
 }

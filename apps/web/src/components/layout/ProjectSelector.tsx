@@ -1,5 +1,6 @@
 import { useAuthStore } from '../../stores/auth.store';
 import { useProjects } from '../../hooks/use-projects';
+import { Badge } from '../ui/Badge';
 import { CheckCircleIcon, FolderIcon } from '../ui/icons';
 
 export function ProjectSelector() {
@@ -37,6 +38,9 @@ export function ProjectSelector() {
                 className={isSelected(project.id) ? 'shrink-0 text-blue-400' : 'shrink-0 text-text-muted'}
               />
               <span className="truncate">{project.name}</span>
+              {project.isTeam && (
+                <Badge variant="info" className="shrink-0">Team</Badge>
+              )}
               {isSelected(project.id) && (
                 <CheckCircleIcon size={16} className="ml-auto shrink-0 text-blue-400" />
               )}

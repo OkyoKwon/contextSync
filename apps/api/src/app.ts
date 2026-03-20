@@ -12,6 +12,7 @@ import { conflictRoutes } from './modules/conflicts/conflict.routes.js';
 import { searchRoutes } from './modules/search/search.routes.js';
 import { notificationRoutes } from './modules/notifications/notification.routes.js';
 import { prdAnalysisRoutes } from './modules/prd-analysis/prd-analysis.routes.js';
+import { activityRoutes } from './modules/activity/activity.routes.js';
 
 export async function buildApp(env: Env) {
   const app = Fastify({
@@ -34,6 +35,7 @@ export async function buildApp(env: Env) {
   await app.register(searchRoutes, { prefix: '/api' });
   await app.register(notificationRoutes, { prefix: '/api' });
   await app.register(prdAnalysisRoutes, { prefix: '/api' });
+  await app.register(activityRoutes, { prefix: '/api' });
 
   app.get('/api/health', async () => ({ status: 'ok' }));
 

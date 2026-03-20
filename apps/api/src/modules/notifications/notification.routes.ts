@@ -8,6 +8,7 @@ const notificationSettingsSchema = z.object({
   slack: z.boolean(),
   slackWebhookUrl: z.string().url().nullable(),
   severityThreshold: z.enum(['info', 'warning', 'critical']),
+  teamEvents: z.boolean().default(true),
 });
 
 export const notificationRoutes: FastifyPluginAsync = async (app) => {

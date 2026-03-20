@@ -6,6 +6,7 @@ import { assertProjectAccess } from '../projects/project.service.js';
 import { detectFileConflicts } from './conflict-detector.js';
 import * as conflictRepo from './conflict.repository.js';
 import { findRecentSessionsByProject } from '../sessions/session.repository.js';
+import { logActivity } from '../activity/activity.service.js';
 
 export async function detectConflicts(
   db: Db,
@@ -38,6 +39,14 @@ export async function saveDetectedConflicts(
     if (!exists) {
       const created = await conflictRepo.createConflict(db, projectId, conflict);
       saved.push(created);
+      logActivity(db, {
+        projectId,
+        userId: conflict.sessionAId,
+        action: 'conflict_detected',
+        entityType: 'conflict',
+        entityId: created.id,
+        metadata: { severity: conflict.severity, type: conflict.conflictType },
+      });
     }
   }
 
@@ -74,5 +83,40 @@ export async function updateConflictStatus(
   const conflict = await conflictRepo.findConflictById(db, conflictId);
   if (!conflict) throw new NotFoundError('Conflict');
   await assertProjectAccess(db, conflict.projectId, userId);
-  return conflictRepo.updateConflictStatus(db, conflictId, status, userId);
+  const updated = await conflictRepo.updateConflictStatus(db, conflictId, status, userId);
+  if (status === 'resolved' || status === 'dismissed') {
+    logActivity(db, {
+      projectId: conflict.projectId,
+      userId,
+      action: 'conflict_resolved',
+      entityType: 'conflict',
+      entityId: conflictId,
+      metadata: { status },
+    });
+  }
+  return updated;
+}
+
+export async function assignReviewer(
+  db: Db,
+  conflictId: string,
+  userId: string,
+  reviewerId: string,
+): Promise<Conflict> {
+  const conflict = await conflictRepo.findConflictById(db, conflictId);
+  if (!conflict) throw new NotFoundError('Conflict');
+  await assertProjectAccess(db, conflict.projectId, userId);
+  return conflictRepo.assignReviewer(db, conflictId, reviewerId);
+}
+
+export async function addReviewNotes(
+  db: Db,
+  conflictId: string,
+  userId: string,
+  reviewNotes: string,
+): Promise<Conflict> {
+  const conflict = await conflictRepo.findConflictById(db, conflictId);
+  if (!conflict) throw new NotFoundError('Conflict');
+  await assertProjectAccess(db, conflict.projectId, userId);
+  return conflictRepo.updateReviewNotes(db, conflictId, reviewNotes);
 }

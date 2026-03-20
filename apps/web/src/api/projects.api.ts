@@ -1,9 +1,9 @@
-import type { Project, Collaborator, CreateProjectInput, UpdateProjectInput, AddCollaboratorInput } from '@context-sync/shared';
+import type { Project, ProjectWithTeamInfo, Collaborator, CreateProjectInput, UpdateProjectInput, AddCollaboratorInput } from '@context-sync/shared';
 import { api } from './client';
 
 export const projectsApi = {
-  list: () => api.get<readonly Project[]>('/projects'),
-  get: (projectId: string) => api.get<Project>(`/projects/${projectId}`),
+  list: () => api.get<readonly ProjectWithTeamInfo[]>('/projects'),
+  get: (projectId: string) => api.get<ProjectWithTeamInfo>(`/projects/${projectId}`),
   create: (input: CreateProjectInput) => api.post<Project>('/projects', input),
   update: (projectId: string, input: UpdateProjectInput) =>
     api.patch<Project>(`/projects/${projectId}`, input),

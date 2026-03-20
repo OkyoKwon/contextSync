@@ -16,6 +16,10 @@ export interface Conflict {
   readonly sessionBTitle?: string;
   readonly sessionAUserName?: string;
   readonly sessionBUserName?: string;
+  readonly reviewerId: string | null;
+  readonly reviewerName?: string | null;
+  readonly reviewNotes: string | null;
+  readonly assignedAt: string | null;
 }
 
 export type ConflictType = 'file' | 'design' | 'dependency' | 'plan';

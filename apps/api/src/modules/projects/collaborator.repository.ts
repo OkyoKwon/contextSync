@@ -58,6 +58,42 @@ export async function removeCollaborator(
     .execute();
 }
 
+export async function findCollaboratorByProjectAndUser(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<Collaborator | null> {
+  const row = await db
+    .selectFrom('project_collaborators')
+    .innerJoin('users', 'users.id', 'project_collaborators.user_id')
+    .select([
+      'project_collaborators.id',
+      'project_collaborators.project_id',
+      'project_collaborators.user_id',
+      'project_collaborators.role',
+      'project_collaborators.added_at',
+      'users.name as user_name',
+      'users.email as user_email',
+      'users.avatar_url as user_avatar_url',
+    ])
+    .where('project_collaborators.project_id', '=', projectId)
+    .where('project_collaborators.user_id', '=', userId)
+    .executeTakeFirst();
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    projectId: row.project_id,
+    userId: row.user_id,
+    role: row.role as Collaborator['role'],
+    addedAt: row.added_at.toISOString(),
+    userName: row.user_name,
+    userEmail: row.user_email,
+    userAvatarUrl: row.user_avatar_url,
+  };
+}
+
 export async function isCollaborator(
   db: Db,
   projectId: string,

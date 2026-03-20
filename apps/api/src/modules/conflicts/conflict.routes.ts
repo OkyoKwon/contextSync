@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as conflictService from './conflict.service.js';
-import { conflictFilterSchema, updateConflictSchema } from './conflict.schema.js';
+import { conflictFilterSchema, updateConflictSchema, assignReviewerSchema, reviewNotesSchema } from './conflict.schema.js';
 
 export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -43,6 +43,34 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
         request.params.conflictId,
         request.user.userId,
         input.status,
+      );
+      return reply.send(ok(conflict));
+    },
+  );
+
+  app.patch<{ Params: { conflictId: string }; Body: unknown }>(
+    '/conflicts/:conflictId/assign',
+    async (request, reply) => {
+      const { reviewerId } = assignReviewerSchema.parse(request.body);
+      const conflict = await conflictService.assignReviewer(
+        app.db,
+        request.params.conflictId,
+        request.user.userId,
+        reviewerId,
+      );
+      return reply.send(ok(conflict));
+    },
+  );
+
+  app.patch<{ Params: { conflictId: string }; Body: unknown }>(
+    '/conflicts/:conflictId/review-notes',
+    async (request, reply) => {
+      const { reviewNotes } = reviewNotesSchema.parse(request.body);
+      const conflict = await conflictService.addReviewNotes(
+        app.db,
+        request.params.conflictId,
+        request.user.userId,
+        reviewNotes,
       );
       return reply.send(ok(conflict));
     },

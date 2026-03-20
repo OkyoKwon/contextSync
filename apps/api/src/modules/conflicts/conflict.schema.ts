@@ -10,3 +10,11 @@ export const conflictFilterSchema = z.object({
 export const updateConflictSchema = z.object({
   status: z.enum(['reviewing', 'resolved', 'dismissed']),
 });
+
+export const assignReviewerSchema = z.object({
+  reviewerId: z.string().uuid(),
+});
+
+export const reviewNotesSchema = z.object({
+  reviewNotes: z.string().min(1).max(5000),
+});

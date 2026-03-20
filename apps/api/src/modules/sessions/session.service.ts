@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import type { Db } from '../../database/client.js';
 import type {
   Session,
@@ -5,9 +6,11 @@ import type {
   SessionFilterQuery,
   TimelineEntry,
   DashboardStats,
+  MemberActivity,
 } from '@context-sync/shared';
 import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 import { assertProjectAccess } from '../projects/project.service.js';
+import { logActivity } from '../activity/activity.service.js';
 import * as sessionRepo from './session.repository.js';
 
 export async function getSessionsByProject(
@@ -42,7 +45,18 @@ export async function updateSession(
   const session = await sessionRepo.findSessionById(db, sessionId);
   if (!session) throw new NotFoundError('Session');
   await assertProjectAccess(db, session.projectId, userId);
-  return sessionRepo.updateSession(db, sessionId, input);
+  const updated = await sessionRepo.updateSession(db, sessionId, input);
+  if (input.status === 'completed') {
+    logActivity(db, {
+      projectId: session.projectId,
+      userId,
+      action: 'session_completed',
+      entityType: 'session',
+      entityId: sessionId,
+      metadata: { title: session.title },
+    });
+  }
+  return updated;
 }
 
 export async function deleteSession(db: Db, sessionId: string, userId: string): Promise<void> {
@@ -86,7 +100,7 @@ export async function getDashboardStats(
   const weekStart = new Date(todayStart);
   weekStart.setDate(weekStart.getDate() - 7);
 
-  const [todayResult, weekResult, conflictsResult] = await Promise.all([
+  const [todayResult, weekResult, conflictsResult, membersResult, hotFilesResult] = await Promise.all([
     db
       .selectFrom('sessions')
       .select(db.fn.countAll().as('count'))
@@ -105,13 +119,71 @@ export async function getDashboardStats(
       .where('project_id', '=', projectId)
       .where('status', 'in', ['detected', 'reviewing'])
       .executeTakeFirstOrThrow(),
+    db
+      .selectFrom('sessions')
+      .select(db.fn.count('user_id').distinct().as('count'))
+      .where('project_id', '=', projectId)
+      .where('created_at', '>=', weekStart)
+      .executeTakeFirstOrThrow(),
+    db
+      .selectFrom('sessions')
+      .select([
+        sql<string>`unnest(file_paths)`.as('path'),
+        db.fn.countAll().as('count'),
+      ])
+      .where('project_id', '=', projectId)
+      .where('created_at', '>=', weekStart)
+      .groupBy(sql`unnest(file_paths)`)
+      .orderBy(sql`count(*)`, 'desc')
+      .limit(10)
+      .execute()
+      .catch(() => []),
   ]);
 
   return {
     todaySessions: Number(todayResult.count),
     weekSessions: Number(weekResult.count),
     activeConflicts: Number(conflictsResult.count),
-    activeMembers: 0,
-    hotFilePaths: [],
+    activeMembers: Number(membersResult.count),
+    hotFilePaths: hotFilesResult.map((r) => ({
+      path: r.path as string,
+      count: Number(r.count),
+    })),
   };
+}
+
+export async function getTeamStats(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<readonly MemberActivity[]> {
+  await assertProjectAccess(db, projectId, userId);
+
+  const weekStart = new Date();
+  weekStart.setDate(weekStart.getDate() - 7);
+
+  const rows = await db
+    .selectFrom('sessions')
+    .innerJoin('users', 'users.id', 'sessions.user_id')
+    .select([
+      'sessions.user_id',
+      'users.name as user_name',
+      'users.avatar_url as user_avatar_url',
+      db.fn.countAll().as('session_count'),
+      db.fn.max('sessions.created_at').as('last_active_at'),
+    ])
+    .where('sessions.project_id', '=', projectId)
+    .where('sessions.created_at', '>=', weekStart)
+    .groupBy(['sessions.user_id', 'users.name', 'users.avatar_url'])
+    .orderBy(sql`count(*)`, 'desc')
+    .limit(10)
+    .execute();
+
+  return rows.map((row) => ({
+    userId: row.user_id,
+    userName: row.user_name,
+    userAvatarUrl: row.user_avatar_url,
+    sessionCount: Number(row.session_count),
+    lastActiveAt: (row.last_active_at as Date).toISOString(),
+  }));
 }

@@ -12,10 +12,10 @@ import { Spinner } from '../ui/Spinner';
 
 interface CollaboratorListProps {
   readonly projectId: string;
-  readonly isOwner: boolean;
+  readonly canManage: boolean;
 }
 
-export function CollaboratorList({ projectId, isOwner }: CollaboratorListProps) {
+export function CollaboratorList({ projectId, canManage }: CollaboratorListProps) {
   const { data, isLoading } = useCollaborators(projectId);
   const collaborators = data?.data ?? [];
   const queryClient = useQueryClient();
@@ -27,6 +27,7 @@ export function CollaboratorList({ projectId, isOwner }: CollaboratorListProps) 
     mutationFn: () => projectsApi.addCollaborator(projectId, { email }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collaborators', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       setEmail('');
     },
   });
@@ -35,6 +36,7 @@ export function CollaboratorList({ projectId, isOwner }: CollaboratorListProps) 
     mutationFn: (userId: string) => projectsApi.removeCollaborator(projectId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collaborators', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 
@@ -52,7 +54,7 @@ export function CollaboratorList({ projectId, isOwner }: CollaboratorListProps) 
               <p className="text-xs text-text-tertiary">{collab.userEmail}</p>
             </div>
             <Badge>{collab.role}</Badge>
-            {isOwner && collab.userId !== currentUserId && (
+            {canManage && collab.userId !== currentUserId && (
               <Button
                 size="sm"
                 variant="danger"
@@ -70,7 +72,7 @@ export function CollaboratorList({ projectId, isOwner }: CollaboratorListProps) 
           <p className="text-sm text-text-tertiary">No collaborators yet.</p>
         )}
       </div>
-      {isOwner && (
+      {canManage && (
         <div className="mt-4 flex gap-2">
           <Input
             value={email}

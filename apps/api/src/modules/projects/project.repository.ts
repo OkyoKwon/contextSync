@@ -1,5 +1,6 @@
+import { sql } from 'kysely';
 import type { Db } from '../../database/client.js';
-import type { Project } from '@context-sync/shared';
+import type { Project, ProjectWithTeamInfo } from '@context-sync/shared';
 
 export async function createProject(
   db: Db,
@@ -21,18 +22,21 @@ export async function createProject(
   return toProject(row);
 }
 
-export async function findProjectsByUserId(db: Db, userId: string): Promise<readonly Project[]> {
-  const ownedRows = await db
+export async function findProjectsWithTeamInfo(
+  db: Db,
+  userId: string,
+): Promise<readonly ProjectWithTeamInfo[]> {
+  const rows = await db
     .selectFrom('projects')
-    .selectAll()
-    .where('owner_id', '=', userId)
-    .execute();
-
-  const collabRows = await db
-    .selectFrom('projects')
-    .selectAll()
-    .innerJoin('project_collaborators', 'project_collaborators.project_id', 'projects.id')
-    .where('project_collaborators.user_id', '=', userId)
+    .leftJoin(
+      db
+        .selectFrom('project_collaborators')
+        .select(['project_id', sql<number>`count(*)`.as('cnt')])
+        .groupBy('project_id')
+        .as('collab_counts'),
+      'collab_counts.project_id',
+      'projects.id',
+    )
     .select([
       'projects.id',
       'projects.owner_id',
@@ -42,20 +46,57 @@ export async function findProjectsByUserId(db: Db, userId: string): Promise<read
       'projects.local_directory',
       'projects.created_at',
       'projects.updated_at',
+      sql<number>`COALESCE(collab_counts.cnt, 0)`.as('collaborator_count'),
     ])
+    .where((eb) =>
+      eb.or([
+        eb('projects.owner_id', '=', userId),
+        eb(
+          'projects.id',
+          'in',
+          eb
+            .selectFrom('project_collaborators')
+            .select('project_id')
+            .where('user_id', '=', userId),
+        ),
+      ]),
+    )
+    .orderBy('projects.created_at', 'desc')
     .execute();
 
-  const seen = new Set(ownedRows.map((r) => r.id));
-  const combined = [...ownedRows];
-  for (const row of collabRows) {
-    if (!seen.has(row.id)) {
-      combined.push(row as typeof ownedRows[number]);
-      seen.add(row.id);
-    }
-  }
+  return rows.map(toProjectWithTeamInfo);
+}
 
-  combined.sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
-  return combined.map(toProject);
+export async function findProjectByIdWithTeamInfo(
+  db: Db,
+  id: string,
+): Promise<ProjectWithTeamInfo | null> {
+  const row = await db
+    .selectFrom('projects')
+    .leftJoin(
+      db
+        .selectFrom('project_collaborators')
+        .select(['project_id', sql<number>`count(*)`.as('cnt')])
+        .groupBy('project_id')
+        .as('collab_counts'),
+      'collab_counts.project_id',
+      'projects.id',
+    )
+    .select([
+      'projects.id',
+      'projects.owner_id',
+      'projects.name',
+      'projects.description',
+      'projects.repo_url',
+      'projects.local_directory',
+      'projects.created_at',
+      'projects.updated_at',
+      sql<number>`COALESCE(collab_counts.cnt, 0)`.as('collaborator_count'),
+    ])
+    .where('projects.id', '=', id)
+    .executeTakeFirst();
+
+  return row ? toProjectWithTeamInfo(row) : null;
 }
 
 export async function findProjectById(db: Db, id: string): Promise<Project | null> {
@@ -107,5 +148,31 @@ function toProject(row: {
     localDirectory: row.local_directory,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
+  };
+}
+
+function toProjectWithTeamInfo(row: {
+  id: string;
+  owner_id: string;
+  name: string;
+  description: string | null;
+  repo_url: string | null;
+  local_directory: string | null;
+  created_at: Date;
+  updated_at: Date;
+  collaborator_count: number;
+}): ProjectWithTeamInfo {
+  const count = Number(row.collaborator_count);
+  return {
+    id: row.id,
+    ownerId: row.owner_id,
+    name: row.name,
+    description: row.description,
+    repoUrl: row.repo_url,
+    localDirectory: row.local_directory,
+    createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
+    collaboratorCount: count,
+    isTeam: count > 0,
   };
 }

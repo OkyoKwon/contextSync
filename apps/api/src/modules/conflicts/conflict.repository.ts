@@ -110,6 +110,39 @@ export async function existsConflictBetweenSessions(
   return !!row;
 }
 
+export async function assignReviewer(
+  db: Db,
+  id: string,
+  reviewerId: string,
+): Promise<Conflict> {
+  const row = await db
+    .updateTable('conflicts')
+    .set({
+      reviewer_id: reviewerId,
+      assigned_at: new Date(),
+    })
+    .where('id', '=', id)
+    .returningAll()
+    .executeTakeFirstOrThrow();
+
+  return toConflict(row);
+}
+
+export async function updateReviewNotes(
+  db: Db,
+  id: string,
+  reviewNotes: string,
+): Promise<Conflict> {
+  const row = await db
+    .updateTable('conflicts')
+    .set({ review_notes: reviewNotes })
+    .where('id', '=', id)
+    .returningAll()
+    .executeTakeFirstOrThrow();
+
+  return toConflict(row);
+}
+
 function toConflict(row: Record<string, unknown>): Conflict {
   return {
     id: row['id'] as string,
@@ -125,5 +158,8 @@ function toConflict(row: Record<string, unknown>): Conflict {
     resolvedBy: (row['resolved_by'] as string) ?? null,
     createdAt: (row['created_at'] as Date).toISOString(),
     resolvedAt: row['resolved_at'] ? (row['resolved_at'] as Date).toISOString() : null,
+    reviewerId: (row['reviewer_id'] as string) ?? null,
+    reviewNotes: (row['review_notes'] as string) ?? null,
+    assignedAt: row['assigned_at'] ? (row['assigned_at'] as Date).toISOString() : null,
   };
 }

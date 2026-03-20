@@ -5,6 +5,7 @@ import type {
   SessionFilterQuery,
   TimelineEntry,
   DashboardStats,
+  MemberActivity,
   TokenUsageStats,
   TokenUsagePeriod,
   LocalDirectory,
@@ -13,6 +14,7 @@ import type {
   SyncSessionResult,
   RecalculateTokenResult,
   ProjectConversation,
+  BrowseDirectoryEntry,
 } from '@context-sync/shared';
 import { api } from './client';
 
@@ -51,8 +53,16 @@ export const sessionsApi = {
 
   stats: (projectId: string) => api.get<DashboardStats>(`/projects/${projectId}/stats`),
 
+  teamStats: (projectId: string) =>
+    api.get<readonly MemberActivity[]>(`/projects/${projectId}/team-stats`),
+
   tokenUsage: (projectId: string, period: TokenUsagePeriod = '30d') =>
     api.get<TokenUsageStats>(`/projects/${projectId}/token-usage?period=${period}`),
+
+  browseDirectory: (path?: string) =>
+    api.get<readonly BrowseDirectoryEntry[]>(
+      `/sessions/local/browse${path ? `?path=${encodeURIComponent(path)}` : ''}`,
+    ),
 
   listLocalDirectories: () =>
     api.get<readonly LocalDirectory[]>('/sessions/local/directories'),

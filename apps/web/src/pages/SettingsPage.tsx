@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
+import { usePermissions } from '../hooks/use-permissions';
 import { projectsApi } from '../api/projects.api';
 import { CollaboratorList } from '../components/projects/CollaboratorList';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
@@ -46,6 +47,7 @@ export function SettingsPage() {
 
 function ProjectInfoSection({ projectId }: { readonly projectId: string }) {
   const { data: projectData, isLoading } = useCurrentProject();
+  const { canEditProject } = usePermissions();
   const queryClient = useQueryClient();
 
   const project = projectData?.data ?? null;
@@ -84,7 +86,7 @@ function ProjectInfoSection({ projectId }: { readonly projectId: string }) {
       <Card>
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Project Info</h3>
-          {!isEditing && (
+          {!isEditing && canEditProject && (
             <Button size="sm" variant="secondary" onClick={handleEdit}>
               Edit
             </Button>
@@ -126,17 +128,12 @@ function InfoRow({ label, value }: { readonly label: string; readonly value: str
 }
 
 function CollaboratorSection({ projectId }: { readonly projectId: string }) {
-  const currentUserId = useAuthStore((s) => s.user?.id);
-  const { data: projectData } = useCurrentProject();
-  const project = projectData?.data ?? null;
-
-  const isOwner = project?.ownerId === currentUserId;
-
-  return <CollaboratorList projectId={projectId} isOwner={isOwner} />;
+  const { canManageCollaborators } = usePermissions();
+  return <CollaboratorList projectId={projectId} canManage={canManageCollaborators} />;
 }
 
 function DangerZoneSection({ projectId }: { readonly projectId: string }) {
-  const currentUserId = useAuthStore((s) => s.user?.id);
+  const { canDeleteProject } = usePermissions();
   const { data: projectData } = useCurrentProject();
   const project = projectData?.data ?? null;
   const setCurrentProject = useAuthStore((s) => s.setCurrentProject);
@@ -153,8 +150,7 @@ function DangerZoneSection({ projectId }: { readonly projectId: string }) {
     },
   });
 
-  const isOwner = project?.ownerId === currentUserId;
-  if (!isOwner) return null;
+  if (!canDeleteProject) return null;
 
   return (
     <>

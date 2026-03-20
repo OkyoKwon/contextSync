@@ -3,12 +3,15 @@ import { useSearchParams } from 'react-router';
 import type { SessionSource } from '@context-sync/shared';
 import { useTimeline, useDashboardStats } from '../hooks/use-sessions';
 import { useAuthStore } from '../stores/auth.store';
+import { useCurrentProject } from '../hooks/use-current-project';
 import { DashboardStatsView } from '../components/dashboard/DashboardStats';
 import { Timeline } from '../components/dashboard/Timeline';
 import { TimelineFilters } from '../components/dashboard/TimelineFilters';
 import { ActiveConflictsSidebar } from '../components/dashboard/ActiveConflictsSidebar';
 import { HotFiles } from '../components/dashboard/HotFiles';
 import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
+import { TeamActivityPanel } from '../components/dashboard/TeamActivityPanel';
+import { ActivityFeed } from '../components/dashboard/ActivityFeed';
 import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
 import { Spinner } from '../components/ui/Spinner';
 import { getGreeting } from '../lib/date';
@@ -29,6 +32,9 @@ export function DashboardPage() {
 
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   const { data: timelineData, isLoading: timelineLoading } = useTimeline();
+  const { data: projectData } = useCurrentProject();
+
+  const isTeam = projectData?.data?.isTeam ?? false;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSource = parseSourceParam(searchParams.get('source'));
@@ -118,8 +124,10 @@ export function DashboardPage() {
           <Timeline entries={filteredEntries} isLoading={timelineLoading} />
         </div>
         <div className="space-y-4">
+          {isTeam && <TeamActivityPanel />}
           <ActiveConflictsSidebar />
           {stats && <HotFiles hotFilePaths={stats.hotFilePaths} />}
+          {isTeam && <ActivityFeed />}
         </div>
       </div>
     </div>
