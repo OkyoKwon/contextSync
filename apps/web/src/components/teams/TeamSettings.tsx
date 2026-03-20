@@ -41,7 +41,7 @@ export function TeamSettings() {
           placeholder="my-team"
         />
         {createMutation.isError && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-red-400">
             {createMutation.error instanceof Error
               ? createMutation.error.message
               : 'Failed to create team'}

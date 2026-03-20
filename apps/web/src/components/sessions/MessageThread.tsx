@@ -30,7 +30,7 @@ function MessageBubble({ message }: { readonly message: DisplayMessage }) {
         className={`max-w-[80%] rounded-xl px-4 py-3 ${
           isUser
             ? 'bg-blue-600 text-white'
-            : 'border border-gray-200 bg-white text-gray-900'
+            : 'border border-zinc-800 bg-[#1C1C1C] text-[#FAFAFA]'
         }`}
       >
         <div className="mb-1 text-xs font-medium opacity-70">
@@ -39,7 +39,7 @@ function MessageBubble({ message }: { readonly message: DisplayMessage }) {
             <span className="ml-1 opacity-50">({message.modelUsed})</span>
           )}
         </div>
-        <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : ''}`}>
+        <div className={`prose prose-sm max-w-none prose-invert`}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
         </div>
       </div>

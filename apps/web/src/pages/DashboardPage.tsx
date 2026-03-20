@@ -13,7 +13,7 @@ export function DashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold text-gray-900">Dashboard</h1>
+      <h1 className="mb-6 text-xl font-bold text-[#FAFAFA]">Dashboard</h1>
 
       {statsLoading ? (
         <Spinner />
@@ -23,7 +23,7 @@ export function DashboardPage() {
 
       <div className="mt-6 grid grid-cols-3 gap-6">
         <div className="col-span-2">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">Timeline</h2>
+          <h2 className="mb-3 text-sm font-semibold text-[#D4D4D8]">Timeline</h2>
           <Timeline entries={entries} isLoading={timelineLoading} />
         </div>
         <div>

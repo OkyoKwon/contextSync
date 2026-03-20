@@ -1,4 +1,4 @@
-import { DarkModal } from '../ui/DarkModal';
+import { Modal } from '../ui/Modal';
 import { LoginHero } from './LoginHero';
 import { useLoginModal } from '../../hooks/use-login-modal';
 
@@ -6,8 +6,8 @@ export function LoginModal() {
   const { isOpen, closeLoginModal } = useLoginModal();
 
   return (
-    <DarkModal isOpen={isOpen} onClose={closeLoginModal}>
+    <Modal isOpen={isOpen} onClose={closeLoginModal} title="">
       <LoginHero compact />
-    </DarkModal>
+    </Modal>
   );
 }

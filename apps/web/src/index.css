@@ -5,3 +5,8 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
     Consolas, "Liberation Mono", "Courier New", monospace;
 }
+
+body {
+  background-color: #141414;
+  color: #fafafa;
+}

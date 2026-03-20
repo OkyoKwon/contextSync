@@ -12,17 +12,17 @@ export function OnboardingPage() {
   if (status === 'ready') return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#141414] p-4">
       <div className="w-full max-w-lg space-y-6">
         <StepIndicator current={status === 'needs-team' ? 1 : 2} />
 
         {status === 'needs-team' && (
           <div className="space-y-4">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-[#FAFAFA]">
                 Welcome to ContextSync!
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-[#A1A1AA]">
                 Start by creating your first team.
               </p>
             </div>
@@ -33,10 +33,10 @@ export function OnboardingPage() {
         {status === 'needs-project' && (
           <div className="space-y-4">
             <div className="text-center">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-[#FAFAFA]">
                 Almost there!
               </h1>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-[#A1A1AA]">
                 Now create a project to get started.
               </p>
             </div>
@@ -52,7 +52,7 @@ function StepIndicator({ current }: { readonly current: 1 | 2 }) {
   return (
     <div className="flex items-center justify-center gap-3">
       <StepDot step={1} current={current} label="Team" />
-      <div className="h-px w-8 bg-gray-300" />
+      <div className="h-px w-8 bg-zinc-700" />
       <StepDot step={2} current={current} label="Project" />
     </div>
   );
@@ -77,13 +77,13 @@ function StepDot({
           isComplete
             ? 'bg-green-500 text-white'
             : isActive
-              ? 'bg-blue-600 text-white'
-              : 'bg-gray-200 text-gray-500'
+              ? 'bg-blue-500 text-white'
+              : 'bg-zinc-800 text-[#71717A]'
         }`}
       >
         {isComplete ? '✓' : step}
       </div>
-      <span className="text-xs text-gray-500">{label}</span>
+      <span className="text-xs text-[#A1A1AA]">{label}</span>
     </div>
   );
 }

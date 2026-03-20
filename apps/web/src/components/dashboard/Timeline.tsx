@@ -18,7 +18,7 @@ export function Timeline({ entries, isLoading }: TimelineProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-gray-500">
+      <div className="py-8 text-center text-sm text-[#A1A1AA]">
         No activity yet. Import sessions to see the timeline.
       </div>
     );

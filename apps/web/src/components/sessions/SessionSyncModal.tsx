@@ -74,25 +74,25 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
       {isLoading && (
         <div className="flex items-center justify-center py-8">
           <Spinner size="md" />
-          <span className="ml-2 text-sm text-gray-500">Scanning local sessions...</span>
+          <span className="ml-2 text-sm text-[#A1A1AA]">Scanning local sessions...</span>
         </div>
       )}
 
       {!projectId && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-red-400">
           No project selected. Please select a project first.
         </p>
       )}
 
       {fetchError && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-red-400">
           {fetchError instanceof Error ? fetchError.message : 'Failed to load local sessions'}
         </p>
       )}
 
       {!isLoading && groups.length === 0 && !fetchError && projectId && (
         <div className="py-8 text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[#A1A1AA]">
             {activeOnly
               ? 'No active Claude Code sessions found.'
               : 'No Claude Code sessions found in ~/.claude/projects/'}
@@ -100,7 +100,7 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
           {activeOnly && (
             <button
               onClick={() => setShowAll(true)}
-              className="mt-2 text-xs text-blue-600 hover:underline"
+              className="mt-2 text-xs text-blue-400 hover:underline"
             >
               Show all sessions
             </button>
@@ -112,19 +112,19 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
         <>
           <div className="mb-3 flex items-center justify-between">
             {allUnsyncedSessions.length > 0 && (
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-[#A1A1AA]">
                 <input
                   type="checkbox"
                   checked={selectedIds.size === allUnsyncedSessions.length && allUnsyncedSessions.length > 0}
                   onChange={toggleAll}
-                  className="rounded border-gray-300"
+                  className="rounded border-zinc-700 bg-[#141414]"
                 />
                 Select all ({allUnsyncedSessions.length})
               </label>
             )}
             <button
               onClick={() => setShowAll((v) => !v)}
-              className="text-xs text-blue-600 hover:underline"
+              className="text-xs text-blue-400 hover:underline"
             >
               {showAll ? 'Show active only' : 'Show all sessions'}
             </button>
@@ -134,13 +134,13 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
             {visibleGroups.map((group) => (
               <div key={group.projectPath}>
                 <div className="mb-1.5 flex items-center gap-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717A]">
                     {shortPath(group.projectPath)}
                   </h3>
                   {group.isActive && (
                     <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
                   )}
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-[#71717A]">
                     {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
                   </span>
                 </div>
@@ -155,10 +155,10 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
                         key={session.sessionId}
                         className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
                           isSynced
-                            ? 'cursor-default border-gray-200 bg-gray-50 opacity-60'
+                            ? 'cursor-default border-zinc-800 bg-[#252525] opacity-60'
                             : isSelected
-                              ? 'border-blue-300 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
+                              ? 'border-blue-500 bg-blue-500/10'
+                              : 'border-zinc-800 hover:border-zinc-700'
                         }`}
                       >
                         <input
@@ -166,11 +166,11 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
                           checked={isSynced || isSelected}
                           disabled={isSynced}
                           onChange={() => !isSynced && toggleSession(session.sessionId)}
-                          className="mt-0.5 rounded border-gray-300"
+                          className="mt-0.5 rounded border-zinc-700 bg-[#141414]"
                         />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <p className="truncate text-sm font-medium text-gray-900">
+                            <p className="truncate text-sm font-medium text-[#FAFAFA]">
                               {session.firstMessage}
                             </p>
                             {isSynced && <Badge variant="success">Synced</Badge>}
@@ -178,7 +178,7 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
                               <Badge variant="info">Active</Badge>
                             )}
                           </div>
-                          <p className="mt-0.5 text-xs text-gray-500">
+                          <p className="mt-0.5 text-xs text-[#71717A]">
                             {session.messageCount} messages · {formatTimeAgo(session.lastModifiedAt)}
                           </p>
                         </div>
@@ -193,19 +193,19 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
       )}
 
       {syncMutation.error && (
-        <p className="mt-3 text-sm text-red-600">
+        <p className="mt-3 text-sm text-red-400">
           {syncMutation.error instanceof Error ? syncMutation.error.message : 'Sync failed'}
         </p>
       )}
 
       {syncMutation.data?.data && (
-        <div className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+        <div className="mt-3 rounded-lg bg-green-500/10 p-3 text-sm text-green-400">
           Synced {syncMutation.data.data.syncedCount} session(s).
           {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
             <> Conflicts detected — check the Conflicts page.</>
           )}
           {syncMutation.data.data.results.some((r) => !r.success) && (
-            <span className="text-red-600">
+            <span className="text-red-400">
               {' '}
               {syncMutation.data.data.results.filter((r) => !r.success).length} session(s) failed.
             </span>

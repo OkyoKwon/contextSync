@@ -9,10 +9,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-  secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-400',
+  primary: 'bg-[#FAFAFA] text-[#141414] hover:bg-[#E4E4E7] focus:ring-[#FAFAFA]',
+  secondary: 'bg-[#252525] text-[#D4D4D8] hover:bg-zinc-700 focus:ring-zinc-600',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-  ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-400',
+  ghost: 'bg-transparent text-[#A1A1AA] hover:bg-zinc-800 focus:ring-zinc-600',
 };
 
 const sizeClasses: Record<Size, string> = {
@@ -32,7 +32,7 @@ export function Button({
   return (
     <button
       className={`inline-flex items-center justify-center rounded-lg font-medium transition-colors
-        focus:outline-none focus:ring-2 focus:ring-offset-2
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#141414]
         disabled:opacity-50 disabled:cursor-not-allowed
         ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
       disabled={disabled}

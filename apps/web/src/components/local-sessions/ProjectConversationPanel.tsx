@@ -32,7 +32,7 @@ export function ProjectConversationPanel({
     return (
       <div className="flex h-full items-center justify-center">
         <Spinner size="md" />
-        <span className="ml-2 text-sm text-gray-500">Loading project conversation...</span>
+        <span className="ml-2 text-sm text-[#A1A1AA]">Loading project conversation...</span>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export function ProjectConversationPanel({
   if (error) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-red-400">
           {error instanceof Error ? error.message : 'Failed to load project conversation'}
         </p>
       </div>
@@ -50,18 +50,18 @@ export function ProjectConversationPanel({
   if (messages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-gray-400">No messages found in this project.</p>
+        <p className="text-sm text-[#71717A]">No messages found in this project.</p>
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-gray-200 p-4">
-        <h2 className="text-lg font-semibold text-gray-900">
+      <div className="border-b border-zinc-800 p-4">
+        <h2 className="text-lg font-semibold text-[#FAFAFA]">
           {shortPath(projectPath)}
         </h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-[#A1A1AA]">
           {pluralize(sessionCount, 'session')} · {pluralize(totalMessages, 'message')}
         </p>
       </div>

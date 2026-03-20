@@ -24,8 +24,8 @@ export function SessionCard({ session }: SessionCardProps) {
           <div className="flex items-center gap-2">
             <Avatar src={session.userAvatarUrl} name={session.userName ?? 'User'} size="sm" />
             <div>
-              <h3 className="text-sm font-medium text-gray-900">{session.title}</h3>
-              <p className="text-xs text-gray-500">
+              <h3 className="text-sm font-medium text-[#FAFAFA]">{session.title}</h3>
+              <p className="text-xs text-[#A1A1AA]">
                 {session.userName} &middot; {timeAgo(session.createdAt)}
               </p>
             </div>
@@ -37,12 +37,12 @@ export function SessionCard({ session }: SessionCardProps) {
         {session.filePaths.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {session.filePaths.slice(0, 3).map((path) => (
-              <span key={path} className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+              <span key={path} className="rounded bg-[#252525] px-1.5 py-0.5 text-xs text-[#A1A1AA]">
                 {path}
               </span>
             ))}
             {session.filePaths.length > 3 && (
-              <span className="text-xs text-gray-400">+{session.filePaths.length - 3} more</span>
+              <span className="text-xs text-[#71717A]">+{session.filePaths.length - 3} more</span>
             )}
           </div>
         )}

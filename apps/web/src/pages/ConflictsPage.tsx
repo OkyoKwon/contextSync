@@ -12,13 +12,13 @@ export function ConflictsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold text-gray-900">Conflicts</h1>
+      <h1 className="mb-6 text-xl font-bold text-[#FAFAFA]">Conflicts</h1>
 
       <div className="mb-4 flex gap-3">
         <select
           value={severity ?? ''}
           onChange={(e) => setSeverity((e.target.value || undefined) as ConflictSeverity | undefined)}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+          className="rounded-lg border border-zinc-700 bg-[#141414] px-3 py-1.5 text-sm text-[#FAFAFA]"
         >
           <option value="">All Severities</option>
           <option value="info">Info</option>
@@ -29,7 +29,7 @@ export function ConflictsPage() {
         <select
           value={status ?? ''}
           onChange={(e) => setStatus((e.target.value || undefined) as ConflictStatus | undefined)}
-          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+          className="rounded-lg border border-zinc-700 bg-[#141414] px-3 py-1.5 text-sm text-[#FAFAFA]"
         >
           <option value="">All Statuses</option>
           <option value="detected">Detected</option>

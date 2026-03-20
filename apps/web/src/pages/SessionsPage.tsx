@@ -13,7 +13,7 @@ export function SessionsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Sessions</h1>
+        <h1 className="text-xl font-bold text-[#FAFAFA]">Sessions</h1>
         <Button onClick={() => setIsSyncOpen(true)}>Sync Session</Button>
       </div>
 

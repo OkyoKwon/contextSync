@@ -47,7 +47,7 @@ export function UnifiedMessageThread({
           <button
             onClick={onLoadMore}
             disabled={isLoading}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+            className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-[#A1A1AA] hover:bg-[#252525] disabled:opacity-50"
           >
             {isLoading ? 'Loading...' : 'Load more'}
           </button>
@@ -78,20 +78,20 @@ function SessionDivider({
 
   return (
     <div className="my-6 flex items-center gap-3">
-      <div className="h-px flex-1 bg-gray-200" />
-      <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1">
-        <span className="text-xs font-medium text-gray-600 truncate max-w-48">
+      <div className="h-px flex-1 bg-zinc-800" />
+      <div className="flex items-center gap-2 rounded-full border border-zinc-800 bg-[#252525] px-3 py-1">
+        <span className="text-xs font-medium text-[#A1A1AA] truncate max-w-48">
           {sessionTitle}
         </span>
-        <span className="text-xs text-gray-400">{formatted}</span>
+        <span className="text-xs text-[#71717A]">{formatted}</span>
         <button
           onClick={() => onSelectSession(sessionId)}
-          className="text-xs text-blue-500 hover:text-blue-700"
+          className="text-xs text-blue-400 hover:text-blue-300"
         >
           View session &rarr;
         </button>
       </div>
-      <div className="h-px flex-1 bg-gray-200" />
+      <div className="h-px flex-1 bg-zinc-800" />
     </div>
   );
 }
@@ -106,9 +106,9 @@ function DateDivider({ timestamp }: { readonly timestamp: string }) {
 
   return (
     <div className="my-4 flex items-center gap-3">
-      <div className="h-px flex-1 bg-gray-100" />
-      <span className="text-xs text-gray-400">{formatted}</span>
-      <div className="h-px flex-1 bg-gray-100" />
+      <div className="h-px flex-1 bg-zinc-800" />
+      <span className="text-xs text-[#71717A]">{formatted}</span>
+      <div className="h-px flex-1 bg-zinc-800" />
     </div>
   );
 }
@@ -122,7 +122,7 @@ function UnifiedMessageBubble({ message }: { readonly message: UnifiedMessage })
         className={`max-w-[80%] rounded-xl px-4 py-3 ${
           isUser
             ? 'bg-blue-600 text-white'
-            : 'border border-gray-200 bg-white text-gray-900'
+            : 'border border-zinc-800 bg-[#1C1C1C] text-[#FAFAFA]'
         }`}
       >
         <div className="mb-1 text-xs font-medium opacity-70">
@@ -131,7 +131,7 @@ function UnifiedMessageBubble({ message }: { readonly message: UnifiedMessage })
             <span className="ml-1 opacity-50">({message.modelUsed})</span>
           )}
         </div>
-        <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : ''}`}>
+        <div className={`prose prose-sm max-w-none prose-invert`}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
         </div>
       </div>

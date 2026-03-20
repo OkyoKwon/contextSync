@@ -34,17 +34,17 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
           <SeverityBadge severity={conflict.severity} />
           <Badge variant={statusColors[conflict.status]}>{conflict.status}</Badge>
         </div>
-        <span className="text-xs text-gray-400">{timeAgo(conflict.createdAt)}</span>
+        <span className="text-xs text-[#71717A]">{timeAgo(conflict.createdAt)}</span>
       </div>
 
-      <p className="mt-2 text-sm text-gray-700">{conflict.description}</p>
+      <p className="mt-2 text-sm text-[#D4D4D8]">{conflict.description}</p>
 
       {conflict.overlappingPaths.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {conflict.overlappingPaths.map((path) => (
             <span
               key={path}
-              className="rounded bg-red-50 px-1.5 py-0.5 text-xs font-mono text-red-700"
+              className="rounded bg-red-500/10 px-1.5 py-0.5 text-xs font-mono text-red-400"
             >
               {path}
             </span>

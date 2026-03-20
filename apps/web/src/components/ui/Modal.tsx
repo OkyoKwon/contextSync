@@ -21,13 +21,13 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+      <div className="fixed inset-0 bg-black/70" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-lg rounded-xl border border-zinc-800 bg-[#1C1C1C] p-6 shadow-xl">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 className="text-lg font-semibold text-[#FAFAFA]">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-1 text-[#A1A1AA] hover:bg-zinc-800 hover:text-[#FAFAFA]"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

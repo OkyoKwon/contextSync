@@ -18,7 +18,7 @@ export function ConflictList({ conflicts, isLoading }: ConflictListProps) {
 
   if (conflicts.length === 0) {
     return (
-      <div className="py-12 text-center text-sm text-gray-500">
+      <div className="py-12 text-center text-sm text-[#A1A1AA]">
         No conflicts detected. Your team is in sync!
       </div>
     );

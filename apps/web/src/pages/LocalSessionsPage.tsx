@@ -58,15 +58,15 @@ export function LocalSessionsPage() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-200 px-6 py-3">
-        <h1 className="text-lg font-semibold text-gray-900">Local Sessions</h1>
+      <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-3">
+        <h1 className="text-lg font-semibold text-[#FAFAFA]">Local Sessions</h1>
         <div className="flex items-center gap-3">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600">
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-[#A1A1AA]">
             <input
               type="checkbox"
               checked={showAll}
               onChange={() => setShowAll((v) => !v)}
-              className="rounded border-gray-300"
+              className="rounded border-zinc-700 bg-[#141414]"
             />
             Show all
           </label>
@@ -86,12 +86,12 @@ export function LocalSessionsPage() {
       {isLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner size="md" />
-          <span className="ml-2 text-sm text-gray-500">Scanning local sessions...</span>
+          <span className="ml-2 text-sm text-[#A1A1AA]">Scanning local sessions...</span>
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
           {/* Left panel — session list */}
-          <div className="w-96 flex-shrink-0 border-r border-gray-200">
+          <div className="w-96 flex-shrink-0 border-r border-zinc-800">
             <LocalSessionList
               groups={groups}
               selectedSessionId={selectedSessionId}
@@ -120,7 +120,7 @@ export function LocalSessionsPage() {
             )}
             {selection.type === 'none' && (
               <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-[#71717A]">
                   Select a project to view all conversations, or a session for details.
                 </p>
               </div>
@@ -131,13 +131,13 @@ export function LocalSessionsPage() {
 
       {/* Sync result feedback */}
       {syncMutation.data?.data && (
-        <div className="border-t border-gray-200 bg-green-50 px-6 py-3 text-sm text-green-700">
+        <div className="border-t border-zinc-800 bg-green-500/10 px-6 py-3 text-sm text-green-400">
           Synced {syncMutation.data.data.syncedCount} session(s).
           {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
             <> Conflicts detected — check the Conflicts page.</>
           )}
           {syncMutation.data.data.results.some((r) => !r.success) && (
-            <span className="text-red-600">
+            <span className="text-red-400">
               {' '}
               {syncMutation.data.data.results.filter((r) => !r.success).length} session(s) failed.
             </span>
@@ -146,7 +146,7 @@ export function LocalSessionsPage() {
       )}
 
       {syncMutation.error && (
-        <div className="border-t border-gray-200 bg-red-50 px-6 py-3 text-sm text-red-600">
+        <div className="border-t border-zinc-800 bg-red-500/10 px-6 py-3 text-sm text-red-400">
           {syncMutation.error instanceof Error ? syncMutation.error.message : 'Sync failed'}
         </div>
       )}

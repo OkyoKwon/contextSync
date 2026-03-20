@@ -21,7 +21,7 @@ export function LocalSessionConversation({
   if (!sessionId) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-gray-400">Select a session to view its conversation.</p>
+        <p className="text-sm text-[#71717A]">Select a session to view its conversation.</p>
       </div>
     );
   }
@@ -30,7 +30,7 @@ export function LocalSessionConversation({
     return (
       <div className="flex h-full items-center justify-center">
         <Spinner size="md" />
-        <span className="ml-2 text-sm text-gray-500">Loading conversation...</span>
+        <span className="ml-2 text-sm text-[#A1A1AA]">Loading conversation...</span>
       </div>
     );
   }
@@ -38,7 +38,7 @@ export function LocalSessionConversation({
   if (error) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-red-400">
           {error instanceof Error ? error.message : 'Failed to load session'}
         </p>
       </div>
@@ -68,10 +68,10 @@ function SessionHeader({
   readonly onSync: (sessionId: string) => void;
 }) {
   return (
-    <div className="border-b border-gray-200 p-4">
+    <div className="border-b border-zinc-800 p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-lg font-semibold text-gray-900">{detail.title}</h2>
+          <h2 className="truncate text-lg font-semibold text-[#FAFAFA]">{detail.title}</h2>
           <div className="mt-1 flex flex-wrap items-center gap-2">
             {detail.branch && (
               <Badge variant="default">{detail.branch}</Badge>
@@ -79,14 +79,14 @@ function SessionHeader({
             {detail.filePaths.slice(0, 5).map((fp) => (
               <span
                 key={fp}
-                className="inline-block rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
+                className="inline-block rounded bg-[#252525] px-1.5 py-0.5 text-xs text-[#A1A1AA]"
                 title={fp}
               >
                 {fp.split('/').pop()}
               </span>
             ))}
             {detail.filePaths.length > 5 && (
-              <span className="text-xs text-gray-400">+{detail.filePaths.length - 5} more</span>
+              <span className="text-xs text-[#71717A]">+{detail.filePaths.length - 5} more</span>
             )}
           </div>
         </div>

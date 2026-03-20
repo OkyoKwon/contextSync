@@ -43,35 +43,35 @@ export function SessionUploadModal({ isOpen, onClose }: SessionUploadModalProps)
       <div
         {...getRootProps()}
         className={`cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors ${
-          isDragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+          isDragActive ? 'border-blue-400 bg-blue-500/10' : 'border-zinc-700 hover:border-zinc-600'
         }`}
       >
         <input {...getInputProps()} />
         {selectedFile ? (
           <div>
-            <p className="text-sm font-medium text-gray-900">{selectedFile.name}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-medium text-[#FAFAFA]">{selectedFile.name}</p>
+            <p className="text-xs text-[#A1A1AA]">
               {(selectedFile.size / 1024).toFixed(1)} KB
             </p>
           </div>
         ) : (
           <div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[#A1A1AA]">
               Drop a .json, .jsonl, or .md file here, or click to browse
             </p>
-            <p className="mt-1 text-xs text-gray-400">Max 10MB</p>
+            <p className="mt-1 text-xs text-[#71717A]">Max 10MB</p>
           </div>
         )}
       </div>
 
       {importMutation.error && (
-        <p className="mt-3 text-sm text-red-600">
+        <p className="mt-3 text-sm text-red-400">
           {importMutation.error instanceof Error ? importMutation.error.message : 'Upload failed'}
         </p>
       )}
 
       {importMutation.data?.data && (
-        <div className="mt-3 rounded-lg bg-green-50 p-3 text-sm text-green-700">
+        <div className="mt-3 rounded-lg bg-green-500/10 p-3 text-sm text-green-400">
           Imported {importMutation.data.data.messageCount} messages.
           {importMutation.data.data.detectedConflicts > 0 &&
             ` ${importMutation.data.data.detectedConflicts} conflict(s) detected.`}

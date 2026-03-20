@@ -8,7 +8,7 @@ export function Header() {
   const logout = useAuthStore((s) => s.logout);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-6">
+    <header className="flex h-14 items-center justify-between border-b border-zinc-800 bg-[#1C1C1C] px-6">
       <div className="flex items-center gap-4">
         <ProjectSelector />
         <SearchBar />
@@ -17,12 +17,12 @@ export function Header() {
         {user && (
           <div className="flex items-center gap-2">
             <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-            <span className="text-sm text-gray-700">{user.name}</span>
+            <span className="text-sm text-[#D4D4D8]">{user.name}</span>
           </div>
         )}
         <button
           onClick={logout}
-          className="rounded-lg px-3 py-1.5 text-sm text-gray-500 hover:bg-gray-100"
+          className="rounded-lg px-3 py-1.5 text-sm text-[#A1A1AA] hover:bg-zinc-800"
         >
           Logout
         </button>

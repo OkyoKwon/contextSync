@@ -46,19 +46,19 @@ export function LocalSessionList({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-gray-200 p-3">
+      <div className="border-b border-zinc-800 p-3">
         <input
           type="text"
           placeholder="Search sessions..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-md border border-zinc-700 bg-[#141414] px-3 py-1.5 text-sm text-[#FAFAFA] placeholder:text-[#71717A] focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
       <div className="flex-1 overflow-y-auto p-3">
         {filteredGroups.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-500">
+          <p className="py-8 text-center text-sm text-[#A1A1AA]">
             {searchQuery ? 'No sessions match your search.' : 'No local sessions found.'}
           </p>
         )}
@@ -114,21 +114,21 @@ function ProjectGroup({
         onClick={() => onSelectProject(group.projectPath)}
         className={`mb-1.5 flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors ${
           isProjectSelected
-            ? 'border-blue-300 bg-blue-50 shadow-sm'
-            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 hover:shadow-sm'
+            ? 'border-blue-500 bg-blue-500/10'
+            : 'border-zinc-800 bg-[#1C1C1C] hover:border-zinc-700 hover:bg-[#252525]'
         }`}
       >
-        <FolderIcon className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-500' : 'text-gray-400'}`} />
+        <FolderIcon className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-[#71717A]'}`} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className={`truncate text-sm font-medium ${isProjectSelected ? 'text-blue-700' : 'text-gray-700'}`}>
+            <span className={`truncate text-sm font-medium ${isProjectSelected ? 'text-blue-400' : 'text-[#D4D4D8]'}`}>
               {shortPath(group.projectPath)}
             </span>
             {group.isActive && (
               <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
             )}
           </div>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-[#71717A]">
             {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
           </span>
         </div>
@@ -167,8 +167,8 @@ function SessionRow({
     <div
       className={`flex cursor-pointer items-start gap-2 rounded-lg border p-2.5 transition-colors ${
         isSelected
-          ? 'border-blue-400 bg-blue-50'
-          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+          ? 'border-blue-500 bg-blue-500/10'
+          : 'border-zinc-800 hover:border-zinc-700 hover:bg-[#252525]'
       }`}
       onClick={onSelect}
     >
@@ -181,11 +181,11 @@ function SessionRow({
           if (!session.isSynced) onToggleSync();
         }}
         onClick={(e) => e.stopPropagation()}
-        className="mt-0.5 rounded border-gray-300"
+        className="mt-0.5 rounded border-zinc-700 bg-[#141414]"
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="truncate text-sm font-medium text-gray-900">
+          <p className="truncate text-sm font-medium text-[#FAFAFA]">
             {session.firstMessage}
           </p>
           {session.isSynced && <Badge variant="success">Synced</Badge>}
@@ -193,7 +193,7 @@ function SessionRow({
             <Badge variant="info">Active</Badge>
           )}
         </div>
-        <p className="mt-0.5 text-xs text-gray-500">
+        <p className="mt-0.5 text-xs text-[#71717A]">
           {session.messageCount} messages · {formatTimeAgo(session.lastModifiedAt)}
         </p>
       </div>

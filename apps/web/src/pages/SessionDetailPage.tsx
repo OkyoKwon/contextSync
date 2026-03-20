@@ -22,7 +22,7 @@ export function SessionDetailPage() {
 
   return (
     <div>
-      <Link to="/sessions" className="mb-4 inline-block text-sm text-blue-600 hover:underline">
+      <Link to="/sessions" className="mb-4 inline-block text-sm text-blue-400 hover:underline">
         &larr; Back to sessions
       </Link>
       <SessionDetail session={data.data} />
