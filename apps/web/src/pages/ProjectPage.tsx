@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { useLocalSessions, useSyncSessions } from '../hooks/use-session-sync';
 import { LocalSessionList } from '../components/local-sessions/LocalSessionList';
@@ -65,10 +65,45 @@ export function ProjectPage() {
     setSelection({ type: 'project', projectPath });
   }, []);
 
+  const handleSyncProject = useCallback(
+    async (group: { readonly sessions: readonly { readonly sessionId: string; readonly isSynced: boolean }[] }) => {
+      const unsyncedIds = group.sessions
+        .filter((s) => !s.isSynced)
+        .map((s) => s.sessionId);
+      if (unsyncedIds.length === 0) return;
+      await syncMutation.mutateAsync(unsyncedIds);
+    },
+    [syncMutation],
+  );
+
   const handleSyncComplete = useCallback((projectPath: string) => {
     setSelection({ type: 'project', projectPath });
     setIsSyncOpen(false);
   }, []);
+
+  // Auto-sync: projects that have been synced before get new sessions synced automatically
+  const autoSyncedRef = useRef<ReadonlySet<string>>(new Set());
+  useEffect(() => {
+    if (syncMutation.isPending) return;
+
+    const unsyncedIds: string[] = [];
+    for (const group of groups) {
+      const hasSynced = group.sessions.some((s) => s.isSynced);
+      if (!hasSynced) continue;
+
+      for (const session of group.sessions) {
+        if (!session.isSynced && !autoSyncedRef.current.has(session.sessionId)) {
+          unsyncedIds.push(session.sessionId);
+        }
+      }
+    }
+
+    if (unsyncedIds.length === 0) return;
+
+    // Mark as attempted before triggering to prevent re-entry
+    autoSyncedRef.current = new Set([...autoSyncedRef.current, ...unsyncedIds]);
+    syncMutation.mutateAsync(unsyncedIds);
+  }, [groups, syncMutation]);
 
   const selectedSessionId = selection.type === 'session' ? selection.sessionId : null;
   const selectedProjectPath = selection.type === 'project' ? selection.projectPath : null;
@@ -119,6 +154,8 @@ export function ProjectPage() {
               onSelectSession={handleSelectSession}
               onSelectProject={handleSelectProject}
               onToggleSync={toggleSync}
+              onSyncProject={handleSyncProject}
+              isSyncing={syncMutation.isPending}
             />
           </div>
 
