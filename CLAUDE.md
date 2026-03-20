@@ -37,7 +37,7 @@ apps/
       database/     client.ts (Kysely), types.ts, migrations/
       plugins/      auth, cors, error-handler
       lib/          api-response.ts (ok, fail, paginated)
-      modules/      auth, projects, sessions, conflicts, search, notifications, users
+      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, users
   web/          # React 19 SPA (Vite 6)
     src/
       api/          API 클라이언트
@@ -97,7 +97,7 @@ interface ApiResponse<T> {
 ### Database
 
 - **Kysely** query builder (full ORM 아님), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–012)
+- **Migrations:** `apps/api/src/database/migrations/` (001–013)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **스키마 타입:** `apps/api/src/database/types.ts`
 
@@ -131,6 +131,8 @@ export async function createProject(db: Db, userId: string, input: CreateProject
 
 필수: `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`
 
+선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`
+
 ### Frontend State
 
 - **Zustand:** `useAuthStore` (token, user, currentProjectId — localStorage 영속), `useThemeStore`
@@ -141,3 +143,10 @@ export async function createProject(db: Db, userId: string, input: CreateProject
 - 백엔드: `kebab-case.suffix.ts` (`auth.routes.ts`, `project.service.ts`)
 - 프론트: 컴포넌트 `PascalCase.tsx`, 훅/유틸 `kebab-case.ts`
 - DB 컬럼: `snake_case`, 테이블: 복수형 소문자
+
+## Documentation
+
+상세 문서는 `docs/` 디렉토리 참조:
+
+- **[디자인시스템](docs/디자인시스템.md)** — 컬러 토큰, 타이포그래피, UI 컴포넌트 카탈로그, 테마 시스템
+- **[아키텍쳐](docs/아키텍쳐.md)** — 시스템 다이어그램, 모듈 패턴, DB 설계, 인증 흐름, PRD 분석
