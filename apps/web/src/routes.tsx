@@ -10,6 +10,7 @@ import { ProjectPage } from './pages/ProjectPage';
 import { SessionDetailPage } from './pages/SessionDetailPage';
 import { ConflictsPage } from './pages/ConflictsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { PrdAnalysisPage } from './pages/PrdAnalysisPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -48,6 +49,7 @@ export function AppRoutes() {
         <Route path="sessions/:sessionId" element={<SessionRedirect />} />
         <Route path="local-sessions" element={<Navigate to="/project" replace />} />
         <Route path="conflicts" element={<ConflictsPage />} />
+        <Route path="prd-analysis" element={<PrdAnalysisPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/team" element={<Navigate to="/settings" replace />} />
         <Route path="settings/project" element={<Navigate to="/settings" replace />} />

@@ -16,6 +16,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@context-sync/shared": "workspace:*",
     "@fastify/cors": "^10.0.0",
     "@fastify/jwt": "^9.0.0",

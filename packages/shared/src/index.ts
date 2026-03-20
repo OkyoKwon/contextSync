@@ -33,6 +33,15 @@ export type {
   UpdateConflictInput,
   DetectedConflict,
 } from './types/conflict.js';
+export type {
+  PrdDocument,
+  PrdAnalysis,
+  PrdRequirement,
+  PrdAnalysisWithRequirements,
+  PrdAnalysisHistoryEntry,
+  PrdRequirementStatus,
+  PrdAnalysisStatus,
+} from './types/prd-analysis.js';
 
 // Constants
 export { USER_ROLES } from './constants/roles.js';
@@ -46,6 +55,12 @@ export {
 } from './constants/conflict-severity.js';
 
 export { MODEL_PRICING, DEFAULT_PRICE_PER_MILLION } from './constants/model-pricing.js';
+export {
+  PRD_REQUIREMENT_STATUSES,
+  PRD_ANALYSIS_STATUSES,
+  SUPPORTED_PRD_EXTENSIONS,
+  MAX_PRD_FILE_SIZE,
+} from './constants/prd-analysis.js';
 
 // Validators
 export { validateSessionImport } from './validators/session.validator.js';

@@ -9,6 +9,9 @@ export interface Database {
   conflicts: ConflictsTable;
   prompt_templates: PromptTemplatesTable;
   synced_sessions: SyncedSessionsTable;
+  prd_documents: PrdDocumentsTable;
+  prd_analyses: PrdAnalysesTable;
+  prd_requirements: PrdRequirementsTable;
 }
 
 export interface UsersTable {
@@ -95,6 +98,48 @@ export interface SyncedSessionsTable {
   external_session_id: string;
   source_path: string;
   synced_at: Generated<Date>;
+}
+
+export interface PrdDocumentsTable {
+  id: Generated<string>;
+  project_id: string;
+  user_id: string;
+  title: string;
+  content: string;
+  file_name: string;
+  created_at: Generated<Date>;
+}
+
+export interface PrdAnalysesTable {
+  id: Generated<string>;
+  prd_document_id: string;
+  project_id: string;
+  status: Generated<string>;
+  overall_rate: number | null;
+  total_items: Generated<number>;
+  achieved_items: Generated<number>;
+  partial_items: Generated<number>;
+  not_started_items: Generated<number>;
+  scanned_files_count: Generated<number>;
+  model_used: string;
+  input_tokens_used: Generated<number>;
+  output_tokens_used: Generated<number>;
+  error_message: string | null;
+  created_at: Generated<Date>;
+  completed_at: Date | null;
+}
+
+export interface PrdRequirementsTable {
+  id: Generated<string>;
+  prd_analysis_id: string;
+  requirement_text: string;
+  category: string | null;
+  status: string;
+  confidence: number;
+  evidence: string | null;
+  file_paths: Generated<string[]>;
+  sort_order: Generated<number>;
+  created_at: Generated<Date>;
 }
 
 export interface PromptTemplatesTable {
