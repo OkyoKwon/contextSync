@@ -204,6 +204,28 @@ export async function findRecentSessionsByProject(
   return rows.map(toSession);
 }
 
+export async function findAllSessionsWithMessages(
+  db: Db,
+  projectId: string,
+): Promise<readonly { session: Session; messages: readonly Message[] }[]> {
+  const sessions = await db
+    .selectFrom('sessions')
+    .selectAll()
+    .where('project_id', '=', projectId)
+    .orderBy('created_at', 'asc')
+    .execute();
+
+  const results = await Promise.all(
+    sessions.map(async (row) => {
+      const session = toSession(row as Record<string, unknown>);
+      const messages = await findMessagesBySessionId(db, session.id);
+      return { session, messages };
+    }),
+  );
+
+  return results;
+}
+
 function toSession(row: Record<string, unknown>): Session {
   return {
     id: row['id'] as string,

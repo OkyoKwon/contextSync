@@ -1,5 +1,5 @@
 import type { Db } from '../../database/client.js';
-import type { Project, CreateProjectInput, UpdateProjectInput } from '@context-sync/shared';
+import type { Project, CreateProjectInput, CreatePersonalProjectInput, UpdateProjectInput } from '@context-sync/shared';
 import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 import { isTeamMember } from '../teams/team.repository.js';
 import { ForbiddenError } from '../../plugins/error-handler.plugin.js';
@@ -15,6 +15,14 @@ export async function createProject(
   return projectRepo.createProject(db, teamId, input);
 }
 
+export async function createPersonalProject(
+  db: Db,
+  userId: string,
+  input: CreatePersonalProjectInput,
+): Promise<Project> {
+  return projectRepo.createPersonalProject(db, userId, input);
+}
+
 export async function getProjectsByTeam(
   db: Db,
   teamId: string,
@@ -24,10 +32,17 @@ export async function getProjectsByTeam(
   return projectRepo.findProjectsByTeamId(db, teamId);
 }
 
+export async function getPersonalProjects(
+  db: Db,
+  userId: string,
+): Promise<readonly Project[]> {
+  return projectRepo.findProjectsByOwnerId(db, userId);
+}
+
 export async function getProject(db: Db, projectId: string, userId: string): Promise<Project> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
-  await assertTeamAccess(db, project.teamId, userId);
+  await assertOwnership(db, project, userId);
   return project;
 }
 
@@ -39,15 +54,23 @@ export async function updateProject(
 ): Promise<Project> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
-  await assertTeamAccess(db, project.teamId, userId);
+  await assertOwnership(db, project, userId);
   return projectRepo.updateProject(db, projectId, input);
 }
 
 export async function assertProjectAccess(db: Db, projectId: string, userId: string): Promise<Project> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
-  await assertTeamAccess(db, project.teamId, userId);
+  await assertOwnership(db, project, userId);
   return project;
+}
+
+async function assertOwnership(db: Db, project: Project, userId: string): Promise<void> {
+  if (project.teamId !== null) {
+    await assertTeamAccess(db, project.teamId, userId);
+  } else if (project.ownerId !== userId) {
+    throw new ForbiddenError('Not the project owner');
+  }
 }
 
 async function assertTeamAccess(db: Db, teamId: string, userId: string): Promise<void> {

@@ -8,8 +8,8 @@ interface AuthState {
   readonly currentTeamId: string | null;
   readonly currentProjectId: string | null;
   setAuth: (token: string, user: User) => void;
-  setCurrentTeam: (teamId: string) => void;
-  setCurrentProject: (projectId: string) => void;
+  setCurrentTeam: (teamId: string | null) => void;
+  setCurrentProject: (projectId: string | null) => void;
   logout: () => void;
 }
 

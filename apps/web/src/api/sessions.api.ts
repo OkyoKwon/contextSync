@@ -71,4 +71,17 @@ export const sessionsApi = {
 
   sync: (projectId: string, sessionIds: readonly string[]) =>
     api.post<SyncSessionResult>(`/projects/${projectId}/sessions/sync`, { sessionIds }),
+
+  exportMarkdown: async (projectId: string): Promise<Blob> => {
+    const token = (await import('../stores/auth.store')).useAuthStore.getState().token;
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`/api/projects/${projectId}/sessions/export/markdown`, { headers });
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      throw new Error(errorBody?.error ?? `Export failed (${response.status})`);
+    }
+    return response.blob();
+  },
 };

@@ -1,10 +1,28 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok } from '../../lib/api-response.js';
 import * as projectService from './project.service.js';
-import { createProjectSchema, updateProjectSchema } from './project.schema.js';
+import { createProjectSchema, createPersonalProjectSchema, updateProjectSchema } from './project.schema.js';
 
 export const projectRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
+
+  app.post('/projects/personal', async (request, reply) => {
+    const input = createPersonalProjectSchema.parse(request.body);
+    const project = await projectService.createPersonalProject(
+      app.db,
+      request.user.userId,
+      input,
+    );
+    return reply.status(201).send(ok(project));
+  });
+
+  app.get('/projects/personal', async (request, reply) => {
+    const projects = await projectService.getPersonalProjects(
+      app.db,
+      request.user.userId,
+    );
+    return reply.send(ok(projects));
+  });
 
   app.post<{ Params: { teamId: string }; Body: unknown }>(
     '/teams/:teamId/projects',

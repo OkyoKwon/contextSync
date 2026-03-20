@@ -11,3 +11,10 @@ export function useProjects() {
     enabled: !!teamId,
   });
 }
+
+export function usePersonalProjects() {
+  return useQuery({
+    queryKey: ['projects', 'personal'],
+    queryFn: () => projectsApi.listPersonal(),
+  });
+}

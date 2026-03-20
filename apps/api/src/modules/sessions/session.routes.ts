@@ -2,12 +2,31 @@ import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
+import { exportProjectAsMarkdown } from './session-export.service.js';
 import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions } from './local-session.service.js';
 import { sessionFilterSchema, updateSessionSchema, tokenUsageQuerySchema } from './session.schema.js';
 import * as tokenUsageService from './token-usage.service.js';
 
 export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
+
+  app.get<{ Params: { projectId: string } }>(
+    '/projects/:projectId/sessions/export/markdown',
+    async (request, reply) => {
+      const { markdown, projectName } = await exportProjectAsMarkdown(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+
+      const filename = `${projectName.replace(/[^a-zA-Z0-9_-]/g, '_')}-sessions.md`;
+
+      return reply
+        .header('Content-Type', 'text/markdown; charset=utf-8')
+        .header('Content-Disposition', `attachment; filename="${filename}"`)
+        .send(markdown);
+    },
+  );
 
   app.post<{ Params: { projectId: string } }>(
     '/projects/:projectId/sessions/import',
