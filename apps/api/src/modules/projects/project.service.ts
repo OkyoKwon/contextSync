@@ -58,6 +58,17 @@ export async function updateProject(
   return projectRepo.updateProject(db, projectId, input);
 }
 
+export async function deleteProject(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<void> {
+  const project = await projectRepo.findProjectById(db, projectId);
+  if (!project) throw new NotFoundError('Project');
+  await assertOwnership(db, project, userId);
+  await projectRepo.deleteProject(db, projectId);
+}
+
 export async function assertProjectAccess(db: Db, projectId: string, userId: string): Promise<Project> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');

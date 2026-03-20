@@ -90,6 +90,10 @@ export async function updateProject(
   return toProject(row);
 }
 
+export async function deleteProject(db: Db, id: string): Promise<void> {
+  await db.deleteFrom('projects').where('id', '=', id).execute();
+}
+
 function toProject(row: {
   id: string;
   team_id: string | null;

@@ -69,4 +69,16 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       return reply.send(ok(project));
     },
   );
+
+  app.delete<{ Params: { projectId: string } }>(
+    '/projects/:projectId',
+    async (request, reply) => {
+      await projectService.deleteProject(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+      return reply.send(ok(null));
+    },
+  );
 };

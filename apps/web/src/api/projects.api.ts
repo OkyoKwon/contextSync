@@ -11,4 +11,5 @@ export const projectsApi = {
     api.post<Project>('/projects/personal', input),
   update: (projectId: string, input: UpdateProjectInput) =>
     api.patch<Project>(`/projects/${projectId}`, input),
+  delete: (projectId: string) => api.delete<void>(`/projects/${projectId}`),
 };
