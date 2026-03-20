@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
-import { listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions } from './local-session.service.js';
+import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions } from './local-session.service.js';
 import { sessionFilterSchema, updateSessionSchema, tokenUsageQuerySchema } from './session.schema.js';
 import * as tokenUsageService from './token-usage.service.js';
 
@@ -127,6 +127,11 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
       return reply.send(ok(stats));
     },
   );
+
+  app.get('/sessions/local/directories', async (_request, reply) => {
+    const directories = await listLocalDirectories();
+    return reply.send(ok(directories));
+  });
 
   app.get<{ Querystring: { projectId: string; activeOnly?: string } }>(
     '/sessions/local',

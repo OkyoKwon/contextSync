@@ -7,6 +7,7 @@ import type {
   DashboardStats,
   TokenUsageStats,
   TokenUsagePeriod,
+  LocalDirectory,
   LocalProjectGroup,
   LocalSessionDetail,
   SyncSessionResult,
@@ -51,6 +52,9 @@ export const sessionsApi = {
 
   tokenUsage: (projectId: string, period: TokenUsagePeriod = '30d') =>
     api.get<TokenUsageStats>(`/projects/${projectId}/token-usage?period=${period}`),
+
+  listLocalDirectories: () =>
+    api.get<readonly LocalDirectory[]>('/sessions/local/directories'),
 
   listLocal: (projectId: string, activeOnly = true) =>
     api.get<readonly LocalProjectGroup[]>(

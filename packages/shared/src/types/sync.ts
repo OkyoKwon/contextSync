@@ -1,3 +1,9 @@
+export interface LocalDirectory {
+  readonly path: string;
+  readonly sessionCount: number;
+  readonly lastActivityAt: string;
+}
+
 export interface LocalSessionInfo {
   readonly sessionId: string;
   readonly projectPath: string;

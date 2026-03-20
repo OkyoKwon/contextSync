@@ -2,7 +2,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Db } from '../../database/client.js';
-import type { LocalProjectGroup, LocalSessionInfo, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, ProjectConversation, UnifiedMessage } from '@context-sync/shared';
+import type { LocalDirectory, LocalProjectGroup, LocalSessionInfo, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, ProjectConversation, UnifiedMessage } from '@context-sync/shared';
 import { parseClaudeCodeSession, parseClaudeCodeSessionWithTimestamps, previewClaudeCodeSession } from './parsers/claude-code-session.parser.js';
 import { importParsedSession } from './session-import.service.js';
 
@@ -64,6 +64,36 @@ function decodeProjectPath(dirName: string): string {
 
 // Maximum number of inactive files to read when activeOnly=false
 const MAX_INACTIVE_FILES = 50;
+
+export async function listLocalDirectories(): Promise<readonly LocalDirectory[]> {
+  const sessionFiles = await findSessionFiles();
+
+  // Group files by directory, track counts and latest modification
+  const dirMap = new Map<string, { count: number; latestMs: number }>();
+
+  for (const file of sessionFiles) {
+    const existing = dirMap.get(file.dir);
+    if (existing) {
+      dirMap.set(file.dir, {
+        count: existing.count + 1,
+        latestMs: Math.max(existing.latestMs, file.lastModifiedMs),
+      });
+    } else {
+      dirMap.set(file.dir, { count: 1, latestMs: file.lastModifiedMs });
+    }
+  }
+
+  const directories: LocalDirectory[] = [...dirMap.entries()].map(([dirName, info]) => ({
+    path: decodeProjectPath(dirName),
+    sessionCount: info.count,
+    lastActivityAt: new Date(info.latestMs).toISOString(),
+  }));
+
+  // Sort by most recent activity first
+  directories.sort((a, b) => (b.lastActivityAt > a.lastActivityAt ? 1 : -1));
+
+  return directories;
+}
 
 export async function listLocalSessions(
   db: Db,

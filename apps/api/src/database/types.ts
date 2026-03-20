@@ -43,10 +43,12 @@ export interface TeamMembersTable {
 
 export interface ProjectsTable {
   id: Generated<string>;
-  team_id: string;
+  team_id: string | null;
+  owner_id: string | null;
   name: string;
   description: string | null;
   repo_url: string | null;
+  local_directory: string | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
