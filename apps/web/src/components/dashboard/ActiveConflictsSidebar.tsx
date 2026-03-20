@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { useConflicts } from '../../hooks/use-conflicts';
 import { SeverityBadge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
+import { CheckCircleIcon } from '../ui/icons';
 
 export function ActiveConflictsSidebar() {
   const { data, isLoading } = useConflicts({ status: 'detected' });
@@ -14,7 +15,10 @@ export function ActiveConflictsSidebar() {
       {isLoading && <Spinner size="sm" />}
 
       {!isLoading && conflicts.length === 0 && (
-        <p className="text-xs text-text-tertiary">No active conflicts</p>
+        <div className="flex items-center gap-2">
+          <CheckCircleIcon size={16} className="text-green-400" />
+          <p className="text-xs text-text-secondary">All clear — no conflicts detected</p>
+        </div>
       )}
 
       <div className="space-y-2">

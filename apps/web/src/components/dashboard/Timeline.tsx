@@ -18,8 +18,14 @@ export function Timeline({ entries, isLoading }: TimelineProps) {
 
   if (entries.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-text-tertiary">
-        No activity yet. Import sessions to see the timeline.
+      <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-border-default py-10">
+        <p className="text-sm text-text-tertiary">Get started by importing your first session</p>
+        <a
+          href="/sessions"
+          className="inline-flex items-center justify-center rounded-lg bg-btn-primary-bg px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:bg-btn-primary-hover transition-colors"
+        >
+          Import Session
+        </a>
       </div>
     );
   }
