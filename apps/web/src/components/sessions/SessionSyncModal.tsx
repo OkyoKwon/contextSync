@@ -29,10 +29,8 @@ function FolderIcon({ className }: { readonly className?: string }) {
 
 export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyncModalProps) {
   const [view, setView] = useState<ModalView>({ type: 'list' });
-  const [showAll, setShowAll] = useState(false);
-  const activeOnly = !showAll;
   const projectId = useAuthStore((s) => s.currentProjectId);
-  const { data, isLoading, error: fetchError } = useLocalSessions(activeOnly);
+  const { data, isLoading, error: fetchError } = useLocalSessions(false);
   const syncMutation = useSyncSessions();
 
   const groups: readonly LocalProjectGroup[] = data?.data ?? [];
@@ -75,7 +73,6 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
   const handleClose = useCallback(() => {
     setView({ type: 'list' });
     syncMutation.reset();
-    setShowAll(false);
     onClose();
   }, [onClose, syncMutation]);
 
@@ -103,33 +100,14 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
       {!isLoading && groups.length === 0 && !fetchError && projectId && (
         <div className="py-8 text-center">
           <p className="text-sm text-text-tertiary">
-            {activeOnly
-              ? 'No active Claude Code sessions found.'
-              : 'No Claude Code sessions found in ~/.claude/projects/'}
+            No Claude Code sessions found in ~/.claude/projects/
           </p>
-          {activeOnly && (
-            <button
-              onClick={() => setShowAll(true)}
-              className="mt-2 text-xs text-blue-400 hover:underline"
-            >
-              Show all sessions
-            </button>
-          )}
         </div>
       )}
 
       {/* Directory list view */}
       {!isLoading && groups.length > 0 && view.type === 'list' && (
         <>
-          <div className="mb-3 flex items-center justify-end">
-            <button
-              onClick={() => setShowAll((v) => !v)}
-              className="text-xs text-blue-400 hover:underline"
-            >
-              {showAll ? 'Show active only' : 'Show all sessions'}
-            </button>
-          </div>
-
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {groups.map((group) => {
               const unsyncedCount = unsyncedCountByProject.get(group.projectPath) ?? 0;
@@ -154,7 +132,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                         {shortPath(group.projectPath)}
                       </span>
                       {group.isActive && (
-                        <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
+                        <Badge variant="info">Active</Badge>
                       )}
                       {allSynced && (
                         <Badge variant="success">All synced</Badge>

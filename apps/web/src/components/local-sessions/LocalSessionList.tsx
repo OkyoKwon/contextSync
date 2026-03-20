@@ -152,7 +152,7 @@ function ProjectGroup({
               {shortPath(group.projectPath)}
             </span>
             {group.isActive && (
-              <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
+              <Badge variant="info">Active</Badge>
             )}
           </div>
           <span className="text-xs text-text-muted">
@@ -218,7 +218,7 @@ function SessionRow({
             {session.firstMessage}
           </p>
           {session.isSynced && <Badge variant="success">Synced</Badge>}
-          {session.isActive && !session.isSynced && (
+          {session.isActive && (
             <Badge variant="info">Active</Badge>
           )}
         </div>

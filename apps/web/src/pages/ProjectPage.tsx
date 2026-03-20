@@ -22,7 +22,6 @@ type Selection =
   | { readonly type: 'project'; readonly projectPath: string };
 
 export function ProjectPage() {
-  const [showAll, setShowAll] = useState(true);
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
   const [selectedSyncIds, setSelectedSyncIds] = useState<ReadonlySet<string>>(new Set());
   const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
@@ -34,8 +33,7 @@ export function ProjectPage() {
 
   const [exporting, setExporting] = useState(false);
 
-  const activeOnly = !showAll;
-  const { data, isLoading } = useLocalSessions(activeOnly);
+  const { data, isLoading } = useLocalSessions(false);
   const syncMutation = useSyncSessions();
 
   const handleExport = useCallback(async () => {
@@ -163,15 +161,6 @@ export function ProjectPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-text-tertiary">
-            <input
-              type="checkbox"
-              checked={showAll}
-              onChange={() => setShowAll((v) => !v)}
-              className="rounded border-border-input bg-page"
-            />
-            Show all
-          </label>
           {selectedSyncIds.size > 0 && (
             <Button onClick={handleBulkSync} disabled={syncMutation.isPending}>
               {syncMutation.isPending ? (
