@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { ConflictSeverity, ConflictStatus } from '@context-sync/shared';
 import { useConflicts } from '../hooks/use-conflicts';
 import { ConflictList } from '../components/conflicts/ConflictList';
+import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 
 export function ConflictsPage() {
   const [severity, setSeverity] = useState<ConflictSeverity | undefined>();
@@ -12,7 +13,9 @@ export function ConflictsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-bold text-text-primary">Conflicts</h1>
+      <div className="mb-6">
+        <PageBreadcrumb pageName="Conflicts" />
+      </div>
 
       <div className="mb-4 flex gap-3">
         <select
