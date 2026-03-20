@@ -12,6 +12,7 @@ export interface LocalSessionInfo {
   readonly messageCount: number;
   readonly startedAt: string;
   readonly lastModifiedAt: string;
+  readonly totalTokens: number;
   readonly isSynced: boolean;
   readonly isActive: boolean;
 }

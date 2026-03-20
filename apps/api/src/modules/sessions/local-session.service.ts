@@ -180,6 +180,7 @@ export async function listLocalSessions(
         projectPath,
         firstMessage: result.title,
         messageCount: result.messages.length,
+        totalTokens: result.messages.reduce((sum, m) => sum + (m.tokensUsed ?? 0), 0),
         startedAt: result.messages[0]?.timestamp ?? new Date().toISOString(),
         lastModifiedAt: new Date(file.lastModifiedMs).toISOString(),
         isSynced: syncedIds.has(sessionId),

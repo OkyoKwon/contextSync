@@ -4,6 +4,16 @@ import { Badge } from '../ui/Badge';
 import { shortPath } from '../../lib/format';
 import { timeAgo } from '../../lib/date';
 
+function formatTokenCount(tokens: number): string {
+  if (tokens >= 1_000_000) {
+    return `${(tokens / 1_000_000).toFixed(1)}M`;
+  }
+  if (tokens >= 1_000) {
+    return `${(tokens / 1_000).toFixed(1)}K`;
+  }
+  return String(tokens);
+}
+
 interface LocalSessionListProps {
   readonly groups: readonly LocalProjectGroup[];
   readonly selectedSessionId: string | null;
@@ -95,7 +105,15 @@ export function LocalSessionList({
 
 function FolderIcon({ className }: { readonly className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
     </svg>
   );
@@ -125,18 +143,25 @@ function ProjectGroup({
             : 'border-border-default bg-zinc-800/50 hover:border-border-input hover:bg-surface-hover'
         }`}
       >
-        <FolderIcon className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`} />
+        <FolderIcon
+          className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <span className={`truncate text-sm font-semibold ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}>
+            <span
+              className={`truncate text-sm font-semibold ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}
+            >
               {shortPath(group.projectPath)}
             </span>
             {group.isActive && (
-              <Badge variant="default" className="whitespace-nowrap">Current</Badge>
+              <Badge variant="default" className="whitespace-nowrap">
+                Current
+              </Badge>
             )}
           </div>
           <span className="text-xs text-text-muted">
-            {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} · {group.totalMessages} msgs
+            {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} ·{' '}
+            {group.totalMessages} msgs
           </span>
         </div>
       </button>
@@ -176,16 +201,23 @@ function SessionRow({
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <p className="truncate text-sm font-medium text-text-primary">
-            {session.firstMessage}
-          </p>
-          {session.isSynced && <Badge variant="success" title="Saved to database">Synced</Badge>}
+          <p className="truncate text-sm font-medium text-text-primary">{session.firstMessage}</p>
+          {session.isSynced && (
+            <Badge variant="success" title="Saved to database">
+              Synced
+            </Badge>
+          )}
           {session.isActive && (
-            <Badge variant="info" title="Used within 10 min">Active</Badge>
+            <Badge variant="info" title="Used within 10 min">
+              Active
+            </Badge>
           )}
         </div>
         <p className="mt-0.5 text-xs text-text-muted">
-          {session.messageCount} messages · {timeAgo(session.lastModifiedAt)}
+          {session.messageCount} messages
+          {session.totalTokens > 0 && ` · ${formatTokenCount(session.totalTokens)} tokens`}
+          {' · '}
+          {timeAgo(session.lastModifiedAt)}
         </p>
       </div>
     </button>
