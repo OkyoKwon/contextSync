@@ -10,7 +10,8 @@ const navItems = [
 export function Sidebar() {
   return (
     <aside className="flex w-60 flex-col border-r border-border-default bg-surface">
-      <div className="flex h-14 items-center border-b border-border-default px-4">
+      <div className="flex h-14 items-center gap-2 border-b border-border-default px-4">
+        <img src="/logo.png" alt="ContextSync" className="h-7 w-7" />
         <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>
       </div>
       <nav className="flex-1 space-y-1 p-3">
