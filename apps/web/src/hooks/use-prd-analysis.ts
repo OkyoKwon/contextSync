@@ -71,6 +71,21 @@ export function usePrdAnalysisHistory(page = 1) {
   });
 }
 
+export function useReplacePrdDocument() {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ oldDocumentId, file }: { oldDocumentId: string; file: File }) => {
+      await prdAnalysisApi.deleteDocument(oldDocumentId);
+      return prdAnalysisApi.uploadDocument(projectId!, file);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prd-documents', projectId] });
+    },
+  });
+}
+
 export function usePrdAnalysisDetail(analysisId: string | null) {
   return useQuery({
     queryKey: ['prd-analysis-detail', analysisId],

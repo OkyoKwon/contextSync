@@ -1,21 +1,25 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { useStartAnalysis, useLatestPrdAnalysis, usePrdAnalysisDetail } from '../hooks/use-prd-analysis';
-import { PrdUploadSection } from '../components/prd-analysis/PrdUploadSection';
+import { useStartAnalysis, useLatestPrdAnalysis, usePrdAnalysisDetail, usePrdDocuments } from '../hooks/use-prd-analysis';
+import { PrdDocumentSection } from '../components/prd-analysis/PrdDocumentSection';
 import { PrdAnalysisResults } from '../components/prd-analysis/PrdAnalysisResults';
 import { PrdRequirementList } from '../components/prd-analysis/PrdRequirementList';
 import { PrdAnalysisHistory } from '../components/prd-analysis/PrdAnalysisHistory';
 import { AnalyzingOverlay } from '../components/prd-analysis/AnalyzingOverlay';
+import { Card } from '../components/ui/Card';
 
 export function PrdAnalysisPage() {
   const startAnalysisMutation = useStartAnalysis();
   const { data: latestData, isLoading: isLoadingLatest } = useLatestPrdAnalysis();
+  const { data: documentsData } = usePrdDocuments();
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
   const { data: detailData } = usePrdAnalysisDetail(selectedAnalysisId);
 
   const displayAnalysis = selectedAnalysisId
     ? detailData?.data ?? null
     : latestData?.data ?? null;
+
+  const hasDocument = (documentsData?.data ?? []).length > 0;
 
   const handleStartAnalysis = (documentId: string) => {
     startAnalysisMutation.mutate(documentId, {
@@ -36,42 +40,45 @@ export function PrdAnalysisPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-border-default bg-surface p-4">
+      <Card>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
-          Upload & Analyze
+          PRD Document
         </h2>
-        <PrdUploadSection
+        <PrdDocumentSection
           onStartAnalysis={handleStartAnalysis}
           isAnalyzing={startAnalysisMutation.isPending}
+          latestAnalysis={latestData?.data ?? null}
         />
-      </div>
+      </Card>
 
       {startAnalysisMutation.isPending && <AnalyzingOverlay />}
 
       {!startAnalysisMutation.isPending && displayAnalysis && (
         <>
-          <div className="rounded-lg border border-border-default bg-surface p-4">
+          <Card>
             <PrdAnalysisResults analysis={displayAnalysis} />
-          </div>
+          </Card>
 
-          <div className="rounded-lg border border-border-default bg-surface p-4">
+          <Card>
             <PrdRequirementList requirements={displayAnalysis.requirements} />
-          </div>
+          </Card>
         </>
       )}
 
       {!startAnalysisMutation.isPending && !displayAnalysis && !isLoadingLatest && (
-        <div className="rounded-lg border border-border-default bg-surface p-8 text-center text-sm text-text-tertiary">
-          No analysis results yet. Upload a PRD document and start your first analysis.
-        </div>
+        <Card padding="lg" className="text-center text-sm text-text-tertiary">
+          {hasDocument
+            ? '문서가 업로드되었습니다. 분석 업데이트를 클릭하세요.'
+            : 'PRD 문서를 업로드하여 시작하세요.'}
+        </Card>
       )}
 
-      <div className="rounded-lg border border-border-default bg-surface p-4">
+      <Card>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
           Analysis History
         </h2>
         <PrdAnalysisHistory onSelectAnalysis={setSelectedAnalysisId} />
-      </div>
+      </Card>
     </div>
   );
 }
