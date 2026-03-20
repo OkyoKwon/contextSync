@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { LocalProjectGroup, LocalSessionInfo } from '@context-sync/shared';
 import { Badge } from '../ui/Badge';
-import { Spinner } from '../ui/Spinner';
 import { shortPath } from '../../lib/format';
 import { timeAgo } from '../../lib/date';
 
@@ -25,8 +24,6 @@ export function LocalSessionList({
   onSelectSession,
   onSelectProject,
   onToggleSync,
-  onSyncProject,
-  isSyncing,
 }: LocalSessionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -104,8 +101,6 @@ export function LocalSessionList({
               onSelectSession={onSelectSession}
               onSelectProject={onSelectProject}
               onToggleSync={onToggleSync}
-              onSyncProject={onSyncProject}
-              isSyncing={isSyncing}
             />
           ))}
         </div>
@@ -122,17 +117,6 @@ function FolderIcon({ className }: { readonly className?: string }) {
   );
 }
 
-function SyncIcon({ className }: { readonly className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 2v6h-6" />
-      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-      <path d="M3 22v-6h6" />
-      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-    </svg>
-  );
-}
-
 function ProjectGroup({
   group,
   selectedSessionId,
@@ -141,8 +125,6 @@ function ProjectGroup({
   onSelectSession,
   onSelectProject,
   onToggleSync,
-  onSyncProject,
-  isSyncing,
 }: {
   readonly group: LocalProjectGroup;
   readonly selectedSessionId: string | null;
@@ -151,55 +133,33 @@ function ProjectGroup({
   readonly onSelectSession: (sessionId: string) => void;
   readonly onSelectProject: (projectPath: string) => void;
   readonly onToggleSync: (sessionId: string) => void;
-  readonly onSyncProject: (group: LocalProjectGroup) => void;
-  readonly isSyncing: boolean;
 }) {
-  const hasUnsyncedSessions = group.sessions.some((s) => !s.isSynced);
-
   return (
     <div>
-      <div
-        className={`mb-1.5 flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 transition-colors ${
+      <button
+        type="button"
+        onClick={() => onSelectProject(group.projectPath)}
+        className={`mb-1.5 flex w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors ${
           isProjectSelected
             ? 'border-blue-500 bg-blue-500/10'
             : 'border-border-default bg-surface hover:border-border-input hover:bg-surface-hover'
         }`}
       >
-        <button
-          type="button"
-          onClick={() => onSelectProject(group.projectPath)}
-          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
-        >
-          <FolderIcon className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className={`truncate text-sm font-medium ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}>
-                {shortPath(group.projectPath)}
-              </span>
-              {group.isActive && (
-                <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
-              )}
-            </div>
-            <span className="text-xs text-text-muted">
-              {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
+        <FolderIcon className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className={`truncate text-sm font-medium ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}>
+              {shortPath(group.projectPath)}
             </span>
+            {group.isActive && (
+              <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
+            )}
           </div>
-        </button>
-        {hasUnsyncedSessions && (
-          <button
-            type="button"
-            title="Sync all sessions"
-            disabled={isSyncing}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSyncProject(group);
-            }}
-            className="flex-shrink-0 rounded-md p-1.5 text-text-muted transition-colors hover:bg-blue-500/20 hover:text-blue-400 disabled:opacity-50"
-          >
-            {isSyncing ? <Spinner size="sm" /> : <SyncIcon className="h-4 w-4" />}
-          </button>
-        )}
-      </div>
+          <span className="text-xs text-text-muted">
+            {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
+          </span>
+        </div>
+      </button>
 
       <div className="space-y-1">
         {group.sessions.map((session) => (

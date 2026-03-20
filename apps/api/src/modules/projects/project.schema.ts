@@ -17,4 +17,5 @@ export const updateProjectSchema = z.object({
   name: z.string().min(1).max(255).optional(),
   description: z.string().max(2000).optional(),
   repoUrl: z.string().url().optional(),
+  localDirectory: z.string().max(1024).nullable().optional(),
 });

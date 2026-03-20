@@ -39,4 +39,5 @@ export interface UpdateProjectInput {
   readonly name?: string;
   readonly description?: string;
   readonly repoUrl?: string;
+  readonly localDirectory?: string | null;
 }

@@ -72,7 +72,7 @@ export async function findProjectById(db: Db, id: string): Promise<Project | nul
 export async function updateProject(
   db: Db,
   id: string,
-  input: { name?: string; description?: string; repoUrl?: string },
+  input: { name?: string; description?: string; repoUrl?: string; localDirectory?: string | null },
 ): Promise<Project> {
   const row = await db
     .updateTable('projects')
@@ -80,6 +80,7 @@ export async function updateProject(
       ...(input.name !== undefined && { name: input.name }),
       ...(input.description !== undefined && { description: input.description }),
       ...(input.repoUrl !== undefined && { repo_url: input.repoUrl }),
+      ...(input.localDirectory !== undefined && { local_directory: input.localDirectory }),
       updated_at: new Date(),
     })
     .where('id', '=', id)

@@ -102,7 +102,22 @@ export async function listLocalSessions(
   projectId: string,
   activeOnly = true,
 ): Promise<readonly LocalProjectGroup[]> {
-  const sessionFiles = await findSessionFiles();
+  // Look up the project's linked local_directory
+  const project = await db
+    .selectFrom('projects')
+    .select(['local_directory'])
+    .where('id', '=', projectId)
+    .executeTakeFirst();
+
+  if (!project?.local_directory) return [];
+
+  const encodedDir = encodeProjectPath(project.local_directory);
+
+  const allSessionFiles = await findSessionFiles();
+  const sessionFiles = allSessionFiles.filter((f) => f.dir === encodedDir);
+
+  if (sessionFiles.length === 0) return [];
+
   const now = Date.now();
 
   // Get already-synced session IDs for this project

@@ -1,14 +1,18 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { useLocalSessions, useSyncSessions } from '../hooks/use-session-sync';
+import { useCurrentProject } from '../hooks/use-current-project';
 import { LocalSessionList } from '../components/local-sessions/LocalSessionList';
 import { LocalSessionConversation } from '../components/local-sessions/LocalSessionConversation';
 import { ProjectConversationPanel } from '../components/local-sessions/ProjectConversationPanel';
-import { SessionSyncModal } from '../components/sessions/SessionSyncModal';
+import { ChangeDirectoryModal } from '../components/projects/ChangeDirectoryModal';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { Badge } from '../components/ui/Badge';
+import { shortPath } from '../lib/format';
 import { timeAgo } from '../lib/date';
+import { useAuthStore } from '../stores/auth.store';
+import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 
 type Selection =
   | { readonly type: 'none' }
@@ -19,14 +23,28 @@ export function ProjectPage() {
   const [showAll, setShowAll] = useState(true);
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
   const [selectedSyncIds, setSelectedSyncIds] = useState<ReadonlySet<string>>(new Set());
-  const [isSyncOpen, setIsSyncOpen] = useState(false);
   const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
+  const [isChangeDirectoryOpen, setIsChangeDirectoryOpen] = useState(false);
+
+  const projectId = useAuthStore((s) => s.currentProjectId);
+  const { data: projectData } = useCurrentProject();
+  const currentProject = projectData?.data ?? null;
 
   const activeOnly = !showAll;
   const { data, isLoading } = useLocalSessions(activeOnly);
   const syncMutation = useSyncSessions();
 
   const groups = useMemo(() => data?.data ?? [], [data]);
+
+  // Auto-select the project path when there's exactly one group
+  const autoSelectedRef = useRef(false);
+  useEffect(() => {
+    if (autoSelectedRef.current) return;
+    if (groups.length === 1 && selection.type === 'none' && groups[0]) {
+      setSelection({ type: 'project', projectPath: groups[0].projectPath });
+      autoSelectedRef.current = true;
+    }
+  }, [groups, selection.type]);
 
   const syncedSessionsForProject = useMemo(() => {
     if (selection.type !== 'project') return [];
@@ -76,11 +94,6 @@ export function ProjectPage() {
     [syncMutation],
   );
 
-  const handleSyncComplete = useCallback((projectPath: string) => {
-    setSelection({ type: 'project', projectPath });
-    setIsSyncOpen(false);
-  }, []);
-
   // Auto-sync: projects that have been synced before get new sessions synced automatically
   const autoSyncedRef = useRef<ReadonlySet<string>>(new Set());
   useEffect(() => {
@@ -108,11 +121,23 @@ export function ProjectPage() {
   const selectedSessionId = selection.type === 'session' ? selection.sessionId : null;
   const selectedProjectPath = selection.type === 'project' ? selection.projectPath : null;
 
+  const linkedDirectory = currentProject?.localDirectory ?? null;
+
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-default px-6 py-3">
-        <h1 className="text-lg font-semibold text-text-primary">Project</h1>
+        <div className="flex items-center gap-3">
+          <PageBreadcrumb pageName="Conversations" />
+          {linkedDirectory && (
+            <span className="flex items-center gap-1.5 text-sm text-text-tertiary">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
+              </svg>
+              {shortPath(linkedDirectory)}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           <label className="flex cursor-pointer items-center gap-2 text-sm text-text-tertiary">
             <input
@@ -132,12 +157,31 @@ export function ProjectPage() {
               )}
             </Button>
           )}
-          <Button onClick={() => setIsSyncOpen(true)}>Sync Context</Button>
+          <Button variant="secondary" onClick={() => setIsChangeDirectoryOpen(true)}>
+            {linkedDirectory ? 'Change Directory' : 'Link Directory'}
+          </Button>
         </div>
       </div>
 
       {/* Content */}
-      {isLoading ? (
+      {!linkedDirectory ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4">
+          <div className="text-center">
+            <svg className="mx-auto mb-3 h-12 w-12 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
+            </svg>
+            <p className="text-sm text-text-tertiary">
+              No directory linked to this project.
+            </p>
+            <p className="mt-1 text-xs text-text-muted">
+              Link a local directory to see its Claude Code sessions here.
+            </p>
+          </div>
+          <Button onClick={() => setIsChangeDirectoryOpen(true)}>
+            Link Directory
+          </Button>
+        </div>
+      ) : isLoading ? (
         <div className="flex flex-1 items-center justify-center">
           <Spinner size="md" />
           <span className="ml-2 text-sm text-text-tertiary">Scanning local sessions...</span>
@@ -285,11 +329,14 @@ export function ProjectPage() {
         </div>
       )}
 
-      <SessionSyncModal
-        isOpen={isSyncOpen}
-        onClose={() => setIsSyncOpen(false)}
-        onSyncComplete={handleSyncComplete}
-      />
+      {projectId && (
+        <ChangeDirectoryModal
+          isOpen={isChangeDirectoryOpen}
+          onClose={() => setIsChangeDirectoryOpen(false)}
+          projectId={projectId}
+          currentDirectory={linkedDirectory}
+        />
+      )}
     </div>
   );
 }
