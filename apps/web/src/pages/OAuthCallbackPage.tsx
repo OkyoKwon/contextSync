@@ -21,7 +21,9 @@ export function OAuthCallbackPage() {
     try {
       const user = JSON.parse(userStr);
       setAuth(token, user);
-      navigate('/dashboard', { replace: true });
+      const { currentTeamId, currentProjectId } = useAuthStore.getState();
+      const destination = (currentTeamId && currentProjectId) ? '/dashboard' : '/onboarding';
+      navigate(destination, { replace: true });
     } catch {
       setError('Authentication failed - invalid data');
     }

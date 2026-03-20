@@ -1,22 +1,27 @@
-import type { Message } from '@context-sync/shared';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+export interface DisplayMessage {
+  readonly role: 'user' | 'assistant';
+  readonly content: string;
+  readonly modelUsed?: string | null;
+}
+
 interface MessageThreadProps {
-  messages: readonly Message[];
+  readonly messages: readonly DisplayMessage[];
 }
 
 export function MessageThread({ messages }: MessageThreadProps) {
   return (
     <div className="space-y-4">
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+      {messages.map((message, index) => (
+        <MessageBubble key={'id' in message ? (message as { id: string }).id : index} message={message} />
       ))}
     </div>
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+function MessageBubble({ message }: { readonly message: DisplayMessage }) {
   const isUser = message.role === 'user';
 
   return (

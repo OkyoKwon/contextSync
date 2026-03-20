@@ -40,6 +40,13 @@ export function TeamSettings() {
           onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
           placeholder="my-team"
         />
+        {createMutation.isError && (
+          <p className="text-sm text-red-600">
+            {createMutation.error instanceof Error
+              ? createMutation.error.message
+              : 'Failed to create team'}
+          </p>
+        )}
         <Button
           onClick={() => createMutation.mutate()}
           disabled={!name || !slug || createMutation.isPending}

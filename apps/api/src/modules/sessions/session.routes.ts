@@ -2,7 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
-import { listLocalSessions, syncSessions } from './local-session.service.js';
+import { listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions } from './local-session.service.js';
 import { sessionFilterSchema, updateSessionSchema } from './session.schema.js';
 
 export const sessionRoutes: FastifyPluginAsync = async (app) => {
@@ -113,15 +113,44 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.get<{ Querystring: { projectId: string } }>(
+  app.get<{ Querystring: { projectId: string; activeOnly?: string } }>(
     '/sessions/local',
     async (request, reply) => {
-      const { projectId } = request.query;
+      const { projectId, activeOnly } = request.query;
       if (!projectId) {
         return reply.status(400).send({ success: false, data: null, error: 'projectId is required' });
       }
-      const sessions = await listLocalSessions(app.db, projectId);
+      const isActiveOnly = activeOnly !== 'false';
+      const sessions = await listLocalSessions(app.db, projectId, isActiveOnly);
       return reply.send(ok(sessions));
+    },
+  );
+
+  app.get<{ Querystring: { projectPath: string; cursor?: string; limit?: string } }>(
+    '/sessions/local/project-conversation',
+    async (request, reply) => {
+      const { projectPath, cursor, limit } = request.query;
+      if (!projectPath) {
+        return reply.status(400).send({ success: false, data: null, error: 'projectPath is required' });
+      }
+      const parsedLimit = limit ? parseInt(limit, 10) : 100;
+      const conversation = await getProjectConversation(projectPath, cursor || undefined, parsedLimit);
+      return reply.send(ok(conversation));
+    },
+  );
+
+  app.get<{ Params: { sessionId: string } }>(
+    '/sessions/local/:sessionId',
+    async (request, reply) => {
+      try {
+        const detail = await getLocalSessionDetail(request.params.sessionId);
+        return reply.send(ok(detail));
+      } catch (err) {
+        if (err instanceof Error && (err as NodeJS.ErrnoException).code === 'NOT_FOUND') {
+          return reply.status(404).send({ success: false, data: null, error: err.message });
+        }
+        throw err;
+      }
     },
   );
 

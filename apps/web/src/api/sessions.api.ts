@@ -6,7 +6,9 @@ import type {
   TimelineEntry,
   DashboardStats,
   LocalProjectGroup,
+  LocalSessionDetail,
   SyncSessionResult,
+  ProjectConversation,
 } from '@context-sync/shared';
 import { api } from './client';
 
@@ -45,8 +47,18 @@ export const sessionsApi = {
 
   stats: (projectId: string) => api.get<DashboardStats>(`/projects/${projectId}/stats`),
 
-  listLocal: (projectId: string) =>
-    api.get<readonly LocalProjectGroup[]>(`/sessions/local?projectId=${projectId}`),
+  listLocal: (projectId: string, activeOnly = true) =>
+    api.get<readonly LocalProjectGroup[]>(
+      `/sessions/local?projectId=${projectId}&activeOnly=${activeOnly}`,
+    ),
+
+  getLocal: (sessionId: string) =>
+    api.get<LocalSessionDetail>(`/sessions/local/${sessionId}`),
+
+  getLocalProjectConversation: (projectPath: string, cursor?: string, limit = 100) =>
+    api.get<ProjectConversation>(
+      `/sessions/local/project-conversation?projectPath=${encodeURIComponent(projectPath)}${cursor ? `&cursor=${cursor}` : ''}&limit=${limit}`,
+    ),
 
   sync: (projectId: string, sessionIds: readonly string[]) =>
     api.post<SyncSessionResult>(`/projects/${projectId}/sessions/sync`, { sessionIds }),

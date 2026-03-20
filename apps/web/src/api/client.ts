@@ -32,7 +32,18 @@ async function request<T>(
     throw new Error('Unauthorized');
   }
 
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null);
+    const message = errorBody?.error ?? `Request failed (${response.status})`;
+    throw new Error(message);
+  }
+
   const data = (await response.json()) as ApiResponse<T>;
+
+  if (!data.success && data.error) {
+    throw new Error(data.error);
+  }
+
   return data;
 }
 

@@ -108,6 +108,95 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
   };
 }
 
+export interface TimestampedMessage {
+  readonly role: 'user' | 'assistant';
+  readonly content: string;
+  readonly timestamp: string;
+  readonly modelUsed?: string;
+  readonly tokensUsed?: number;
+}
+
+export interface TimestampedParseResult {
+  readonly title: string;
+  readonly branch?: string;
+  readonly messages: readonly TimestampedMessage[];
+  readonly filePaths: readonly string[];
+}
+
+export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedParseResult {
+  const lines = raw.trim().split('\n').filter(Boolean);
+  const messages: TimestampedMessage[] = [];
+  const filePaths = new Set<string>();
+  let model: string | undefined;
+  let branch: string | undefined;
+  let lastTimestamp: string = new Date(0).toISOString();
+
+  for (const line of lines) {
+    let record: ClaudeCodeRecord;
+    try {
+      record = JSON.parse(line) as ClaudeCodeRecord;
+    } catch {
+      continue;
+    }
+
+    if ('timestamp' in record && (record as Record<string, unknown>)['timestamp']) {
+      lastTimestamp = String((record as Record<string, unknown>)['timestamp']);
+    }
+
+    if (record.type === 'user' && typeof record.message?.content === 'string') {
+      messages.push({
+        role: 'user',
+        content: record.message.content,
+        timestamp: lastTimestamp,
+      });
+    }
+
+    if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
+      const textBlocks = (record.message.content as readonly ClaudeContentBlock[])
+        .filter((block) => block.type === 'text' && block.text);
+
+      if (textBlocks.length > 0) {
+        const content = textBlocks.map((block) => block.text!).join('\n\n');
+        messages.push({
+          role: 'assistant',
+          content,
+          timestamp: lastTimestamp,
+          modelUsed: record.message.model ?? model,
+          tokensUsed: record.message.usage
+            ? (record.message.usage.input_tokens ?? 0) + (record.message.usage.output_tokens ?? 0)
+            : undefined,
+        });
+
+        if (record.message.model) {
+          model = record.message.model;
+        }
+      }
+    }
+
+    if (record.snapshot?.trackedFileBackups) {
+      for (const path of Object.keys(record.snapshot.trackedFileBackups)) {
+        filePaths.add(path);
+      }
+    }
+
+    if ('gitBranch' in record && typeof (record as Record<string, unknown>)['gitBranch'] === 'string') {
+      branch = String((record as Record<string, unknown>)['gitBranch']);
+    }
+  }
+
+  const firstUserMsg = messages.find((m) => m.role === 'user');
+  const title = firstUserMsg
+    ? firstUserMsg.content.slice(0, 100).replace(/\n/g, ' ').trim()
+    : 'Untitled Session';
+
+  return {
+    title,
+    branch,
+    messages,
+    filePaths: [...filePaths],
+  };
+}
+
 export function previewClaudeCodeSession(raw: string, maxLines = 200): {
   readonly firstMessage: string;
   readonly messageCount: number;

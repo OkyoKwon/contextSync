@@ -2,12 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { sessionsApi } from '../api/sessions.api';
 import { useAuthStore } from '../stores/auth.store';
 
-export function useLocalSessions() {
+export function useLocalSessions(activeOnly = true) {
   const projectId = useAuthStore((s) => s.currentProjectId);
 
   return useQuery({
-    queryKey: ['local-sessions', projectId],
-    queryFn: () => sessionsApi.listLocal(projectId!),
+    queryKey: ['local-sessions', projectId, activeOnly],
+    queryFn: () => sessionsApi.listLocal(projectId!, activeOnly),
     enabled: !!projectId,
   });
 }

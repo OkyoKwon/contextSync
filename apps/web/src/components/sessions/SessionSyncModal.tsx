@@ -5,40 +5,26 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
 import { useLocalSessions, useSyncSessions } from '../../hooks/use-session-sync';
+import { useAuthStore } from '../../stores/auth.store';
+import { formatTimeAgo, shortPath } from '../../lib/format';
 
 interface SessionSyncModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
 }
 
-function formatTimeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60_000);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-function shortPath(projectPath: string): string {
-  const parts = projectPath.split('/');
-  return parts.slice(-2).join('/');
-}
-
 export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
   const [showAll, setShowAll] = useState(false);
-  const { data, isLoading, error: fetchError } = useLocalSessions();
+  const activeOnly = !showAll;
+  const projectId = useAuthStore((s) => s.currentProjectId);
+  const { data, isLoading, error: fetchError } = useLocalSessions(activeOnly);
   const syncMutation = useSyncSessions();
 
   const groups: readonly LocalProjectGroup[] = data?.data ?? [];
 
-  // Filter to active groups only, unless "show all" is toggled
-  const visibleGroups = useMemo(
-    () => (showAll ? groups : groups.filter((g) => g.isActive)),
-    [groups, showAll],
-  );
+  // Server already filters by activeOnly — show all returned groups
+  const visibleGroups = groups;
 
   const allUnsyncedSessions = useMemo(() => {
     const sessions: LocalSessionInfo[] = [];
@@ -49,11 +35,6 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
     }
     return sessions;
   }, [visibleGroups]);
-
-  const inactiveCount = useMemo(
-    () => groups.filter((g) => !g.isActive).length,
-    [groups],
-  );
 
   const toggleSession = (sessionId: string) => {
     setSelectedIds((prev) => {
@@ -97,16 +78,34 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
         </div>
       )}
 
+      {!projectId && (
+        <p className="text-sm text-red-600">
+          No project selected. Please select a project first.
+        </p>
+      )}
+
       {fetchError && (
         <p className="text-sm text-red-600">
           {fetchError instanceof Error ? fetchError.message : 'Failed to load local sessions'}
         </p>
       )}
 
-      {!isLoading && groups.length === 0 && !fetchError && (
-        <p className="py-8 text-center text-sm text-gray-500">
-          No Claude Code sessions found in ~/.claude/projects/
-        </p>
+      {!isLoading && groups.length === 0 && !fetchError && projectId && (
+        <div className="py-8 text-center">
+          <p className="text-sm text-gray-500">
+            {activeOnly
+              ? 'No active Claude Code sessions found.'
+              : 'No Claude Code sessions found in ~/.claude/projects/'}
+          </p>
+          {activeOnly && (
+            <button
+              onClick={() => setShowAll(true)}
+              className="mt-2 text-xs text-blue-600 hover:underline"
+            >
+              Show all sessions
+            </button>
+          )}
+        </div>
       )}
 
       {!isLoading && groups.length > 0 && (
@@ -123,14 +122,12 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
                 Select all ({allUnsyncedSessions.length})
               </label>
             )}
-            {inactiveCount > 0 && (
-              <button
-                onClick={() => setShowAll((v) => !v)}
-                className="text-xs text-blue-600 hover:underline"
-              >
-                {showAll ? 'Show active only' : `Show all (+${inactiveCount} inactive)`}
-              </button>
-            )}
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              className="text-xs text-blue-600 hover:underline"
+            >
+              {showAll ? 'Show active only' : 'Show all sessions'}
+            </button>
           </div>
 
           <div className="max-h-96 space-y-4 overflow-y-auto">

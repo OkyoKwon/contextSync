@@ -23,7 +23,7 @@ export type {
   TimelineEntry,
   DashboardStats,
 } from './types/session.js';
-export type { LocalSessionInfo, LocalProjectGroup, SyncSessionResult, SyncSingleResult } from './types/sync.js';
+export type { LocalSessionInfo, LocalProjectGroup, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, UnifiedMessage, ProjectConversation } from './types/sync.js';
 export type {
   Conflict,
   ConflictType,

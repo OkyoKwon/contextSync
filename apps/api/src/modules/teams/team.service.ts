@@ -10,7 +10,23 @@ export async function createTeam(db: Db, input: CreateTeamInput, ownerId: string
   if (!input.slug.trim() || !/^[a-z0-9-]+$/.test(input.slug)) {
     throw new AppError('Slug must contain only lowercase letters, numbers, and hyphens');
   }
-  return teamRepo.createTeam(db, input, ownerId);
+  try {
+    return await teamRepo.createTeam(db, input, ownerId);
+  } catch (error: unknown) {
+    if (isUniqueViolation(error)) {
+      throw new AppError('A team with this slug already exists', 409);
+    }
+    throw error;
+  }
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    (error as { code: string }).code === '23505'
+  );
 }
 
 export async function getTeamsByUser(db: Db, userId: string): Promise<readonly Team[]> {
