@@ -1,10 +1,10 @@
 import type { UnifiedMessage } from '@context-sync/shared';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { useThemeStore } from '../../stores/theme.store';
+import { MessageBubble } from '../sessions/MessageThread';
+import { Spinner } from '../ui/Spinner';
 
 interface UnifiedMessageThreadProps {
   readonly messages: readonly UnifiedMessage[];
+  readonly totalMessages: number;
   readonly hasMore: boolean;
   readonly isLoading: boolean;
   readonly onLoadMore: () => void;
@@ -13,6 +13,7 @@ interface UnifiedMessageThreadProps {
 
 export function UnifiedMessageThread({
   messages,
+  totalMessages,
   hasMore,
   isLoading,
   onLoadMore,
@@ -38,19 +39,29 @@ export function UnifiedMessageThread({
                 onSelectSession={onSelectSession}
               />
             )}
-            <UnifiedMessageBubble message={message} />
+            <MessageBubble message={message} />
           </div>
         );
       })}
 
       {hasMore && (
-        <div className="flex justify-center py-4">
+        <div className="flex flex-col items-center gap-2 py-4">
+          <span className="text-xs text-text-muted">
+            {messages.length} of {totalMessages} messages
+          </span>
           <button
             onClick={onLoadMore}
             disabled={isLoading}
-            className="rounded-lg border border-border-input px-4 py-2 text-sm text-text-tertiary hover:bg-surface-hover disabled:opacity-50"
+            className="flex items-center gap-2 rounded-lg border border-border-input px-4 py-2 text-sm text-text-tertiary hover:bg-surface-hover disabled:opacity-50"
           >
-            {isLoading ? 'Loading...' : 'Load more'}
+            {isLoading ? (
+              <>
+                <Spinner size="sm" />
+                Loading...
+              </>
+            ) : (
+              'Load more'
+            )}
           </button>
         </div>
       )}
@@ -110,33 +121,6 @@ function DateDivider({ timestamp }: { readonly timestamp: string }) {
       <div className="h-px flex-1 bg-border-default" />
       <span className="text-xs text-text-muted">{formatted}</span>
       <div className="h-px flex-1 bg-border-default" />
-    </div>
-  );
-}
-
-function UnifiedMessageBubble({ message }: { readonly message: UnifiedMessage }) {
-  const isUser = message.role === 'user';
-  const theme = useThemeStore((s) => s.theme);
-
-  return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className={`max-w-[80%] rounded-xl px-4 py-3 ${
-          isUser
-            ? 'bg-blue-600 text-white'
-            : 'border border-border-default bg-surface text-text-primary'
-        }`}
-      >
-        <div className="mb-1 text-xs font-medium opacity-70">
-          {isUser ? 'You' : 'Claude'}
-          {message.modelUsed && !isUser && (
-            <span className="ml-1 opacity-50">({message.modelUsed})</span>
-          )}
-        </div>
-        <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''}`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-        </div>
-      </div>
     </div>
   );
 }

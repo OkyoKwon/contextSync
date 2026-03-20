@@ -22,7 +22,7 @@ export function MessageThread({ messages }: MessageThreadProps) {
   );
 }
 
-function MessageBubble({ message }: { readonly message: DisplayMessage }) {
+export function MessageBubble({ message }: { readonly message: DisplayMessage }) {
   const isUser = message.role === 'user';
   const theme = useThemeStore((s) => s.theme);
 

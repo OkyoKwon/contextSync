@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { Link } from 'react-router';
 import { useLocalSessions, useSyncSessions } from '../hooks/use-session-sync';
 import { LocalSessionList } from '../components/local-sessions/LocalSessionList';
 import { LocalSessionConversation } from '../components/local-sessions/LocalSessionConversation';
@@ -19,6 +20,7 @@ export function ProjectPage() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
   const [selectedSyncIds, setSelectedSyncIds] = useState<ReadonlySet<string>>(new Set());
   const [isSyncOpen, setIsSyncOpen] = useState(false);
+  const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
 
   const activeOnly = !showAll;
   const { data, isLoading } = useLocalSessions(activeOnly);
@@ -134,29 +136,44 @@ export function ProjectPage() {
                 {/* Synced sessions for this project */}
                 {syncedSessionsForProject.length > 0 && (
                   <div className="border-t border-border-default px-6 py-4">
-                    <h3 className="mb-3 text-sm font-medium text-text-tertiary">
+                    <button
+                      type="button"
+                      onClick={() => setIsSyncedExpanded((v) => !v)}
+                      className="flex w-full items-center gap-2 text-sm font-medium text-text-tertiary hover:text-text-secondary"
+                    >
+                      <svg
+                        className={`h-4 w-4 transition-transform ${isSyncedExpanded ? 'rotate-90' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
                       Synced Sessions ({syncedSessionsForProject.length})
-                    </h3>
-                    <div className="space-y-2">
-                      {syncedSessionsForProject.map((session) => (
-                        <button
-                          key={session.sessionId}
-                          type="button"
-                          onClick={() => handleSelectSession(session.sessionId)}
-                          className="flex w-full items-center justify-between rounded-lg border border-border-default bg-surface px-4 py-3 text-left transition-colors hover:border-border-input hover:bg-surface-hover"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-text-secondary">
-                              {session.firstMessage || session.sessionId.slice(0, 12)}
-                            </p>
-                            <p className="text-xs text-text-muted">
-                              {session.messageCount} messages · {timeAgo(session.lastModifiedAt)}
-                            </p>
-                          </div>
-                          <Badge variant="success">Synced</Badge>
-                        </button>
-                      ))}
-                    </div>
+                    </button>
+                    {isSyncedExpanded && (
+                      <div className="mt-3 max-h-48 space-y-2 overflow-y-auto">
+                        {syncedSessionsForProject.map((session) => (
+                          <button
+                            key={session.sessionId}
+                            type="button"
+                            onClick={() => handleSelectSession(session.sessionId)}
+                            className="flex w-full items-center justify-between rounded-lg border border-border-default bg-surface px-4 py-3 text-left transition-colors hover:border-border-input hover:bg-surface-hover"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium text-text-secondary">
+                                {session.firstMessage || session.sessionId.slice(0, 12)}
+                              </p>
+                              <p className="text-xs text-text-muted">
+                                {session.messageCount} messages · {timeAgo(session.lastModifiedAt)}
+                              </p>
+                            </div>
+                            <Badge variant="success">Synced</Badge>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -181,23 +198,53 @@ export function ProjectPage() {
 
       {/* Sync result feedback */}
       {syncMutation.data?.data && (
-        <div className="border-t border-border-default bg-green-500/10 px-6 py-3 text-sm text-green-400">
-          Synced {syncMutation.data.data.syncedCount} session(s).
-          {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
-            <> Conflicts detected — check the Conflicts page.</>
-          )}
-          {syncMutation.data.data.results.some((r) => !r.success) && (
-            <span className="text-red-400">
-              {' '}
-              {syncMutation.data.data.results.filter((r) => !r.success).length} session(s) failed.
-            </span>
-          )}
+        <div className="flex items-center justify-between border-t border-border-default bg-green-500/10 px-6 py-3 text-sm text-green-400">
+          <span>
+            Synced {syncMutation.data.data.syncedCount} session(s).
+            {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
+              <>
+                {' '}Conflicts detected —{' '}
+                <Link to="/conflicts" className="underline hover:text-green-300">
+                  view conflicts
+                </Link>
+                .
+              </>
+            )}
+            {syncMutation.data.data.results.some((r) => !r.success) && (
+              <span className="text-red-400">
+                {' '}
+                {syncMutation.data.data.results.filter((r) => !r.success).length} session(s) failed.
+              </span>
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={() => syncMutation.reset()}
+            className="ml-4 text-green-400 hover:text-green-300"
+            aria-label="Dismiss"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       )}
 
       {syncMutation.error && (
-        <div className="border-t border-border-default bg-red-500/10 px-6 py-3 text-sm text-red-400">
-          {syncMutation.error instanceof Error ? syncMutation.error.message : 'Sync failed'}
+        <div className="flex items-center justify-between border-t border-border-default bg-red-500/10 px-6 py-3 text-sm text-red-400">
+          <span>
+            {syncMutation.error instanceof Error ? syncMutation.error.message : 'Sync failed'}
+          </span>
+          <button
+            type="button"
+            onClick={() => syncMutation.reset()}
+            className="ml-4 text-red-400 hover:text-red-300"
+            aria-label="Dismiss"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       )}
 

@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import type { LocalProjectGroup, LocalSessionInfo } from '@context-sync/shared';
 import { Badge } from '../ui/Badge';
-import { formatTimeAgo, shortPath } from '../../lib/format';
+import { shortPath } from '../../lib/format';
+import { timeAgo } from '../../lib/date';
 
 interface LocalSessionListProps {
   readonly groups: readonly LocalProjectGroup[];
@@ -58,9 +59,22 @@ export function LocalSessionList({
 
       <div className="flex-1 overflow-y-auto p-3">
         {filteredGroups.length === 0 && (
-          <p className="py-8 text-center text-sm text-text-tertiary">
-            {searchQuery ? 'No sessions match your search.' : 'No local sessions found.'}
-          </p>
+          <div className="py-8 text-center text-sm text-text-tertiary">
+            {searchQuery ? (
+              <p>
+                No sessions match your search.{' '}
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-blue-400 hover:underline"
+                >
+                  Clear search
+                </button>
+              </p>
+            ) : (
+              <p>No local sessions found. Start a Claude Code session to see it here.</p>
+            )}
+          </div>
         )}
 
         <div className="space-y-4">
@@ -164,18 +178,20 @@ function SessionRow({
   readonly onToggleSync: () => void;
 }) {
   return (
-    <div
-      className={`flex cursor-pointer items-start gap-2 rounded-lg border p-2.5 transition-colors ${
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`flex w-full items-start gap-2 rounded-lg border p-2.5 text-left transition-colors ${
         isSelected
           ? 'border-blue-500 bg-blue-500/10'
           : 'border-border-default hover:border-border-input hover:bg-surface-hover'
       }`}
-      onClick={onSelect}
     >
       <input
         type="checkbox"
         checked={session.isSynced || isSyncChecked}
         disabled={session.isSynced}
+        aria-label={session.isSynced ? 'Already synced' : 'Select for sync'}
         onChange={(e) => {
           e.stopPropagation();
           if (!session.isSynced) onToggleSync();
@@ -194,9 +210,9 @@ function SessionRow({
           )}
         </div>
         <p className="mt-0.5 text-xs text-text-muted">
-          {session.messageCount} messages · {formatTimeAgo(session.lastModifiedAt)}
+          {session.messageCount} messages · {timeAgo(session.lastModifiedAt)}
         </p>
       </div>
-    </div>
+    </button>
   );
 }

@@ -50,7 +50,7 @@ export function ProjectConversationPanel({
   if (messages.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-text-muted">No messages found in this project.</p>
+        <p className="text-sm text-text-muted">No messages found. Sessions in this project may not contain conversation data.</p>
       </div>
     );
   }
@@ -68,6 +68,7 @@ export function ProjectConversationPanel({
       <div className="flex-1 overflow-y-auto p-4">
         <UnifiedMessageThread
           messages={messages}
+          totalMessages={totalMessages}
           hasMore={hasMore}
           isLoading={isLoading}
           onLoadMore={loadMore}
