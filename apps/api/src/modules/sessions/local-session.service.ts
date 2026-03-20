@@ -2,9 +2,10 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Db } from '../../database/client.js';
-import type { LocalDirectory, LocalProjectGroup, LocalSessionInfo, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, ProjectConversation, UnifiedMessage } from '@context-sync/shared';
+import type { LocalDirectory, LocalProjectGroup, LocalSessionInfo, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, RecalculateTokenResult, ProjectConversation, UnifiedMessage } from '@context-sync/shared';
 import { parseClaudeCodeSession, parseClaudeCodeSessionWithTimestamps } from './parsers/claude-code-session.parser.js';
 import { importParsedSession } from './session-import.service.js';
+import { assertProjectAccess } from '../projects/project.service.js';
 
 const CLAUDE_PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 
@@ -362,4 +363,64 @@ export async function syncSessions(
   }
 
   return { syncedCount, results };
+}
+
+export async function recalculateTokenUsage(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<RecalculateTokenResult> {
+  await assertProjectAccess(db, projectId, userId);
+
+  // Find all synced sessions with their source JSONL paths
+  const syncedRows = await db
+    .selectFrom('synced_sessions')
+    .select(['session_id', 'external_session_id', 'source_path'])
+    .where('project_id', '=', projectId)
+    .execute();
+
+  if (syncedRows.length === 0) {
+    return { updatedSessions: 0, updatedMessages: 0, skipped: 0, errors: [] };
+  }
+
+  let updatedSessions = 0;
+  let updatedMessages = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const row of syncedRows) {
+    try {
+      const content = await readFile(row.source_path, 'utf-8');
+      const { parsed } = parseClaudeCodeSession(content);
+
+      // Re-parsed data may have more messages (tool-use turns) than old parse.
+      // Delete all messages and re-insert from scratch.
+      await db.deleteFrom('messages').where('session_id', '=', row.session_id).execute();
+
+      const values = parsed.messages.map((msg, index) => ({
+        session_id: row.session_id,
+        role: msg.role,
+        content: msg.content,
+        content_type: msg.contentType ?? 'prompt',
+        tokens_used: msg.tokensUsed ?? null,
+        model_used: msg.modelUsed ?? null,
+        sort_order: index,
+      }));
+
+      if (values.length > 0) {
+        await db.insertInto('messages').values(values).execute();
+      }
+
+      updatedSessions++;
+      updatedMessages += values.length;
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('ENOENT')) {
+        skipped++;
+      } else {
+        errors.push(`${row.external_session_id}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      }
+    }
+  }
+
+  return { updatedSessions, updatedMessages, skipped, errors };
 }

@@ -11,6 +11,7 @@ import type {
   LocalProjectGroup,
   LocalSessionDetail,
   SyncSessionResult,
+  RecalculateTokenResult,
   ProjectConversation,
 } from '@context-sync/shared';
 import { api } from './client';
@@ -71,6 +72,9 @@ export const sessionsApi = {
 
   sync: (projectId: string, sessionIds: readonly string[]) =>
     api.post<SyncSessionResult>(`/projects/${projectId}/sessions/sync`, { sessionIds }),
+
+  recalculateTokens: (projectId: string) =>
+    api.post<RecalculateTokenResult>(`/projects/${projectId}/sessions/recalculate-tokens`),
 
   exportMarkdown: async (projectId: string): Promise<Blob> => {
     const token = (await import('../stores/auth.store')).useAuthStore.getState().token;

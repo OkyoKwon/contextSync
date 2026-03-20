@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useAuthStore } from '../../stores/auth.store';
 import { useThemeStore } from '../../stores/theme.store';
 import { Avatar } from '../ui/Avatar';
 import { SearchBar } from '../search/SearchBar';
+import { CreateProjectModal } from '../projects/CreateProjectModal';
 
 function ThemeToggle() {
   const theme = useThemeStore((s) => s.theme);
@@ -29,27 +31,44 @@ function ThemeToggle() {
 export function Header() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-border-default bg-surface px-6">
-      <div className="flex items-center gap-4">
-        <SearchBar />
-      </div>
-      <div className="flex items-center gap-3">
-        {user && (
-          <div className="flex items-center gap-2">
-            <Avatar src={user.avatarUrl} name={user.name} size="sm" />
-            <span className="text-sm text-text-secondary">{user.name}</span>
-          </div>
-        )}
-        <ThemeToggle />
-        <button
-          onClick={logout}
-          className="rounded-lg px-3 py-1.5 text-sm text-text-tertiary hover:bg-interactive-hover"
-        >
-          Logout
-        </button>
-      </div>
-    </header>
+    <>
+      <header className="flex h-14 items-center justify-between border-b border-border-default bg-surface px-6">
+        <div className="flex items-center gap-4">
+          <SearchBar />
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-btn-primary-bg px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:bg-btn-primary-hover"
+            aria-label="New Project"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+            </svg>
+            New Project
+          </button>
+          {user && (
+            <div className="flex items-center gap-2">
+              <Avatar src={user.avatarUrl} name={user.name} size="sm" />
+              <span className="text-sm text-text-secondary">{user.name}</span>
+            </div>
+          )}
+          <ThemeToggle />
+          <button
+            onClick={logout}
+            className="rounded-lg px-3 py-1.5 text-sm text-text-tertiary hover:bg-interactive-hover"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
+      <CreateProjectModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
+    </>
   );
 }

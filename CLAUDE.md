@@ -144,9 +144,23 @@ export async function createProject(db: Db, userId: string, input: CreateProject
 - 프론트: 컴포넌트 `PascalCase.tsx`, 훅/유틸 `kebab-case.ts`
 - DB 컬럼: `snake_case`, 테이블: 복수형 소문자
 
-## Documentation
+## Documentation Sync
 
-상세 문서는 `docs/` 디렉토리 참조:
+소스 파일 수정 시 관련 문서도 함께 업데이트한다.
 
-- **[디자인시스템](docs/디자인시스템.md)** — 컬러 토큰, 타이포그래피, UI 컴포넌트 카탈로그, 테마 시스템
-- **[아키텍쳐](docs/아키텍쳐.md)** — 시스템 다이어그램, 모듈 패턴, DB 설계, 인증 흐름, PRD 분석
+| 소스 경로 | 문서 |
+|-----------|------|
+| `apps/web/src/components/ui/` | `docs/디자인시스템.md` |
+| `apps/web/src/index.css` | `docs/디자인시스템.md` |
+| `apps/web/src/stores/theme.store.ts`, `hooks/use-theme.ts` | `docs/디자인시스템.md` |
+| `apps/web/src/components/layout/` | `docs/디자인시스템.md` |
+| `apps/api/src/modules/` (새 모듈) | `docs/아키텍쳐.md`, `CLAUDE.md` |
+| `apps/api/src/database/migrations/` (새 마이그레이션) | `docs/아키텍쳐.md`, `CLAUDE.md` |
+| `apps/api/src/database/types.ts` | `docs/아키텍쳐.md` |
+| `apps/api/src/config/env.ts` | `docs/아키텍쳐.md`, `CLAUDE.md` |
+| `apps/api/src/app.ts` | `docs/아키텍쳐.md` |
+| `apps/web/src/routes.tsx` | `docs/아키텍쳐.md` |
+| `packages/shared/src/` | `docs/아키텍쳐.md` |
+
+상세 문서: [디자인시스템](docs/디자인시스템.md) · [아키텍쳐](docs/아키텍쳐.md)
+대량 변경 시 `doc-updater` 에이전트로 일괄 동기화.

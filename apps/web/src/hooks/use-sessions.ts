@@ -57,6 +57,19 @@ export function useTokenUsage(period: TokenUsagePeriod = '30d') {
   });
 }
 
+export function useRecalculateTokens() {
+  const queryClient = useQueryClient();
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useMutation({
+    mutationFn: () => sessionsApi.recalculateTokens(projectId!),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['token-usage'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+}
+
 export function useDashboardStats() {
   const projectId = useAuthStore((s) => s.currentProjectId);
 

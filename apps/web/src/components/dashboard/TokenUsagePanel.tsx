@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { TokenUsagePeriod } from '@context-sync/shared';
-import { useTokenUsage } from '../../hooks/use-sessions';
+import { useTokenUsage, useRecalculateTokens } from '../../hooks/use-sessions';
 import { Spinner } from '../ui/Spinner';
 import { TokenUsageSummary } from './TokenUsageSummary';
 import { ModelBreakdownTable } from './ModelBreakdownTable';
@@ -15,13 +15,29 @@ const PERIODS: readonly { readonly value: TokenUsagePeriod; readonly label: stri
 export function TokenUsagePanel() {
   const [period, setPeriod] = useState<TokenUsagePeriod>('30d');
   const { data, isLoading } = useTokenUsage(period);
+  const recalculate = useRecalculateTokens();
 
   const stats = data?.data;
 
   return (
     <div>
       <div className="mb-3 flex items-center justify-between gap-4">
-        <h2 className="text-sm font-semibold text-text-secondary">Token Usage</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-text-secondary">Token Usage</h2>
+          <button
+            onClick={() => recalculate.mutate()}
+            disabled={recalculate.isPending}
+            title="Recalculate token usage from source files"
+            className="rounded-md px-2 py-0.5 text-xs text-text-tertiary hover:text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
+          >
+            {recalculate.isPending ? 'Recalculating...' : 'Recalculate'}
+          </button>
+          {recalculate.isSuccess && recalculate.data?.data && (
+            <span className="text-xs text-emerald-400">
+              {recalculate.data.data.updatedSessions} sessions updated
+            </span>
+          )}
+        </div>
         <div className="flex gap-1">
           {PERIODS.map((p) => (
             <button

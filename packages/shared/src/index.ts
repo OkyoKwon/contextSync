@@ -16,7 +16,7 @@ export type {
   TimelineEntry,
   DashboardStats,
 } from './types/session.js';
-export type { LocalDirectory, LocalSessionInfo, LocalProjectGroup, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, UnifiedMessage, ProjectConversation } from './types/sync.js';
+export type { LocalDirectory, LocalSessionInfo, LocalProjectGroup, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, RecalculateTokenResult, UnifiedMessage, ProjectConversation } from './types/sync.js';
 export type {
   TokenUsagePeriod,
   TokenUsageStats,

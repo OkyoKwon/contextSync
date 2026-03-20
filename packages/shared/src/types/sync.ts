@@ -65,6 +65,13 @@ export interface UnifiedMessage {
   readonly tokensUsed?: number;
 }
 
+export interface RecalculateTokenResult {
+  readonly updatedSessions: number;
+  readonly updatedMessages: number;
+  readonly skipped: number;
+  readonly errors: readonly string[];
+}
+
 export interface ProjectConversation {
   readonly projectPath: string;
   readonly messages: readonly UnifiedMessage[];

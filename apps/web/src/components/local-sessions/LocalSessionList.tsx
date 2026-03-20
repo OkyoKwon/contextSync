@@ -8,10 +8,8 @@ interface LocalSessionListProps {
   readonly groups: readonly LocalProjectGroup[];
   readonly selectedSessionId: string | null;
   readonly selectedProjectPath: string | null;
-  readonly selectedSyncIds: ReadonlySet<string>;
   readonly onSelectSession: (sessionId: string) => void;
   readonly onSelectProject: (projectPath: string) => void;
-  readonly onToggleSync: (sessionId: string) => void;
   readonly onSyncProject: (group: LocalProjectGroup) => void;
   readonly isSyncing: boolean;
 }
@@ -20,10 +18,8 @@ export function LocalSessionList({
   groups,
   selectedSessionId,
   selectedProjectPath,
-  selectedSyncIds,
   onSelectSession,
   onSelectProject,
-  onToggleSync,
 }: LocalSessionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -87,10 +83,8 @@ export function LocalSessionList({
               group={group}
               selectedSessionId={selectedSessionId}
               isProjectSelected={group.projectPath === selectedProjectPath}
-              selectedSyncIds={selectedSyncIds}
               onSelectSession={onSelectSession}
               onSelectProject={onSelectProject}
-              onToggleSync={onToggleSync}
             />
           ))}
         </div>
@@ -111,18 +105,14 @@ function ProjectGroup({
   group,
   selectedSessionId,
   isProjectSelected,
-  selectedSyncIds,
   onSelectSession,
   onSelectProject,
-  onToggleSync,
 }: {
   readonly group: LocalProjectGroup;
   readonly selectedSessionId: string | null;
   readonly isProjectSelected: boolean;
-  readonly selectedSyncIds: ReadonlySet<string>;
   readonly onSelectSession: (sessionId: string) => void;
   readonly onSelectProject: (projectPath: string) => void;
-  readonly onToggleSync: (sessionId: string) => void;
 }) {
   return (
     <div>
@@ -157,9 +147,7 @@ function ProjectGroup({
             key={session.sessionId}
             session={session}
             isSelected={session.sessionId === selectedSessionId}
-            isSyncChecked={selectedSyncIds.has(session.sessionId)}
             onSelect={() => onSelectSession(session.sessionId)}
-            onToggleSync={() => onToggleSync(session.sessionId)}
           />
         ))}
       </div>
@@ -170,15 +158,11 @@ function ProjectGroup({
 function SessionRow({
   session,
   isSelected,
-  isSyncChecked,
   onSelect,
-  onToggleSync,
 }: {
   readonly session: LocalSessionInfo;
   readonly isSelected: boolean;
-  readonly isSyncChecked: boolean;
   readonly onSelect: () => void;
-  readonly onToggleSync: () => void;
 }) {
   return (
     <button
@@ -190,18 +174,6 @@ function SessionRow({
           : 'border-border-default hover:border-border-input hover:bg-surface-hover'
       }`}
     >
-      <input
-        type="checkbox"
-        checked={session.isSynced || isSyncChecked}
-        disabled={session.isSynced}
-        aria-label={session.isSynced ? 'Already synced' : 'Select for sync'}
-        onChange={(e) => {
-          e.stopPropagation();
-          if (!session.isSynced) onToggleSync();
-        }}
-        onClick={(e) => e.stopPropagation()}
-        className="mt-0.5 rounded border-border-input bg-page"
-      />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="truncate text-sm font-medium text-text-primary">

@@ -23,7 +23,6 @@ type Selection =
 
 export function ProjectPage() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
-  const [selectedSyncIds, setSelectedSyncIds] = useState<ReadonlySet<string>>(new Set());
   const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
   const [isChangeDirectoryOpen, setIsChangeDirectoryOpen] = useState(false);
 
@@ -74,24 +73,6 @@ export function ProjectPage() {
     if (!group) return [];
     return group.sessions.filter((s) => s.isSynced);
   }, [groups, selection]);
-
-  const toggleSync = (sessionId: string) => {
-    setSelectedSyncIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(sessionId)) {
-        next.delete(sessionId);
-      } else {
-        next.add(sessionId);
-      }
-      return next;
-    });
-  };
-
-  const handleBulkSync = async () => {
-    if (selectedSyncIds.size === 0) return;
-    await syncMutation.mutateAsync([...selectedSyncIds]);
-    setSelectedSyncIds(new Set());
-  };
 
   const handleSingleSync = async (sessionId: string) => {
     await syncMutation.mutateAsync([sessionId]);
@@ -161,15 +142,6 @@ export function ProjectPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
-          {selectedSyncIds.size > 0 && (
-            <Button onClick={handleBulkSync} disabled={syncMutation.isPending}>
-              {syncMutation.isPending ? (
-                <Spinner size="sm" />
-              ) : (
-                `Sync selected (${selectedSyncIds.size})`
-              )}
-            </Button>
-          )}
           <button
             onClick={handleExport}
             disabled={exporting || !projectId}
@@ -222,10 +194,8 @@ export function ProjectPage() {
               groups={groups}
               selectedSessionId={selectedSessionId}
               selectedProjectPath={selectedProjectPath}
-              selectedSyncIds={selectedSyncIds}
               onSelectSession={handleSelectSession}
               onSelectProject={handleSelectProject}
-              onToggleSync={toggleSync}
               onSyncProject={handleSyncProject}
               isSyncing={syncMutation.isPending}
             />

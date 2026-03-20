@@ -3,7 +3,7 @@ import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
 import { exportProjectAsMarkdown } from './session-export.service.js';
-import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions } from './local-session.service.js';
+import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions, recalculateTokenUsage } from './local-session.service.js';
 import { sessionFilterSchema, updateSessionSchema, tokenUsageQuerySchema } from './session.schema.js';
 import * as tokenUsageService from './token-usage.service.js';
 
@@ -190,6 +190,18 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
         }
         throw err;
       }
+    },
+  );
+
+  app.post<{ Params: { projectId: string } }>(
+    '/projects/:projectId/sessions/recalculate-tokens',
+    async (request, reply) => {
+      const result = await recalculateTokenUsage(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+      return reply.send(ok(result));
     },
   );
 
