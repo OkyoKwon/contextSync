@@ -1,7 +1,11 @@
-import type { PrdAnalysisWithRequirements } from '@context-sync/shared';
+import type { PrdAnalysisWithRequirements, PrdRequirement } from '@context-sync/shared';
+import { PrdRateDelta } from './PrdRateDelta';
+import { PrdRateChangeDetails } from './PrdRateChangeDetails';
 
 interface PrdAnalysisResultsProps {
   readonly analysis: PrdAnalysisWithRequirements;
+  readonly previousRate?: number | null;
+  readonly previousRequirements?: readonly PrdRequirement[] | null;
 }
 
 function getRateColor(rate: number): string {
@@ -16,7 +20,7 @@ function getRateBarColor(rate: number): string {
   return 'bg-red-500';
 }
 
-export function PrdAnalysisResults({ analysis }: PrdAnalysisResultsProps) {
+export function PrdAnalysisResults({ analysis, previousRate, previousRequirements }: PrdAnalysisResultsProps) {
   const rate = analysis.overallRate ?? 0;
 
   return (
@@ -29,10 +33,13 @@ export function PrdAnalysisResults({ analysis }: PrdAnalysisResultsProps) {
           </p>
         </div>
         <div className="text-right">
-          <p className={`text-3xl font-bold ${getRateColor(rate)}`}>
-            {rate.toFixed(1)}%
-          </p>
-          <p className="text-xs text-text-tertiary">Achievement Rate</p>
+          <p className="mb-0.5 text-xs font-medium uppercase tracking-wider text-text-tertiary">Achievement Rate</p>
+          <div className="flex items-baseline gap-2">
+            <p className={`text-3xl font-bold ${getRateColor(rate)}`}>
+              {rate.toFixed(1)}%
+            </p>
+            <PrdRateDelta currentRate={rate} previousRate={previousRate ?? null} />
+          </div>
         </div>
       </div>
 
@@ -42,6 +49,13 @@ export function PrdAnalysisResults({ analysis }: PrdAnalysisResultsProps) {
           style={{ width: `${Math.min(100, rate)}%` }}
         />
       </div>
+
+      {previousRequirements && previousRequirements.length > 0 && (
+        <PrdRateChangeDetails
+          currentRequirements={analysis.requirements}
+          previousRequirements={previousRequirements}
+        />
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <StatCard

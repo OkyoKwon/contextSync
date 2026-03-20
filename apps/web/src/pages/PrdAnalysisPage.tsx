@@ -31,6 +31,13 @@ export function PrdAnalysisPage() {
     ? completedEntries[1]?.overallRate ?? null
     : null;
 
+  const previousAnalysisId = completedEntries.length >= 2
+    ? completedEntries[1]?.id ?? null
+    : null;
+
+  const { data: previousDetailData } = usePrdAnalysisDetail(previousAnalysisId);
+  const previousRequirements = previousDetailData?.data?.requirements ?? null;
+
   const handleStartAnalysis = (documentId: string) => {
     startAnalysisMutation.mutate(documentId, {
       onSuccess: () => {
@@ -80,6 +87,7 @@ export function PrdAnalysisPage() {
               <PrdDashboard
                 analysis={displayAnalysis}
                 previousRate={previousRate}
+                previousRequirements={previousRequirements}
                 historyEntries={historyEntries}
               />
             </Card>
