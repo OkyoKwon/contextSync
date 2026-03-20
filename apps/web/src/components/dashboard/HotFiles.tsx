@@ -1,4 +1,5 @@
 import { Card } from '../ui/Card';
+import { Tooltip } from '../ui/Tooltip';
 import { FileIcon } from '../ui/icons';
 
 interface HotFilesProps {
@@ -11,6 +12,11 @@ export function HotFiles({ hotFilePaths }: HotFilesProps) {
       <div className="flex items-center gap-2 mb-3">
         <FileIcon size={16} className="text-text-tertiary" />
         <h3 className="text-sm font-semibold text-text-primary">Hot Files</h3>
+        <Tooltip
+          content="Files most frequently edited across sessions. Higher counts may indicate shared work areas or potential conflict zones."
+          position="bottom"
+          width="w-64"
+        />
       </div>
 
       {hotFilePaths.length === 0 ? (

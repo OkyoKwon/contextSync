@@ -1,6 +1,6 @@
 import type { SessionSource } from '@context-sync/shared';
 import { Button } from '../ui/Button';
-import { InfoIcon } from '../ui/icons';
+import { Tooltip } from '../ui/Tooltip';
 
 interface TimelineFiltersProps {
   readonly activeSource: SessionSource | null;
@@ -28,22 +28,25 @@ export function TimelineFilters({ activeSource, onFilterChange }: TimelineFilter
           {label}
         </Button>
       ))}
-      <div className="group relative">
-        <InfoIcon size={14} className="cursor-help text-text-tertiary transition-colors group-hover:text-text-secondary" />
-        <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-border-primary bg-bg-primary p-3 opacity-0 shadow-xl backdrop-blur-sm transition-opacity group-hover:pointer-events-auto group-hover:opacity-100">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            Filter by source
-          </p>
-          <ul className="space-y-1.5">
-            {filters.map(({ label, description }) => (
-              <li key={label} className="text-xs">
-                <span className="font-medium text-text-primary">{label}</span>
-                <span className="text-text-tertiary"> — {description}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <Tooltip
+        position="bottom"
+        align="right"
+        content={
+          <>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+              Filter by source
+            </p>
+            <ul className="space-y-1.5">
+              {filters.map(({ label, description }) => (
+                <li key={label} className="text-xs">
+                  <span className="font-medium text-text-primary">{label}</span>
+                  <span className="text-text-tertiary"> — {description}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        }
+      />
     </div>
   );
 }

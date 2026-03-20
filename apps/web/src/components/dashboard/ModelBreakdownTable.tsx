@@ -1,5 +1,6 @@
 import type { ModelUsageBreakdown } from '@context-sync/shared';
 import { Card } from '../ui/Card';
+import { Tooltip } from '../ui/Tooltip';
 import { formatTokenCount, formatUSD } from '../../lib/format';
 
 interface ModelBreakdownTableProps {
@@ -23,7 +24,16 @@ export function ModelBreakdownTable({ breakdown }: ModelBreakdownTableProps) {
             <th className="text-left font-medium px-4 py-2">Model</th>
             <th className="text-right font-medium px-4 py-2">Tokens</th>
             <th className="text-right font-medium px-4 py-2">Messages</th>
-            <th className="text-right font-medium px-4 py-2">Cost</th>
+            <th className="text-right font-medium px-4 py-2">
+              <span className="inline-flex items-center justify-end gap-1">
+                Cost
+                <Tooltip
+                  content="Estimated cost based on average blended input/output rates per model."
+                  position="bottom"
+                  align="right"
+                />
+              </span>
+            </th>
             <th className="text-right font-medium px-4 py-2">Share</th>
           </tr>
         </thead>
