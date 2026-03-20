@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { homedir } from 'node:os';
 import type { Db } from '../../database/client.js';
 import type { LocalDirectory, LocalProjectGroup, LocalSessionInfo, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, ProjectConversation, UnifiedMessage } from '@context-sync/shared';
-import { parseClaudeCodeSession, parseClaudeCodeSessionWithTimestamps, previewClaudeCodeSession } from './parsers/claude-code-session.parser.js';
+import { parseClaudeCodeSession, parseClaudeCodeSessionWithTimestamps } from './parsers/claude-code-session.parser.js';
 import { importParsedSession } from './session-import.service.js';
 
 const CLAUDE_PROJECTS_DIR = join(homedir(), '.claude', 'projects');
@@ -136,16 +136,16 @@ export async function listLocalSessions(
 
     try {
       const content = await readFile(file.fullPath, 'utf-8');
-      const preview = previewClaudeCodeSession(content);
+      const result = parseClaudeCodeSessionWithTimestamps(content);
 
-      if (preview.messageCount === 0) continue;
+      if (result.messages.length === 0) continue;
 
       allSessions.push({
         sessionId,
         projectPath,
-        firstMessage: preview.firstMessage,
-        messageCount: preview.messageCount,
-        startedAt: preview.startedAt ?? new Date().toISOString(),
+        firstMessage: result.title,
+        messageCount: result.messages.length,
+        startedAt: result.messages[0]?.timestamp ?? new Date().toISOString(),
         lastModifiedAt: new Date(file.lastModifiedMs).toISOString(),
         isSynced: syncedIds.has(sessionId),
         isActive,
