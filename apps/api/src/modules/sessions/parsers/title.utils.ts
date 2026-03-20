@@ -40,6 +40,7 @@ export function generateTitle(rawContent: string): string {
   let content = rawContent;
   content = content.replace(XML_TAG_PATTERN, '');
   content = content.replace(SELF_CLOSING_TAG_PATTERN, '');
+  content = content.trim();
 
   // 2. Try to extract plan name from markdown header (needs newlines intact)
   const planMatch = IMPLEMENT_PLAN_PREFIX.test(content) ? PLAN_HEADER_PATTERN.exec(content) : null;
@@ -47,11 +48,11 @@ export function generateTitle(rawContent: string): string {
   if (planMatch) {
     content = planMatch[1]!.trim();
   } else {
-    // 3. Strip markdown header prefixes (e.g. "# Title", "## Title")
-    content = content.replace(/^#{1,6}\s+/gm, '');
-
-    // 4. Strip "Implement the following plan:" prefix
+    // 3. Strip "Implement the following plan:" prefix
     content = content.replace(IMPLEMENT_PLAN_PREFIX, '');
+
+    // 4. Strip markdown header prefixes (e.g. "# Title", "## Title")
+    content = content.replace(/^#{1,6}\s+/gm, '');
 
     // 5. Strip boilerplate prefixes
     for (const prefix of BOILERPLATE_PREFIXES) {

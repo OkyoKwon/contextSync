@@ -107,6 +107,17 @@ describe('generateTitle', () => {
     const input = 'Short message';
     expect(generateTitle(input)).toBe('Short message');
   });
+
+  it('should strip # after XML removal leaves leading whitespace', () => {
+    const input = '<system-reminder>Info</system-reminder>\n# Fix login bug';
+    expect(generateTitle(input)).toBe('Fix login bug');
+  });
+
+  it('should handle plan detection after XML removal', () => {
+    const input =
+      '<system-reminder>Info</system-reminder>\nImplement the following plan:\n\n# Plan: My Feature\n\n## Context';
+    expect(generateTitle(input)).toBe('My Feature');
+  });
 });
 
 describe('findFirstMeaningfulTitle', () => {
