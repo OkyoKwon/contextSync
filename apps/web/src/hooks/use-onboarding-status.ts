@@ -11,8 +11,8 @@ export function useOnboardingStatus(): OnboardingStatus {
   const setCurrentProject = useAuthStore((s) => s.setCurrentProject);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['projects', 'personal'],
-    queryFn: () => projectsApi.listPersonal(),
+    queryKey: ['projects'],
+    queryFn: () => projectsApi.list(),
     enabled: !!token && !currentProjectId,
   });
 

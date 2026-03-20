@@ -26,7 +26,7 @@ const FEATURES = [
     ),
   },
   {
-    title: 'Team Dashboard',
+    title: 'Project Dashboard',
     description:
       '팀 전체의 AI 작업 현황을 실시간 타임라인과 통계로 한눈에 파악',
     icon: (

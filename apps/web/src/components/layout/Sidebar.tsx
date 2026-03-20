@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router';
 import { ProjectSelector } from './ProjectSelector';
+import { CreateProjectModal } from '../projects/CreateProjectModal';
 import { useConflicts } from '../../hooks/use-conflicts';
 
 interface NavItem {
@@ -10,6 +12,7 @@ interface NavItem {
 }
 
 export function Sidebar() {
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const { data: conflictsData } = useConflicts({ status: 'detected' });
   const activeConflictCount = conflictsData?.data?.length ?? 0;
 
@@ -17,7 +20,7 @@ export function Sidebar() {
     { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
     { to: '/project', label: 'Conversations', icon: ConversationsIcon },
     { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
-    { to: '/settings/team', label: 'Settings', icon: SettingsIcon },
+    { to: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
 
   return (
@@ -27,9 +30,20 @@ export function Sidebar() {
         <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>
       </div>
       <div className="border-b border-border-default p-3">
-        <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Projects
-        </p>
+        <div className="mb-2 flex items-center justify-between px-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+            Projects
+          </p>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex h-5 w-5 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+            title="Create project"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m6-6H6" />
+            </svg>
+          </button>
+        </div>
         <ProjectSelector />
       </div>
       <nav className="flex-1 space-y-1 p-3">
@@ -55,6 +69,10 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      <CreateProjectModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+      />
     </aside>
   );
 }

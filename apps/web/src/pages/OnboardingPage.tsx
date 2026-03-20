@@ -56,7 +56,7 @@ function CreateFirstProject() {
 
   const createMutation = useMutation({
     mutationFn: () =>
-      projectsApi.createPersonal({
+      projectsApi.create({
         name,
         localDirectory: localDirectory ?? undefined,
       }),
