@@ -31,12 +31,6 @@ export async function buildApp(env: Env) {
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
 
   await app.register(authRoutes, { prefix: '/api/auth' });
-
-  if (env.DEV_AUTH_MODE === 'true') {
-    const { devAuthRoutes } = await import('./modules/auth/dev-auth.routes.js');
-    await app.register(devAuthRoutes, { prefix: '/api/auth' });
-    app.log.warn('DEV_AUTH_MODE enabled — do not use in production');
-  }
   await app.register(projectRoutes, { prefix: '/api' });
   await app.register(sessionRoutes, { prefix: '/api' });
   await app.register(conflictRoutes, { prefix: '/api' });

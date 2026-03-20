@@ -21,9 +21,8 @@ pnpm install
 # 3. Start PostgreSQL
 docker compose up -d
 
-# 4. Configure environment
+# 4. Configure environment (set GitHub OAuth credentials)
 cp apps/api/.env.example apps/api/.env
-# Default .env uses DEV_AUTH_MODE=true — no GitHub OAuth needed
 
 # 5. Run database migrations
 pnpm --filter @context-sync/api migrate
@@ -37,13 +36,7 @@ pnpm dev
 # Web → http://localhost:5173
 ```
 
-Click **"Dev Login"** on the landing page to sign in without GitHub OAuth.
-
-## Dev Auth Mode
-
-By default, `DEV_AUTH_MODE=true` in `.env.example` lets you run the app without setting up GitHub OAuth credentials. This creates a local dev user automatically.
-
-To use real GitHub OAuth instead, set `DEV_AUTH_MODE=false` and provide `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` in your `.env`.
+Sign in with GitHub OAuth at `http://localhost:5173`.
 
 ## Project Structure
 

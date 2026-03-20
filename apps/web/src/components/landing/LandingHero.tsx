@@ -1,6 +1,5 @@
 import { CONTEXT_SYNC_ASCII, CONTEXT_SYNC_ASCII_COMPACT } from '../auth/login-ascii';
 import { useT } from '../../i18n/use-translation';
-import { DevLoginButton } from '../auth/DevLoginButton';
 
 function GitHubIcon() {
   return (
@@ -67,7 +66,6 @@ export function LandingHero() {
             <GitHubIcon />
             {t('hero.cta.github')}
           </button>
-          {import.meta.env.VITE_DEV_AUTH === 'true' && <DevLoginButton />}
           <button
             type="button"
             onClick={() => scrollToSection('features')}

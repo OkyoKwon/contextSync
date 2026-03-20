@@ -8,7 +8,4 @@ export const authApi = {
     api.get<{ token: string; user: User }>(`/auth/github/callback?code=${code}`),
 
   refresh: () => api.post<{ token: string }>('/auth/refresh'),
-
-  devLogin: (input?: { name?: string; email?: string }) =>
-    api.post<{ token: string; user: User }>('/auth/dev-login', input ?? {}),
 };

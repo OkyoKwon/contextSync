@@ -16,7 +16,7 @@ async function main() {
 
   console.log('Seeding database...');
 
-  // Dev user 1 (matches dev-auth github_id: 0)
+  // Seed user 1
   const user1 = await db
     .insertInto('users')
     .values({

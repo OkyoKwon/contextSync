@@ -7,11 +7,10 @@ AI 세션 컨텍스트 관리 플랫폼 — Claude Code 세션을 팀 단위로 
 ```bash
 pnpm install
 docker compose up -d                        # PostgreSQL 16
-cp apps/api/.env.example apps/api/.env      # DEV_AUTH_MODE=true 기본값
+cp apps/api/.env.example apps/api/.env      # GitHub OAuth 설정 필요
 pnpm --filter @context-sync/api migrate     # DB 마이그레이션
 pnpm --filter @context-sync/api seed        # 선택: 샘플 데이터
 pnpm dev                                    # API :3001, Web :5173
-# → http://localhost:5173 → "Dev Login" 클릭
 ```
 
 ## Commands
@@ -135,11 +134,9 @@ export async function createProject(
 
 `apps/api/.env`에서 관리. `config/env.ts`가 Zod로 시작 시 검증.
 
-필수: `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`
+필수: `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`
 
-조건부: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (`DEV_AUTH_MODE=false`일 때 필수)
-
-선택: `DEV_AUTH_MODE` (로컬 개발용 OAuth 우회), `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`
+선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`
 
 ### Frontend State
 

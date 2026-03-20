@@ -12,7 +12,7 @@ AI session context management platform — archive, sync, search, and detect con
 | Frontend | React 19, Vite 6, Tailwind CSS 4, Zustand, React Query |
 | Backend  | Fastify 5, Kysely, Zod                                 |
 | Database | PostgreSQL 16                                          |
-| Auth     | GitHub OAuth + JWT (with dev mode)                     |
+| Auth     | GitHub OAuth + JWT                                     |
 | Monorepo | pnpm workspaces + Turborepo                            |
 
 ## Getting Started
@@ -32,7 +32,7 @@ pnpm install
 # 2. Start PostgreSQL
 docker compose up -d
 
-# 3. Configure environment (DEV_AUTH_MODE=true by default — no GitHub OAuth needed)
+# 3. Configure environment (set GitHub OAuth credentials)
 cp apps/api/.env.example apps/api/.env
 
 # 4. Run database migrations
@@ -45,28 +45,23 @@ pnpm --filter @context-sync/api seed
 pnpm dev
 ```
 
-Open `http://localhost:5173` and click **"Dev Login"** to sign in.
+Open `http://localhost:5173` and sign in with GitHub.
 
 API runs at `http://localhost:3001`.
 
-### Dev Auth Mode
-
-By default, the app runs with `DEV_AUTH_MODE=true`, which lets you sign in without GitHub OAuth credentials. To use real GitHub OAuth, set `DEV_AUTH_MODE=false` and provide your `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`.
-
 ### Environment Variables
 
-| Variable               | Required                 | Description                                                   |
-| ---------------------- | ------------------------ | ------------------------------------------------------------- |
-| `DATABASE_URL`         | Yes                      | PostgreSQL connection string                                  |
-| `DEV_AUTH_MODE`        | No                       | `true` to skip GitHub OAuth (default: `true` in .env.example) |
-| `GITHUB_CLIENT_ID`     | When DEV_AUTH_MODE=false | GitHub OAuth app client ID                                    |
-| `GITHUB_CLIENT_SECRET` | When DEV_AUTH_MODE=false | GitHub OAuth app client secret                                |
-| `JWT_SECRET`           | Yes                      | JWT signing key (min 32 chars)                                |
-| `JWT_EXPIRES_IN`       | No                       | Token expiry (default: `7d`)                                  |
-| `FRONTEND_URL`         | No                       | Frontend URL (default: `http://localhost:5173`)               |
-| `ANTHROPIC_API_KEY`    | No                       | For PRD analysis feature                                      |
-| `SLACK_WEBHOOK_URL`    | No                       | Slack notification webhook                                    |
-| `RESEND_API_KEY`       | No                       | Email notifications                                           |
+| Variable               | Required | Description                                     |
+| ---------------------- | -------- | ----------------------------------------------- |
+| `DATABASE_URL`         | Yes      | PostgreSQL connection string                    |
+| `GITHUB_CLIENT_ID`     | Yes      | GitHub OAuth app client ID                      |
+| `GITHUB_CLIENT_SECRET` | Yes      | GitHub OAuth app client secret                  |
+| `JWT_SECRET`           | Yes      | JWT signing key (min 32 chars)                  |
+| `JWT_EXPIRES_IN`       | No       | Token expiry (default: `7d`)                    |
+| `FRONTEND_URL`         | No       | Frontend URL (default: `http://localhost:5173`) |
+| `ANTHROPIC_API_KEY`    | No       | For PRD analysis feature                        |
+| `SLACK_WEBHOOK_URL`    | No       | Slack notification webhook                      |
+| `RESEND_API_KEY`       | No       | Email notifications                             |
 
 ## Project Structure
 
@@ -84,7 +79,7 @@ contextSync/
 
 ```
 apps/api/src/modules/
-├── auth/            # GitHub OAuth + JWT + Dev auth
+├── auth/            # GitHub OAuth + JWT
 ├── users/           # User management
 ├── projects/        # Project management
 ├── sessions/        # Session import, sync, parsing
