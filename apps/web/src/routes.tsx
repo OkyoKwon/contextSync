@@ -12,6 +12,7 @@ import { ConflictsPage } from './pages/ConflictsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PrdAnalysisPage } from './pages/PrdAnalysisPage';
 import { PlansPage } from './pages/PlansPage';
+import { DocsPage } from './pages/DocsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -32,6 +33,7 @@ export function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/docs" element={<DocsPage />} />
       <Route path="/auth/callback" element={<OAuthCallbackPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
       <Route

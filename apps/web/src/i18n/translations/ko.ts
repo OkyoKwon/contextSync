@@ -89,6 +89,89 @@ export const ko: TranslationKeys = {
   'demo.conflict2': '⚠ src/api/routes.ts — dev-A, dev-C 동시 작업',
   'demo.notified': '→ 관련 팀원에게 알림을 전송했습니다.',
 
+  // Docs
+  'docs.hero.title': 'ContextSync 활용법을 알아보세요',
+  'docs.hero.subtitle': '팀의 Claude Code 세션을 아카이브 · 동기화 · 검색 · 충돌 감지',
+  'docs.hero.highlight.0.title': 'Session Sync',
+  'docs.hero.highlight.0.desc': 'Claude Code 세션을 자동으로 가져오고 아카이브',
+  'docs.hero.highlight.1.title': 'Conflict Detection',
+  'docs.hero.highlight.1.desc': '머지 지옥이 되기 전에 파일 충돌을 감지',
+  'docs.hero.highlight.2.title': 'Full-Text Search',
+  'docs.hero.highlight.2.desc': '모든 세션, 메시지, 코드 변경사항을 검색',
+  'docs.hero.cta': '시작하기',
+  'docs.toc.title': '목차',
+  'docs.toc.gettingStarted': '시작하기',
+  'docs.toc.features': '기능',
+  'docs.toc.faq': 'FAQ',
+  'docs.gettingStarted.title': '시작하기',
+  'docs.gettingStarted.step.0.title': '프로젝트 생성',
+  'docs.gettingStarted.step.0.desc':
+    '이름을 입력하고 로컬 작업 디렉토리를 연결하세요. 프로젝트는 모든 세션, 충돌, 분석을 한 곳에 그룹화합니다.',
+  'docs.gettingStarted.step.1.title': '첫 세션 동기화',
+  'docs.gettingStarted.step.1.desc':
+    '로컬 Claude Code 세션을 스캔하고 가져오세요. .claude/ 디렉토리에서 대화, 파일 변경, 토큰 사용량을 읽어 업로드합니다.',
+  'docs.gettingStarted.step.2.title': '대시보드 탐색',
+  'docs.gettingStarted.step.2.desc':
+    '세션 통계, 타임라인, 토큰 사용량 차트, 핫 파일을 확인하세요. 대시보드에서 팀의 AI 활동을 실시간으로 파악할 수 있습니다.',
+  'docs.gettingStarted.step.3.title': '팀 초대',
+  'docs.gettingStarted.step.3.desc':
+    'Owner, Admin, Member 역할로 협업자를 추가하세요. 각 역할은 프로젝트와 세션 관리에 대해 다른 권한을 가집니다.',
+  'docs.features.title': '기능',
+  'docs.features.learnMore': '자세히 보기',
+  'docs.features.0.title': 'Session Sync',
+  'docs.features.0.summary':
+    '로컬 .claude/ 디렉토리에서 세션을 스캔합니다. 자동/수동 가져오기와 동기화 상태 추적을 지원합니다.',
+  'docs.features.0.detail':
+    '세션 동기화는 로컬 Claude Code 세션 파일을 읽어 대화와 파일 변경사항을 추출하고 프로젝트에 업로드합니다. 수동 스캔을 트리거하거나 자동 감지를 사용할 수 있습니다. 각 동기화는 상태(대기, 동기화 중, 완료, 실패)를 표시합니다.',
+  'docs.features.1.title': 'Conflict Detection',
+  'docs.features.1.summary':
+    '여러 팀원이 같은 파일을 편집할 때 자동 감지합니다. 심각도 배지(info, warning, critical)와 상태 흐름 추적.',
+  'docs.features.1.detail':
+    '두 명 이상의 팀원이 겹치는 세션에서 같은 파일을 수정하면 잠재적 충돌을 표시합니다. 심각도별로 자동 분류되며 — info는 저위험, warning은 중간 겹침, critical은 같은 코드 블록 직접 편집입니다. 구조화된 워크플로우(감지됨 → 검토 중 → 해결됨)를 통해 충돌을 관리합니다.',
+  'docs.features.2.title': 'Dashboard',
+  'docs.features.2.summary':
+    '오늘/주간 세션 수, 활성 충돌, 토큰 사용량 차트, 핫 파일 목록을 한눈에.',
+  'docs.features.2.detail':
+    '대시보드는 팀의 커맨드 센터입니다. 오늘의 세션 수, 주간 트렌드, 활성 충돌 알림, 모델별 토큰 사용량, 가장 자주 수정되는 "핫 파일" 목록을 보여줍니다. 병목을 발견하고 팀의 AI 사용 패턴을 이해하는 데 활용하세요.',
+  'docs.features.3.title': 'PRD Analysis',
+  'docs.features.3.summary':
+    'PRD 문서를 업로드하면 Claude가 세션 전반에 걸쳐 요구사항 달성률을 분석합니다.',
+  'docs.features.3.detail':
+    'PRD를 업로드하면 Claude API로 분석을 보냅니다. 개별 요구사항을 추출하고 세션이 각 요구사항을 얼마나 충족하는지 추적합니다. 요구사항별 달성률과 전체 점수를 제공하여 누락되는 항목이 없도록 합니다.',
+  'docs.features.4.title': 'Plans',
+  'docs.features.4.summary': '프로젝트 연결이 가능한 마크다운 플랜을 생성하고 확인하세요.',
+  'docs.features.4.detail':
+    '플랜은 구현 전략, 아키텍처 결정, 작업 분류를 설명하는 마크다운 문서입니다. 각 플랜은 프로젝트에 연결할 수 있어 세션의 계획 맥락을 쉽게 찾을 수 있습니다. 코드 블록, 목록, 제목을 포함한 전체 마크다운 렌더링을 지원합니다.',
+  'docs.features.5.title': 'Search',
+  'docs.features.5.summary':
+    '모든 세션과 메시지에 대한 전문 검색. 어떤 대화든 코드 변경이든 즉시 검색.',
+  'docs.features.5.detail':
+    'PostgreSQL 전문 검색을 사용하며 세션과 메시지에 tsvector 인덱스를 적용합니다. 키워드, 파일 경로, 코드 스니펫으로 전체 세션 히스토리를 검색할 수 있습니다. 결과는 관련도순으로 정렬되고 세션별로 그룹화됩니다.',
+  'docs.features.6.title': 'Team Collaboration',
+  'docs.features.6.summary':
+    'Owner, Admin, Member 역할 기반 접근 제어. 협업자를 초대하고 권한을 관리하세요.',
+  'docs.features.6.detail':
+    '프로젝트는 세 가지 역할을 지원합니다: Owner(삭제 포함 전체 권한), Admin(멤버와 세션 관리), Member(세션 조회와 동기화). GitHub 사용자명으로 팀원을 초대하고 설정에서 역할을 관리하세요.',
+  'docs.faq.title': '자주 묻는 질문',
+  'docs.faq.0.q': '세션 동기화는 어떤 데이터를 수집하나요?',
+  'docs.faq.0.a':
+    '로컬 .claude/ 디렉토리에서 대화 메시지, 파일 변경 메타데이터(경로와 변경 유형), 토큰 사용량, 세션 타임스탬프를 수집합니다. 실제 소스 코드는 업로드하지 않습니다.',
+  'docs.faq.1.q': '감지된 충돌을 어떻게 해결하나요?',
+  'docs.faq.1.a':
+    'Conflicts 페이지에서 충돌을 클릭하여 상세 정보를 확인한 후, "Start Review"를 클릭하여 검토 상태로 이동합니다. 팀원과 조율 후 "Resolve"를 클릭하여 해결 완료로 표시합니다.',
+  'docs.faq.2.q': 'PRD 분석에 Anthropic API 키가 필요한가요?',
+  'docs.faq.2.a':
+    '네. PRD 분석은 Claude API를 사용합니다. 서버에 ANTHROPIC_API_KEY 환경 변수를 설정하세요. 없으면 PRD 분석 기능을 사용할 수 없습니다.',
+  'docs.faq.3.q': '팀 역할의 차이점은 무엇인가요?',
+  'docs.faq.3.a':
+    'Owner: 삭제와 역할 관리를 포함한 전체 프로젝트 제어. Admin: 멤버, 세션, 충돌 관리. Member: 데이터 조회와 자신의 세션 동기화. 모든 역할에서 검색과 세션 탐색이 가능합니다.',
+  'docs.faq.4.q': '무엇을 검색할 수 있나요?',
+  'docs.faq.4.a':
+    '세션 제목, 대화 메시지, 파일 경로를 검색할 수 있습니다. PostgreSQL 전문 검색 인덱스를 사용하므로 자연어 쿼리와 부분 매칭을 지원합니다.',
+  'docs.faq.5.q': '로컬 세션은 어디에 저장되나요?',
+  'docs.faq.5.a':
+    'Claude Code는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 명시적으로 동기화하기 전까지 데이터는 로컬에 남아있습니다.',
+
   // Footer
   'footer.cta.title': '팀의 AI 워크플로우를 동기화하세요',
   'footer.cta.subtitle': '무료로 시작하세요. 설치 없이 GitHub 계정만으로 바로 사용 가능합니다.',

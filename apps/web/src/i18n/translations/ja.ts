@@ -90,6 +90,89 @@ export const ja: TranslationKeys = {
   'demo.conflict2': '⚠ src/api/routes.ts — dev-A, dev-C 同時作業中',
   'demo.notified': '→ 関連メンバーに通知を送信しました。',
 
+  // Docs
+  'docs.hero.title': 'ContextSyncの活用方法を学ぼう',
+  'docs.hero.subtitle': 'チームのClaude Codeセッションをアーカイブ・同期・検索・コンフリクト検知',
+  'docs.hero.highlight.0.title': 'Session Sync',
+  'docs.hero.highlight.0.desc': 'Claude Codeセッションを自動でインポート・アーカイブ',
+  'docs.hero.highlight.1.title': 'Conflict Detection',
+  'docs.hero.highlight.1.desc': 'マージ地獄になる前にファイルコンフリクトを検知',
+  'docs.hero.highlight.2.title': 'Full-Text Search',
+  'docs.hero.highlight.2.desc': 'すべてのセッション、メッセージ、コード変更を横断検索',
+  'docs.hero.cta': '始める',
+  'docs.toc.title': '目次',
+  'docs.toc.gettingStarted': 'はじめに',
+  'docs.toc.features': '機能',
+  'docs.toc.faq': 'FAQ',
+  'docs.gettingStarted.title': 'はじめに',
+  'docs.gettingStarted.step.0.title': 'プロジェクトを作成',
+  'docs.gettingStarted.step.0.desc':
+    '名前を入力してローカル作業ディレクトリをリンクします。プロジェクトはすべてのセッション、コンフリクト、分析を一か所にグループ化します。',
+  'docs.gettingStarted.step.1.title': '最初のセッションを同期',
+  'docs.gettingStarted.step.1.desc':
+    'ローカルClaude Codeセッションをスキャンしてインポートします。.claude/ディレクトリから会話、ファイル変更、トークン使用量を読み取りアップロードします。',
+  'docs.gettingStarted.step.2.title': 'ダッシュボードを探索',
+  'docs.gettingStarted.step.2.desc':
+    'セッション統計、タイムライン、トークン使用量チャート、ホットファイルを確認できます。ダッシュボードでチームのAI活動をリアルタイムに把握しましょう。',
+  'docs.gettingStarted.step.3.title': 'チームを招待',
+  'docs.gettingStarted.step.3.desc':
+    'Owner、Admin、Memberのロールでコラボレーターを追加します。各ロールにはプロジェクトとセッション管理の異なる権限があります。',
+  'docs.features.title': '機能',
+  'docs.features.learnMore': '詳しく見る',
+  'docs.features.0.title': 'Session Sync',
+  'docs.features.0.summary':
+    'ローカル.claude/ディレクトリからセッションをスキャン。自動/手動インポートと同期ステータス追跡に対応。',
+  'docs.features.0.detail':
+    'セッション同期はローカルClaude Codeセッションファイルを読み取り、会話とファイル変更を抽出してプロジェクトにアップロードします。手動スキャンまたは自動検知が使えます。各同期はステータス（待機中、同期中、完了、失敗）を表示します。',
+  'docs.features.1.title': 'Conflict Detection',
+  'docs.features.1.summary':
+    '複数のチームメンバーが同じファイルを編集すると自動検知。重大度バッジ（info、warning、critical）とステータスフロー追跡。',
+  'docs.features.1.detail':
+    '2人以上のメンバーが重複するセッションで同じファイルを変更すると、潜在的コンフリクトをフラグ付けします。重大度別に自動分類され — infoは低リスク、warningは中程度の重複、criticalは同じコードブロックの直接編集です。構造化されたワークフロー（検知→レビュー→解決）でコンフリクトを管理します。',
+  'docs.features.2.title': 'Dashboard',
+  'docs.features.2.summary':
+    '今日・週間セッション数、アクティブコンフリクト、トークン使用量チャート、ホットファイルリストを一覧。',
+  'docs.features.2.detail':
+    'ダッシュボードはチームのコマンドセンターです。今日のセッション数、週間トレンド、アクティブコンフリクトアラート、モデル別トークン使用量、最も頻繁に変更される「ホットファイル」リストを表示します。',
+  'docs.features.3.title': 'PRD Analysis',
+  'docs.features.3.summary':
+    'PRDドキュメントをアップロードし、Claudeがセッション全体の要件達成率を分析。',
+  'docs.features.3.detail':
+    'PRDをアップロードするとClaude APIで分析を送信します。個別要件を抽出し、セッションが各要件をどれだけ満たしているか追跡します。要件ごとの達成率と全体スコアを提供します。',
+  'docs.features.4.title': 'Plans',
+  'docs.features.4.summary': 'プロジェクト連携可能なMarkdownプランを作成・閲覧。',
+  'docs.features.4.detail':
+    'プランは実装戦略、アーキテクチャ決定、タスク分類を記述するMarkdownドキュメントです。各プランはプロジェクトに関連付けられ、セッションの計画コンテキストを簡単に見つけられます。',
+  'docs.features.5.title': 'Search',
+  'docs.features.5.summary':
+    'すべてのセッションとメッセージの全文検索。会話やコード変更を即座に検索。',
+  'docs.features.5.detail':
+    'PostgreSQL全文検索をtsvectorインデックスで使用。キーワード、ファイルパス、コードスニペットでセッション履歴全体を検索できます。結果は関連度順にソートされセッション別にグループ化されます。',
+  'docs.features.6.title': 'Team Collaboration',
+  'docs.features.6.summary':
+    'Owner、Admin、Memberのロールベースアクセス制御。コラボレーターを招待し権限を管理。',
+  'docs.features.6.detail':
+    'プロジェクトは3つのロールに対応：Owner（削除含む全権限）、Admin（メンバーとセッション管理）、Member（セッション閲覧と同期）。GitHubユーザー名でメンバーを招待し設定でロールを管理できます。',
+  'docs.faq.title': 'よくある質問',
+  'docs.faq.0.q': 'セッション同期はどのデータを収集しますか？',
+  'docs.faq.0.a':
+    'ローカル.claude/ディレクトリから会話メッセージ、ファイル変更メタデータ（パスと変更タイプ）、トークン使用量、セッションタイムスタンプを収集します。実際のソースコードはアップロードしません。',
+  'docs.faq.1.q': '検知されたコンフリクトをどう解決しますか？',
+  'docs.faq.1.a':
+    'Conflictsページでコンフリクトをクリックして詳細を確認し、「Start Review」をクリックしてレビュー状態に移行します。チームメンバーと調整後、「Resolve」をクリックして解決済みにします。',
+  'docs.faq.2.q': 'PRD分析にAnthropic APIキーは必要ですか？',
+  'docs.faq.2.a':
+    'はい。PRD分析はClaude APIを使用します。サーバーにANTHROPIC_API_KEY環境変数を設定してください。なければPRD分析機能は利用できません。',
+  'docs.faq.3.q': 'チームロールの違いは何ですか？',
+  'docs.faq.3.a':
+    'Owner：削除とロール管理含む全プロジェクト制御。Admin：メンバー、セッション、コンフリクト管理。Member：データ閲覧と自身のセッション同期。全ロールで検索とセッション閲覧が可能です。',
+  'docs.faq.4.q': '何を検索できますか？',
+  'docs.faq.4.a':
+    'セッションタイトル、会話メッセージ、ファイルパスを検索できます。PostgreSQL全文検索インデックスを使用しており、自然言語クエリと部分マッチングに対応しています。',
+  'docs.faq.5.q': 'ローカルセッションはどこに保存されますか？',
+  'docs.faq.5.a':
+    'Claude Codeはプロジェクトルートの.claude/ディレクトリにセッションデータを保存します。セッションスキャンをトリガーするとこのディレクトリから読み取ります。明示的に同期するまでデータはローカルに残ります。',
+
   // Footer
   'footer.cta.title': 'チームのAIワークフローを同期しよう',
   'footer.cta.subtitle':

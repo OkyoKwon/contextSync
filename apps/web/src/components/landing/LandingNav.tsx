@@ -23,10 +23,9 @@ export function LandingNav() {
       }`}
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="" className="h-6" />
-          <span className="font-mono text-sm font-medium text-text-primary">ContextSync</span>
-        </div>
+        <a href="/">
+          <img src="/logo.png" alt="ContextSync" className="h-8" />
+        </a>
         <div className="flex items-center gap-3">
           <LanguageSwitcher />
           <button

@@ -274,6 +274,7 @@ sequenceDiagram
 
 ```
 /login                          → LoginPage
+/docs                           → DocsPage (public)
 /auth/callback                  → OAuth callback
 /onboarding                     → OnboardingPage
 / (Protected + AppLayout)
@@ -282,6 +283,7 @@ sequenceDiagram
   ├── /project/sessions/:id     → SessionDetailPage
   ├── /conflicts                → ConflictsPage
   ├── /prd-analysis             → PrdAnalysisPage
+  ├── /plans                    → PlansPage
   └── /settings                 → SettingsPage
 ```
 
