@@ -12,16 +12,14 @@ export function PlansPage() {
   const { data: planDetailData } = usePlanDetail(selectedFilename);
   const deleteMutation = useDeletePlan();
 
-  const allPlans = plansData?.data ?? [];
   const planDetail = planDetailData?.data ?? null;
 
-  const plans = useMemo(
-    () =>
-      currentProjectId
-        ? allPlans.filter((p) => p.projects.some((proj) => proj.projectId === currentProjectId))
-        : allPlans,
-    [allPlans, currentProjectId],
-  );
+  const plans = useMemo(() => {
+    const allPlans = plansData?.data ?? [];
+    return currentProjectId
+      ? allPlans.filter((p) => p.projects.some((proj) => proj.projectId === currentProjectId))
+      : allPlans;
+  }, [plansData?.data, currentProjectId]);
 
   const handleDelete = (filename: string) => {
     deleteMutation.mutate(filename, {

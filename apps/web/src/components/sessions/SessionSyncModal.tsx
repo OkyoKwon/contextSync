@@ -21,7 +21,15 @@ type ModalView =
 
 function FolderIcon({ className }: { readonly className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
     </svg>
   );
@@ -33,7 +41,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
   const { data, isLoading, error: fetchError } = useLocalSessions(false);
   const syncMutation = useSyncSessions();
 
-  const groups: readonly LocalProjectGroup[] = data?.data ?? [];
+  const groups: readonly LocalProjectGroup[] = useMemo(() => data?.data ?? [], [data?.data]);
 
   const unsyncedCountByProject = useMemo(() => {
     const counts = new Map<string, number>();
@@ -44,26 +52,27 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
     return counts;
   }, [groups]);
 
-  const handleSyncProject = useCallback(async (group: LocalProjectGroup) => {
-    const unsyncedIds = group.sessions
-      .filter((s) => !s.isSynced)
-      .map((s) => s.sessionId);
+  const handleSyncProject = useCallback(
+    async (group: LocalProjectGroup) => {
+      const unsyncedIds = group.sessions.filter((s) => !s.isSynced).map((s) => s.sessionId);
 
-    if (unsyncedIds.length === 0) return;
+      if (unsyncedIds.length === 0) return;
 
-    setView({ type: 'syncing', projectPath: group.projectPath });
+      setView({ type: 'syncing', projectPath: group.projectPath });
 
-    try {
-      const response = await syncMutation.mutateAsync(unsyncedIds);
-      setView({
-        type: 'result',
-        projectPath: group.projectPath,
-        result: response.data!,
-      });
-    } catch {
-      setView({ type: 'list' });
-    }
-  }, [syncMutation]);
+      try {
+        const response = await syncMutation.mutateAsync(unsyncedIds);
+        setView({
+          type: 'result',
+          projectPath: group.projectPath,
+          result: response.data!,
+        });
+      } catch {
+        setView({ type: 'list' });
+      }
+    },
+    [syncMutation],
+  );
 
   const handleBack = useCallback(() => {
     syncMutation.reset();
@@ -86,9 +95,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
       )}
 
       {!projectId && (
-        <p className="text-sm text-red-400">
-          No project selected. Please select a project first.
-        </p>
+        <p className="text-sm text-red-400">No project selected. Please select a project first.</p>
       )}
 
       {fetchError && (
@@ -125,23 +132,25 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                       : 'border-border-default bg-surface hover:border-border-input hover:bg-surface-hover'
                   }`}
                 >
-                  <FolderIcon className={`h-5 w-5 flex-shrink-0 ${allSynced ? 'text-text-muted' : 'text-text-muted'}`} />
+                  <FolderIcon
+                    className={`h-5 w-5 flex-shrink-0 ${allSynced ? 'text-text-muted' : 'text-text-muted'}`}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="truncate text-sm font-medium text-text-secondary">
                         {shortPath(group.projectPath)}
                       </span>
-                      {group.isActive && (
-                        <Badge variant="info">Active</Badge>
-                      )}
-                      {allSynced && (
-                        <Badge variant="success">All synced</Badge>
-                      )}
+                      {group.isActive && <Badge variant="info">Active</Badge>}
+                      {allSynced && <Badge variant="success">All synced</Badge>}
                     </div>
                     <span className="text-xs text-text-muted">
-                      {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} · {group.totalMessages} msgs
+                      {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} ·{' '}
+                      {group.totalMessages} msgs
                       {!allSynced && (
-                        <> · <span className="text-blue-400">{unsyncedCount} to sync</span></>
+                        <>
+                          {' '}
+                          · <span className="text-blue-400">{unsyncedCount} to sync</span>
+                        </>
                       )}
                     </span>
                   </div>
@@ -157,7 +166,9 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
         <div className="flex flex-col items-center justify-center py-8">
           <Spinner size="md" />
           <p className="mt-3 text-sm text-text-tertiary">
-            Syncing sessions from <span className="font-medium text-text-secondary">{shortPath(view.projectPath)}</span>...
+            Syncing sessions from{' '}
+            <span className="font-medium text-text-secondary">{shortPath(view.projectPath)}</span>
+            ...
           </p>
         </div>
       )}
@@ -195,7 +206,9 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                 <div className="flex items-center gap-2">
                   {r.success ? (
                     (r.detectedConflicts ?? 0) > 0 ? (
-                      <Badge variant="warning">{r.detectedConflicts} conflict{(r.detectedConflicts ?? 0) > 1 ? 's' : ''}</Badge>
+                      <Badge variant="warning">
+                        {r.detectedConflicts} conflict{(r.detectedConflicts ?? 0) > 1 ? 's' : ''}
+                      </Badge>
                     ) : (
                       <Badge variant="success">Synced</Badge>
                     )
@@ -214,7 +227,8 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
             )}
             {view.result.results.some((r) => !r.success) && (
               <span className="text-red-400">
-                {' '}{view.result.results.filter((r) => !r.success).length} session(s) failed.
+                {' '}
+                {view.result.results.filter((r) => !r.success).length} session(s) failed.
               </span>
             )}
           </div>

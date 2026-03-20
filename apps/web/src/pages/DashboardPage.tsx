@@ -41,26 +41,28 @@ export function DashboardPage() {
 
   const handleFilterChange = useCallback(
     (source: SessionSource | null) => {
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        if (source) {
-          next.set('source', source);
-        } else {
-          next.delete('source');
-        }
-        return next;
-      }, { replace: true });
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (source) {
+            next.set('source', source);
+          } else {
+            next.delete('source');
+          }
+          return next;
+        },
+        { replace: true },
+      );
     },
     [setSearchParams],
   );
 
   const stats = statsData?.data;
-  const allEntries = timelineData?.data ?? [];
 
-  const filteredEntries = useMemo(
-    () => activeSource ? allEntries.filter((e) => e.source === activeSource) : allEntries,
-    [allEntries, activeSource],
-  );
+  const filteredEntries = useMemo(() => {
+    const allEntries = timelineData?.data ?? [];
+    return activeSource ? allEntries.filter((e) => e.source === activeSource) : allEntries;
+  }, [timelineData?.data, activeSource]);
 
   const greeting = getGreeting(new Date().getHours());
   const displayName = user?.name?.split(' ')[0] ?? 'there';
@@ -78,21 +80,25 @@ export function DashboardPage() {
       <div>
         <div className="mb-6">
           <PageBreadcrumb pageName="Dashboard" />
-          <p className="mt-1 text-sm text-text-secondary">{greeting}, {displayName}</p>
+          <p className="mt-1 text-sm text-text-secondary">
+            {greeting}, {displayName}
+          </p>
         </div>
         <NoProjectState pageName="Dashboard" />
       </div>
     );
   }
 
-  const hasSessions = allEntries.length > 0 || timelineLoading;
+  const hasSessions = filteredEntries.length > 0 || timelineLoading;
 
   if (!timelineLoading && !hasSessions) {
     return (
       <div>
         <div className="mb-6">
           <PageBreadcrumb pageName="Dashboard" />
-          <p className="mt-1 text-sm text-text-secondary">{greeting}, {displayName}</p>
+          <p className="mt-1 text-sm text-text-secondary">
+            {greeting}, {displayName}
+          </p>
         </div>
         <EmptyDashboard hasProject hasSessions={false} />
       </div>
@@ -107,17 +113,15 @@ export function DashboardPage() {
           {greeting}, {displayName}
           {stats && (
             <span className="text-text-tertiary">
-              {' · '}{stats.todaySessions} session{stats.todaySessions !== 1 ? 's' : ''} today, {stats.activeConflicts} active conflict{stats.activeConflicts !== 1 ? 's' : ''}
+              {' · '}
+              {stats.todaySessions} session{stats.todaySessions !== 1 ? 's' : ''} today,{' '}
+              {stats.activeConflicts} active conflict{stats.activeConflicts !== 1 ? 's' : ''}
             </span>
           )}
         </p>
       </div>
 
-      {statsLoading ? (
-        <Spinner />
-      ) : stats ? (
-        <DashboardStatsView stats={stats} />
-      ) : null}
+      {statsLoading ? <Spinner /> : stats ? <DashboardStatsView stats={stats} /> : null}
 
       <div className="mt-6">
         <TokenUsagePanel />

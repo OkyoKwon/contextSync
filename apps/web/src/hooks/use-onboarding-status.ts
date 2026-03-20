@@ -16,14 +16,13 @@ export function useOnboardingStatus(): OnboardingStatus {
     enabled: !!token && !currentProjectId,
   });
 
-  const projects = data?.data ?? [];
-
   useEffect(() => {
+    const projects = data?.data ?? [];
     const first = projects[0];
     if (first && !currentProjectId) {
       setCurrentProject(first.id);
     }
-  }, [projects, currentProjectId, setCurrentProject]);
+  }, [data?.data, currentProjectId, setCurrentProject]);
 
   if (currentProjectId) return 'ready';
   if (isLoading) return 'loading';

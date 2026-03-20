@@ -1,44 +1,49 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useAuthStore } from '../stores/auth.store';
 import { Spinner } from '../components/ui/Spinner';
+
+function parseCallback(searchParams: URLSearchParams) {
+  const token = searchParams.get('token');
+  const userStr = searchParams.get('user');
+
+  if (!token || !userStr) {
+    return { error: 'Authentication failed - missing token' } as const;
+  }
+
+  try {
+    const user = JSON.parse(userStr);
+    return { token, user } as const;
+  } catch {
+    return { error: 'Authentication failed - invalid data' } as const;
+  }
+}
 
 export function OAuthCallbackPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const setAuth = useAuthStore((s) => s.setAuth);
-  const [error, setError] = useState<string | null>(null);
+
+  const result = useMemo(() => parseCallback(searchParams), [searchParams]);
 
   useEffect(() => {
-    const token = searchParams.get('token');
-    const userStr = searchParams.get('user');
+    if ('error' in result) return;
 
-    if (!token || !userStr) {
-      setError('Authentication failed - missing token');
-      return;
-    }
+    setAuth(result.token, result.user);
 
-    try {
-      const user = JSON.parse(userStr);
-      setAuth(token, user);
+    // Remove sensitive data from URL immediately
+    window.history.replaceState({}, '', '/auth/callback');
 
-      // Remove sensitive data from URL immediately
-      window.history.replaceState({}, '', '/auth/callback');
+    const { currentProjectId } = useAuthStore.getState();
+    const destination = currentProjectId ? '/dashboard' : '/onboarding';
+    navigate(destination, { replace: true });
+  }, [result, setAuth, navigate]);
 
-      const { currentProjectId } = useAuthStore.getState();
-      const destination = currentProjectId ? '/dashboard' : '/onboarding';
-      navigate(destination, { replace: true });
-    } catch {
-      window.history.replaceState({}, '', '/auth/callback');
-      setError('Authentication failed - invalid data');
-    }
-  }, [searchParams, setAuth, navigate]);
-
-  if (error) {
+  if ('error' in result) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600">{result.error}</p>
           <a href="/login" className="mt-2 text-sm text-blue-600 underline">
             Back to login
           </a>
