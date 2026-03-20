@@ -1,15 +1,8 @@
 // Types
 export type { ApiResponse, PaginationMeta, PaginationQuery } from './types/api.js';
 export type { User, UserRole, NotificationSettings } from './types/user.js';
-export type {
-  Team,
-  TeamSettings,
-  TeamMember,
-  CreateTeamInput,
-  UpdateTeamInput,
-  AddMemberInput,
-} from './types/team.js';
-export type { Project, PersonalProject, TeamProject, CreateProjectInput, CreatePersonalProjectInput, UpdateProjectInput } from './types/project.js';
+export type { Collaborator, AddCollaboratorInput } from './types/collaborator.js';
+export type { Project, CreateProjectInput, UpdateProjectInput } from './types/project.js';
 export type {
   Session,
   SessionSource,

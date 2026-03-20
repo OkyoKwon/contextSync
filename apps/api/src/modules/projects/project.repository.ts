@@ -3,33 +3,12 @@ import type { Project } from '@context-sync/shared';
 
 export async function createProject(
   db: Db,
-  teamId: string,
-  input: { name: string; description?: string; repoUrl?: string },
-): Promise<Project> {
-  const row = await db
-    .insertInto('projects')
-    .values({
-      team_id: teamId,
-      owner_id: null,
-      name: input.name,
-      description: input.description ?? null,
-      repo_url: input.repoUrl ?? null,
-    })
-    .returningAll()
-    .executeTakeFirstOrThrow();
-
-  return toProject(row);
-}
-
-export async function createPersonalProject(
-  db: Db,
   ownerId: string,
   input: { name: string; description?: string; repoUrl?: string; localDirectory?: string },
 ): Promise<Project> {
   const row = await db
     .insertInto('projects')
     .values({
-      team_id: null,
       owner_id: ownerId,
       name: input.name,
       description: input.description ?? null,
@@ -42,26 +21,41 @@ export async function createPersonalProject(
   return toProject(row);
 }
 
-export async function findProjectsByTeamId(db: Db, teamId: string): Promise<readonly Project[]> {
-  const rows = await db
+export async function findProjectsByUserId(db: Db, userId: string): Promise<readonly Project[]> {
+  const ownedRows = await db
     .selectFrom('projects')
     .selectAll()
-    .where('team_id', '=', teamId)
-    .orderBy('created_at', 'desc')
+    .where('owner_id', '=', userId)
     .execute();
 
-  return rows.map(toProject);
-}
-
-export async function findProjectsByOwnerId(db: Db, ownerId: string): Promise<readonly Project[]> {
-  const rows = await db
+  const collabRows = await db
     .selectFrom('projects')
     .selectAll()
-    .where('owner_id', '=', ownerId)
-    .orderBy('created_at', 'desc')
+    .innerJoin('project_collaborators', 'project_collaborators.project_id', 'projects.id')
+    .where('project_collaborators.user_id', '=', userId)
+    .select([
+      'projects.id',
+      'projects.owner_id',
+      'projects.name',
+      'projects.description',
+      'projects.repo_url',
+      'projects.local_directory',
+      'projects.created_at',
+      'projects.updated_at',
+    ])
     .execute();
 
-  return rows.map(toProject);
+  const seen = new Set(ownedRows.map((r) => r.id));
+  const combined = [...ownedRows];
+  for (const row of collabRows) {
+    if (!seen.has(row.id)) {
+      combined.push(row as typeof ownedRows[number]);
+      seen.add(row.id);
+    }
+  }
+
+  combined.sort((a, b) => b.created_at.getTime() - a.created_at.getTime());
+  return combined.map(toProject);
 }
 
 export async function findProjectById(db: Db, id: string): Promise<Project | null> {
@@ -96,8 +90,7 @@ export async function deleteProject(db: Db, id: string): Promise<void> {
 
 function toProject(row: {
   id: string;
-  team_id: string | null;
-  owner_id: string | null;
+  owner_id: string;
   name: string;
   description: string | null;
   repo_url: string | null;
@@ -105,8 +98,9 @@ function toProject(row: {
   created_at: Date;
   updated_at: Date;
 }): Project {
-  const base = {
+  return {
     id: row.id,
+    ownerId: row.owner_id,
     name: row.name,
     description: row.description,
     repoUrl: row.repo_url,
@@ -114,9 +108,4 @@ function toProject(row: {
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
-
-  if (row.team_id !== null) {
-    return { ...base, kind: 'team' as const, teamId: row.team_id, ownerId: null };
-  }
-  return { ...base, kind: 'personal' as const, ownerId: row.owner_id!, teamId: null };
 }

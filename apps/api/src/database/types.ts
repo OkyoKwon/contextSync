@@ -2,9 +2,8 @@ import type { Generated, ColumnType } from 'kysely';
 
 export interface Database {
   users: UsersTable;
-  teams: TeamsTable;
-  team_members: TeamMembersTable;
   projects: ProjectsTable;
+  project_collaborators: ProjectCollaboratorsTable;
   sessions: SessionsTable;
   messages: MessagesTable;
   conflicts: ConflictsTable;
@@ -24,33 +23,23 @@ export interface UsersTable {
   updated_at: Generated<Date>;
 }
 
-export interface TeamsTable {
-  id: Generated<string>;
-  name: string;
-  slug: string;
-  settings: Generated<string>;
-  created_at: Generated<Date>;
-  updated_at: Generated<Date>;
-}
-
-export interface TeamMembersTable {
-  id: Generated<string>;
-  team_id: string;
-  user_id: string;
-  role: string;
-  joined_at: Generated<Date>;
-}
-
 export interface ProjectsTable {
   id: Generated<string>;
-  team_id: string | null;
-  owner_id: string | null;
+  owner_id: string;
   name: string;
   description: string | null;
   repo_url: string | null;
   local_directory: string | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
+}
+
+export interface ProjectCollaboratorsTable {
+  id: Generated<string>;
+  project_id: string;
+  user_id: string;
+  role: string;
+  added_at: Generated<Date>;
 }
 
 export interface SessionsTable {
