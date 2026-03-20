@@ -59,17 +59,6 @@ export function LocalSessionList({
         />
       </div>
 
-      <div className="flex items-center gap-4 border-b border-border-default px-3 py-2 text-xs text-text-muted">
-        <span className="flex items-center gap-1.5">
-          <Badge variant="info">Active</Badge>
-          <span>Used within 10 min</span>
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Badge variant="success">Synced</Badge>
-          <span>Saved to database</span>
-        </span>
-      </div>
-
       <div className="flex-1 overflow-y-auto p-3">
         {filteredGroups.length === 0 && (
           <div className="py-8 text-center text-sm text-text-tertiary">
@@ -217,9 +206,9 @@ function SessionRow({
           <p className="truncate text-sm font-medium text-text-primary">
             {session.firstMessage}
           </p>
-          {session.isSynced && <Badge variant="success">Synced</Badge>}
+          {session.isSynced && <Badge variant="success" title="Saved to database">Synced</Badge>}
           {session.isActive && (
-            <Badge variant="info">Active</Badge>
+            <Badge variant="info" title="Used within 10 min">Active</Badge>
           )}
         </div>
         <p className="mt-0.5 text-xs text-text-muted">

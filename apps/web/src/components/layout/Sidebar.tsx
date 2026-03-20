@@ -20,7 +20,7 @@ export function Sidebar() {
     { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
     { to: '/project', label: 'Conversations', icon: ConversationsIcon },
     { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
-    { to: '/prd-analysis', label: 'PRD Analysis', icon: PrdAnalysisIcon },
+    { to: '/prd-analysis', label: 'PRD Tracker', icon: PrdAnalysisIcon },
     { to: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
 

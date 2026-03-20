@@ -15,7 +15,7 @@ dist/
 *.swo
 
 # Plan
-.plan/
+plan/
 
 # OS
 .DS_Store

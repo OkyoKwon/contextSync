@@ -1,5 +1,5 @@
 import type { SessionImportData } from '@context-sync/shared';
-import { generateTitle } from './title.utils.js';
+import { findFirstMeaningfulTitle, generateTitle, UNTITLED } from './title.utils.js';
 
 interface ClaudeCodeRecord {
   readonly type?: string;
@@ -93,10 +93,10 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
     throw new Error('No conversation messages found in Claude Code session');
   }
 
-  const firstUserMsg = messages.find((m) => m.role === 'user');
-  const title = firstUserMsg
-    ? generateTitle(firstUserMsg.content)
-    : 'Untitled Session';
+  const userContents = messages
+    .filter((m) => m.role === 'user')
+    .map((m) => m.content);
+  const title = findFirstMeaningfulTitle(userContents);
 
   return {
     parsed: {
@@ -185,10 +185,10 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
     }
   }
 
-  const firstUserMsg = messages.find((m) => m.role === 'user');
-  const title = firstUserMsg
-    ? generateTitle(firstUserMsg.content)
-    : 'Untitled Session';
+  const userContents = messages
+    .filter((m) => m.role === 'user')
+    .map((m) => m.content);
+  const title = findFirstMeaningfulTitle(userContents);
 
   return {
     title,
@@ -223,7 +223,7 @@ export function previewClaudeCodeSession(raw: string, maxLines = 200): {
     }
 
     if (record.type === 'user' && typeof record.message?.content === 'string') {
-      if (!firstMessage) {
+      if (!firstMessage || firstMessage === UNTITLED) {
         firstMessage = generateTitle(record.message.content);
       }
       messageCount++;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateTitle } from '../title.utils.js';
+import { findFirstMeaningfulTitle, generateTitle } from '../title.utils.js';
 
 describe('generateTitle', () => {
   it('should strip XML tags and their content', () => {
@@ -91,5 +91,39 @@ describe('generateTitle', () => {
   it('should handle content shorter than 100 chars', () => {
     const input = 'Short message';
     expect(generateTitle(input)).toBe('Short message');
+  });
+});
+
+describe('findFirstMeaningfulTitle', () => {
+  it('should skip XML-only messages and use the first meaningful one', () => {
+    const contents = [
+      '<local-command-caveat>Caveat text</local-command-caveat>',
+      '<command-name>/clear</command-name><command-message>clear</command-message><command-args></command-args>',
+      'PRD 문서를 넣으면 현재 작성된 코드베이스 기반으로 Achievement Rate 를 측정할 수 있는 기능을 만들고 싶어',
+    ];
+    expect(findFirstMeaningfulTitle(contents)).toBe(
+      'PRD 문서를 넣으면 현재 작성된 코드베이스 기반으로 Achievement Rate 를 측정할 수 있는 기능을 만들고 싶어',
+    );
+  });
+
+  it('should return Untitled Session if all messages are system content', () => {
+    const contents = [
+      '<system-reminder>Only system</system-reminder>',
+      '<command-name>/clear</command-name>',
+    ];
+    expect(findFirstMeaningfulTitle(contents)).toBe('Untitled Session');
+  });
+
+  it('should return Untitled Session for empty array', () => {
+    expect(findFirstMeaningfulTitle([])).toBe('Untitled Session');
+  });
+
+  it('should use the first meaningful message, not the last', () => {
+    const contents = [
+      '<system-reminder>system</system-reminder>',
+      'First real message',
+      'Second real message',
+    ];
+    expect(findFirstMeaningfulTitle(contents)).toBe('First real message');
   });
 });

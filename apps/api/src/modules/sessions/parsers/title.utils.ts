@@ -15,6 +15,18 @@ const BOILERPLATE_PREFIXES: readonly RegExp[] = [
 
 const MAX_TITLE_LENGTH = 100;
 
+export const UNTITLED = 'Untitled Session';
+
+export function findFirstMeaningfulTitle(contents: readonly string[]): string {
+  for (const content of contents) {
+    const title = generateTitle(content);
+    if (title !== UNTITLED) {
+      return title;
+    }
+  }
+  return UNTITLED;
+}
+
 export function generateTitle(rawContent: string): string {
   let content = rawContent;
 

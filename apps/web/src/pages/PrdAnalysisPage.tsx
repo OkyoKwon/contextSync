@@ -30,9 +30,9 @@ export function PrdAnalysisPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div>
-        <h1 className="text-2xl font-bold text-text-primary">PRD Analysis</h1>
+        <h1 className="text-2xl font-bold text-text-primary">PRD Tracker</h1>
         <p className="mt-1 text-sm text-text-tertiary">
-          Upload a PRD document and analyze your codebase achievement rate
+          Upload a PRD document and track your codebase achievement rate
         </p>
       </div>
 

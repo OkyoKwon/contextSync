@@ -1,6 +1,6 @@
 type BadgeVariant = 'default' | 'info' | 'warning' | 'critical' | 'success';
 
-interface BadgeProps {
+interface BadgeProps extends React.ComponentPropsWithoutRef<'span'> {
   variant?: BadgeVariant;
   children: React.ReactNode;
   className?: string;
@@ -14,10 +14,11 @@ const variantClasses: Record<BadgeVariant, string> = {
   success: 'bg-green-500/15 text-green-400',
 };
 
-export function Badge({ variant = 'default', className = '', children }: BadgeProps) {
+export function Badge({ variant = 'default', className = '', children, ...rest }: BadgeProps) {
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${variantClasses[variant]} ${className}`}
+      {...rest}
     >
       {children}
     </span>
