@@ -139,7 +139,7 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
                       )}
                     </div>
                     <span className="text-xs text-text-muted">
-                      {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
+                      {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} · {group.totalMessages} msgs
                       {!allSynced && (
                         <> · <span className="text-blue-400">{unsyncedCount} to sync</span></>
                       )}

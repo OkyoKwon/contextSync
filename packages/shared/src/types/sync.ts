@@ -20,6 +20,7 @@ export interface LocalProjectGroup {
   readonly projectPath: string;
   readonly sessions: readonly LocalSessionInfo[];
   readonly totalMessages: number;
+  readonly totalSessionCount: number;
   readonly isActive: boolean;
 }
 

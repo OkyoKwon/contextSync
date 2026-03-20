@@ -42,6 +42,7 @@ export function LocalSessionList({
           ...group,
           sessions: filteredSessions as readonly LocalSessionInfo[],
           totalMessages: filteredSessions.reduce((sum, s) => sum + s.messageCount, 0),
+          totalSessionCount: filteredSessions.length,
         } as LocalProjectGroup;
       })
       .filter((g): g is LocalProjectGroup => g !== null);
@@ -145,7 +146,7 @@ function ProjectGroup({
             )}
           </div>
           <span className="text-xs text-text-muted">
-            {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
+            {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} · {group.totalMessages} msgs
           </span>
         </div>
       </button>

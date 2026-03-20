@@ -62,9 +62,6 @@ function decodeProjectPath(dirName: string): string {
   return '/' + dirName.slice(1).replace(/-/g, '/');
 }
 
-// Maximum number of inactive files to read when activeOnly=false
-const MAX_INACTIVE_FILES = 50;
-
 export async function listLocalDirectories(): Promise<readonly LocalDirectory[]> {
   const sessionFiles = await findSessionFiles();
 
@@ -129,33 +126,10 @@ export async function listLocalSessions(
 
   const syncedIds = new Set(syncedRows.map((r) => r.external_session_id));
 
-  // Partition files by active status using stat mtime (no readFile needed)
-  const activeFiles: SessionFile[] = [];
-  const inactiveFiles: SessionFile[] = [];
-
-  for (const file of sessionFiles) {
-    if (now - file.lastModifiedMs < ACTIVE_THRESHOLD_MS) {
-      activeFiles.push(file);
-    } else {
-      inactiveFiles.push(file);
-    }
-  }
-
-  // Determine which files to actually read
-  const filesToRead: readonly SessionFile[] = activeOnly
-    ? activeFiles
-    : [
-        ...activeFiles,
-        // For inactive files: sort by most recent first, cap at MAX_INACTIVE_FILES
-        ...[...inactiveFiles]
-          .sort((a, b) => b.lastModifiedMs - a.lastModifiedMs)
-          .slice(0, MAX_INACTIVE_FILES),
-      ];
-
-  // Build session infos — only read files we selected
+  // Read ALL files to get accurate total counts
   const allSessions: LocalSessionInfo[] = [];
 
-  for (const file of filesToRead) {
+  for (const file of sessionFiles) {
     const sessionId = file.fileName.replace('.jsonl', '');
     const projectPath = decodeProjectPath(file.dir);
     const isActive = (now - file.lastModifiedMs) < ACTIVE_THRESHOLD_MS;
@@ -189,12 +163,22 @@ export async function listLocalSessions(
   }
 
   // Build groups, sorted by most recent activity
+  // When activeOnly or file count exceeds cap, limit displayed sessions but keep accurate totals
   const groups: LocalProjectGroup[] = [...groupMap.entries()].map(([projectPath, sessions]) => {
     const sorted = [...sessions].sort((a, b) => (b.lastModifiedAt > a.lastModifiedAt ? 1 : -1));
+    const totalMessages = sorted.reduce((sum, s) => sum + s.messageCount, 0);
+    const totalSessionCount = sorted.length;
+
+    // Determine which sessions to include in the list
+    const displaySessions = activeOnly
+      ? sorted.filter((s) => s.isActive)
+      : sorted;
+
     return {
       projectPath,
-      sessions: sorted,
-      totalMessages: sorted.reduce((sum, s) => sum + s.messageCount, 0),
+      sessions: displaySessions,
+      totalMessages,
+      totalSessionCount,
       isActive: sorted.some((s) => s.isActive),
     };
   });
