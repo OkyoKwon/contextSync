@@ -1,20 +1,34 @@
-import { useState, useMemo } from 'react';
-import type { LocalProjectGroup, LocalSessionInfo } from '@context-sync/shared';
+import { useState, useMemo, useCallback } from 'react';
+import type { LocalProjectGroup, SyncSessionResult } from '@context-sync/shared';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
 import { useLocalSessions, useSyncSessions } from '../../hooks/use-session-sync';
 import { useAuthStore } from '../../stores/auth.store';
-import { formatTimeAgo, shortPath } from '../../lib/format';
+import { shortPath } from '../../lib/format';
 
 interface SessionSyncModalProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
+  readonly onSyncComplete?: (projectPath: string) => void;
 }
 
-export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
-  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set());
+type ModalView =
+  | { readonly type: 'list' }
+  | { readonly type: 'syncing'; readonly projectPath: string }
+  | { readonly type: 'result'; readonly projectPath: string; readonly result: SyncSessionResult };
+
+function FolderIcon({ className }: { readonly className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
+    </svg>
+  );
+}
+
+export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyncModalProps) {
+  const [view, setView] = useState<ModalView>({ type: 'list' });
   const [showAll, setShowAll] = useState(false);
   const activeOnly = !showAll;
   const projectId = useAuthStore((s) => s.currentProjectId);
@@ -23,54 +37,50 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
 
   const groups: readonly LocalProjectGroup[] = data?.data ?? [];
 
-  // Server already filters by activeOnly — show all returned groups
-  const visibleGroups = groups;
-
-  const allUnsyncedSessions = useMemo(() => {
-    const sessions: LocalSessionInfo[] = [];
-    for (const group of visibleGroups) {
-      for (const s of group.sessions) {
-        if (!s.isSynced) sessions.push(s);
-      }
+  const unsyncedCountByProject = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const group of groups) {
+      const count = group.sessions.filter((s) => !s.isSynced).length;
+      counts.set(group.projectPath, count);
     }
-    return sessions;
-  }, [visibleGroups]);
+    return counts;
+  }, [groups]);
 
-  const toggleSession = (sessionId: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(sessionId)) {
-        next.delete(sessionId);
-      } else {
-        next.add(sessionId);
-      }
-      return next;
-    });
-  };
+  const handleSyncProject = useCallback(async (group: LocalProjectGroup) => {
+    const unsyncedIds = group.sessions
+      .filter((s) => !s.isSynced)
+      .map((s) => s.sessionId);
 
-  const toggleAll = () => {
-    if (selectedIds.size === allUnsyncedSessions.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(allUnsyncedSessions.map((s) => s.sessionId)));
+    if (unsyncedIds.length === 0) return;
+
+    setView({ type: 'syncing', projectPath: group.projectPath });
+
+    try {
+      const response = await syncMutation.mutateAsync(unsyncedIds);
+      setView({
+        type: 'result',
+        projectPath: group.projectPath,
+        result: response.data!,
+      });
+    } catch {
+      setView({ type: 'list' });
     }
-  };
+  }, [syncMutation]);
 
-  const handleSync = async () => {
-    if (selectedIds.size === 0) return;
-    await syncMutation.mutateAsync([...selectedIds]);
-    setSelectedIds(new Set());
-  };
+  const handleBack = useCallback(() => {
+    syncMutation.reset();
+    setView({ type: 'list' });
+  }, [syncMutation]);
 
-  const handleClose = () => {
-    setSelectedIds(new Set());
+  const handleClose = useCallback(() => {
+    setView({ type: 'list' });
     syncMutation.reset();
     setShowAll(false);
     onClose();
-  };
+  }, [onClose, syncMutation]);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Sync Sessions">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Sync Context">
       {isLoading && (
         <div className="flex items-center justify-center py-8">
           <Spinner size="md" />
@@ -108,20 +118,10 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
         </div>
       )}
 
-      {!isLoading && groups.length > 0 && (
+      {/* Directory list view */}
+      {!isLoading && groups.length > 0 && view.type === 'list' && (
         <>
-          <div className="mb-3 flex items-center justify-between">
-            {allUnsyncedSessions.length > 0 && (
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-[#A1A1AA]">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.size === allUnsyncedSessions.length && allUnsyncedSessions.length > 0}
-                  onChange={toggleAll}
-                  className="rounded border-zinc-700 bg-[#141414]"
-                />
-                Select all ({allUnsyncedSessions.length})
-              </label>
-            )}
+          <div className="mb-3 flex items-center justify-end">
             <button
               onClick={() => setShowAll((v) => !v)}
               className="text-xs text-blue-400 hover:underline"
@@ -130,102 +130,144 @@ export function SessionSyncModal({ isOpen, onClose }: SessionSyncModalProps) {
             </button>
           </div>
 
-          <div className="max-h-96 space-y-4 overflow-y-auto">
-            {visibleGroups.map((group) => (
-              <div key={group.projectPath}>
-                <div className="mb-1.5 flex items-center gap-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-[#71717A]">
-                    {shortPath(group.projectPath)}
-                  </h3>
-                  {group.isActive && (
-                    <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
-                  )}
-                  <span className="text-xs text-[#71717A]">
-                    {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
-                  </span>
-                </div>
+          <div className="max-h-96 space-y-2 overflow-y-auto">
+            {groups.map((group) => {
+              const unsyncedCount = unsyncedCountByProject.get(group.projectPath) ?? 0;
+              const allSynced = unsyncedCount === 0;
 
-                <div className="space-y-1.5">
-                  {group.sessions.map((session) => {
-                    const isSynced = session.isSynced;
-                    const isSelected = selectedIds.has(session.sessionId);
-
-                    return (
-                      <label
-                        key={session.sessionId}
-                        className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                          isSynced
-                            ? 'cursor-default border-zinc-800 bg-[#252525] opacity-60'
-                            : isSelected
-                              ? 'border-blue-500 bg-blue-500/10'
-                              : 'border-zinc-800 hover:border-zinc-700'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSynced || isSelected}
-                          disabled={isSynced}
-                          onChange={() => !isSynced && toggleSession(session.sessionId)}
-                          className="mt-0.5 rounded border-zinc-700 bg-[#141414]"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <p className="truncate text-sm font-medium text-[#FAFAFA]">
-                              {session.firstMessage}
-                            </p>
-                            {isSynced && <Badge variant="success">Synced</Badge>}
-                            {session.isActive && !isSynced && (
-                              <Badge variant="info">Active</Badge>
-                            )}
-                          </div>
-                          <p className="mt-0.5 text-xs text-[#71717A]">
-                            {session.messageCount} messages · {formatTimeAgo(session.lastModifiedAt)}
-                          </p>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+              return (
+                <button
+                  key={group.projectPath}
+                  type="button"
+                  disabled={allSynced}
+                  onClick={() => handleSyncProject(group)}
+                  className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
+                    allSynced
+                      ? 'cursor-default border-zinc-800 bg-[#1C1C1C] opacity-50'
+                      : 'border-zinc-800 bg-[#1C1C1C] hover:border-zinc-700 hover:bg-[#252525]'
+                  }`}
+                >
+                  <FolderIcon className={`h-5 w-5 flex-shrink-0 ${allSynced ? 'text-[#52525B]' : 'text-[#71717A]'}`} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-[#D4D4D8]">
+                        {shortPath(group.projectPath)}
+                      </span>
+                      {group.isActive && (
+                        <span className="inline-block h-2 w-2 rounded-full bg-green-400" title="Active" />
+                      )}
+                      {allSynced && (
+                        <Badge variant="success">All synced</Badge>
+                      )}
+                    </div>
+                    <span className="text-xs text-[#71717A]">
+                      {group.sessions.length} session{group.sessions.length > 1 ? 's' : ''} · {group.totalMessages} msgs
+                      {!allSynced && (
+                        <> · <span className="text-blue-400">{unsyncedCount} to sync</span></>
+                      )}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </>
       )}
 
-      {syncMutation.error && (
+      {/* Syncing view */}
+      {view.type === 'syncing' && (
+        <div className="flex flex-col items-center justify-center py-8">
+          <Spinner size="md" />
+          <p className="mt-3 text-sm text-[#A1A1AA]">
+            Syncing sessions from <span className="font-medium text-[#D4D4D8]">{shortPath(view.projectPath)}</span>...
+          </p>
+        </div>
+      )}
+
+      {/* Result view */}
+      {view.type === 'result' && (
+        <div>
+          <div className="mb-3 flex items-center gap-2">
+            <FolderIcon className="h-4 w-4 text-[#71717A]" />
+            <span className="text-sm font-medium text-[#D4D4D8]">
+              {shortPath(view.projectPath)}
+            </span>
+          </div>
+
+          <div className="max-h-72 space-y-1.5 overflow-y-auto">
+            {view.result.results.map((r) => (
+              <div
+                key={r.sessionId}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2 ${
+                  r.success
+                    ? (r.detectedConflicts ?? 0) > 0
+                      ? 'border-yellow-500/30 bg-yellow-500/5'
+                      : 'border-zinc-800 bg-[#1C1C1C]'
+                    : 'border-red-500/30 bg-red-500/5'
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm text-[#D4D4D8]">
+                    {r.sessionId.slice(0, 8)}...
+                  </p>
+                  {r.messageCount !== undefined && (
+                    <p className="text-xs text-[#71717A]">{r.messageCount} messages</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  {r.success ? (
+                    (r.detectedConflicts ?? 0) > 0 ? (
+                      <Badge variant="warning">{r.detectedConflicts} conflict{(r.detectedConflicts ?? 0) > 1 ? 's' : ''}</Badge>
+                    ) : (
+                      <Badge variant="success">Synced</Badge>
+                    )
+                  ) : (
+                    <Badge variant="critical">Failed</Badge>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-3 rounded-lg bg-green-500/10 p-3 text-sm text-green-400">
+            Synced {view.result.syncedCount} session(s).
+            {view.result.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
+              <> Conflicts detected — check the Conflicts page.</>
+            )}
+            {view.result.results.some((r) => !r.success) && (
+              <span className="text-red-400">
+                {' '}{view.result.results.filter((r) => !r.success).length} session(s) failed.
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {syncMutation.error && view.type === 'list' && (
         <p className="mt-3 text-sm text-red-400">
           {syncMutation.error instanceof Error ? syncMutation.error.message : 'Sync failed'}
         </p>
       )}
 
-      {syncMutation.data?.data && (
-        <div className="mt-3 rounded-lg bg-green-500/10 p-3 text-sm text-green-400">
-          Synced {syncMutation.data.data.syncedCount} session(s).
-          {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
-            <> Conflicts detected — check the Conflicts page.</>
-          )}
-          {syncMutation.data.data.results.some((r) => !r.success) && (
-            <span className="text-red-400">
-              {' '}
-              {syncMutation.data.data.results.filter((r) => !r.success).length} session(s) failed.
-            </span>
-          )}
-        </div>
-      )}
-
       <div className="mt-4 flex justify-end gap-2">
+        {view.type === 'result' && (
+          <>
+            <Button variant="secondary" onClick={handleBack}>
+              Back
+            </Button>
+            {onSyncComplete && (
+              <Button
+                onClick={() => {
+                  onSyncComplete(view.projectPath);
+                }}
+              >
+                View Project
+              </Button>
+            )}
+          </>
+        )}
         <Button variant="secondary" onClick={handleClose}>
           Close
-        </Button>
-        <Button
-          onClick={handleSync}
-          disabled={selectedIds.size === 0 || syncMutation.isPending}
-        >
-          {syncMutation.isPending ? (
-            <Spinner size="sm" />
-          ) : (
-            `Sync${selectedIds.size > 0 ? ` (${selectedIds.size})` : ''}`
-          )}
         </Button>
       </div>
     </Modal>

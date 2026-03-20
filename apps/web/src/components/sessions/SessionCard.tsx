@@ -18,7 +18,7 @@ const sourceColors: Record<string, 'info' | 'warning' | 'success' | 'default'> =
 
 export function SessionCard({ session }: SessionCardProps) {
   return (
-    <Link to={`/sessions/${session.id}`}>
+    <Link to={`/project/sessions/${session.id}`}>
       <Card className="transition-shadow hover:shadow-md">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">

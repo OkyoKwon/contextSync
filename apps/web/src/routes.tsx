@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router';
+import { Routes, Route, Navigate, useParams } from 'react-router';
 import { useAuthStore } from './stores/auth.store';
 import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
@@ -6,9 +6,8 @@ import { LoginPage } from './pages/LoginPage';
 import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
 import { OnboardingPage } from './pages/OnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
-import { SessionsPage } from './pages/SessionsPage';
+import { ProjectPage } from './pages/ProjectPage';
 import { SessionDetailPage } from './pages/SessionDetailPage';
-import { LocalSessionsPage } from './pages/LocalSessionsPage';
 import { ConflictsPage } from './pages/ConflictsPage';
 import { TeamSettingsPage } from './pages/TeamSettingsPage';
 import { ProjectSettingsPage } from './pages/ProjectSettingsPage';
@@ -20,6 +19,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!token) return <Navigate to="/login" replace />;
   if (status !== 'ready') return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
+}
+
+function SessionRedirect() {
+  const { sessionId } = useParams<{ sessionId: string }>();
+  return <Navigate to={`/project/sessions/${sessionId}`} replace />;
 }
 
 export function AppRoutes() {
@@ -38,9 +42,11 @@ export function AppRoutes() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="sessions" element={<SessionsPage />} />
-        <Route path="sessions/:sessionId" element={<SessionDetailPage />} />
-        <Route path="local-sessions" element={<LocalSessionsPage />} />
+        <Route path="project" element={<ProjectPage />} />
+        <Route path="project/sessions/:sessionId" element={<SessionDetailPage />} />
+        <Route path="sessions" element={<Navigate to="/project" replace />} />
+        <Route path="sessions/:sessionId" element={<SessionRedirect />} />
+        <Route path="local-sessions" element={<Navigate to="/project" replace />} />
         <Route path="conflicts" element={<ConflictsPage />} />
         <Route path="settings/team" element={<TeamSettingsPage />} />
         <Route path="settings/project" element={<ProjectSettingsPage />} />
