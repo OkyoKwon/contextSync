@@ -1,10 +1,14 @@
 import { useState, useMemo } from 'react';
 import type { PlanSummary } from '@context-sync/shared';
+import { Badge } from '../ui/Badge';
 
 interface PlanListProps {
   readonly plans: readonly PlanSummary[];
   readonly selectedFilename: string | null;
+  readonly selectedProject: string | null;
+  readonly projectOptions: readonly string[];
   readonly onSelect: (filename: string) => void;
+  readonly onProjectFilterChange: (project: string | null) => void;
 }
 
 function formatFileSize(bytes: number): string {
@@ -29,20 +33,46 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-export function PlanList({ plans, selectedFilename, onSelect }: PlanListProps) {
+function getProjectLabel(directory: string): string {
+  const parts = directory.split('/');
+  return parts[parts.length - 1] || directory;
+}
+
+export function PlanList({
+  plans,
+  selectedFilename,
+  selectedProject,
+  projectOptions,
+  onSelect,
+  onProjectFilterChange,
+}: PlanListProps) {
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return plans;
-    const query = search.toLowerCase();
-    return plans.filter(
-      (p) => p.title.toLowerCase().includes(query) || p.filename.toLowerCase().includes(query),
-    );
-  }, [plans, search]);
+    let result = plans;
+
+    if (selectedProject) {
+      result = result.filter((p) =>
+        p.projects.some(
+          (proj) =>
+            proj.projectName === selectedProject || proj.projectDirectory === selectedProject,
+        ),
+      );
+    }
+
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      result = result.filter(
+        (p) => p.title.toLowerCase().includes(query) || p.filename.toLowerCase().includes(query),
+      );
+    }
+
+    return result;
+  }, [plans, search, selectedProject]);
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b border-border-default p-3">
+      <div className="space-y-2 border-b border-border-default p-3">
         <input
           type="text"
           value={search}
@@ -50,7 +80,21 @@ export function PlanList({ plans, selectedFilename, onSelect }: PlanListProps) {
           placeholder="Search plans..."
           className="w-full rounded-lg border border-border-default bg-surface-raised px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:border-blue-500 focus:outline-none"
         />
-        <p className="mt-2 text-xs text-text-tertiary">
+        {projectOptions.length > 0 && (
+          <select
+            value={selectedProject ?? ''}
+            onChange={(e) => onProjectFilterChange(e.target.value || null)}
+            className="w-full rounded-lg border border-border-default bg-surface-raised px-3 py-2 text-sm text-text-primary focus:border-blue-500 focus:outline-none"
+          >
+            <option value="">All projects</option>
+            {projectOptions.map((proj) => (
+              <option key={proj} value={proj}>
+                {proj}
+              </option>
+            ))}
+          </select>
+        )}
+        <p className="text-xs text-text-tertiary">
           {filtered.length} plan{filtered.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -66,6 +110,15 @@ export function PlanList({ plans, selectedFilename, onSelect }: PlanListProps) {
             }`}
           >
             <p className="truncate text-sm font-medium text-text-primary">{plan.title}</p>
+            {plan.projects.length > 0 && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {plan.projects.map((proj) => (
+                  <Badge key={proj.projectDirectory} variant={proj.projectId ? 'info' : 'default'}>
+                    {proj.projectName ?? getProjectLabel(proj.projectDirectory)}
+                  </Badge>
+                ))}
+              </div>
+            )}
             <div className="mt-1 flex items-center gap-2 text-xs text-text-tertiary">
               <span>{formatDate(plan.lastModifiedAt)}</span>
               <span>·</span>
@@ -76,7 +129,7 @@ export function PlanList({ plans, selectedFilename, onSelect }: PlanListProps) {
         ))}
         {filtered.length === 0 && (
           <div className="px-4 py-8 text-center text-sm text-text-tertiary">
-            {search ? 'No plans match your search' : 'No plans found'}
+            {search || selectedProject ? 'No plans match your filters' : 'No plans found'}
           </div>
         )}
       </div>

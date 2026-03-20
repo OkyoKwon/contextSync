@@ -42,7 +42,8 @@ async function scanJsonlFilesForPlanRefs(): Promise<ReadonlyMap<string, readonly
             const pattern = new RegExp(PLAN_REF_PATTERN.source, 'g');
 
             while ((match = pattern.exec(content)) !== null) {
-              const planFilename = match[1];
+              const planFilename = match[1] as string | undefined;
+              if (!planFilename) continue;
               const existing = planToDirectories.get(planFilename);
               if (existing) {
                 existing.add(decodedPath);
