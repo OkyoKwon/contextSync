@@ -26,4 +26,5 @@ export interface UpdateProjectInput {
 export interface ProjectWithTeamInfo extends Project {
   readonly collaboratorCount: number;
   readonly isTeam: boolean;
+  readonly myLocalDirectory?: string | null;
 }

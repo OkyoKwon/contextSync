@@ -1,4 +1,6 @@
 import { CONTEXT_SYNC_ASCII, CONTEXT_SYNC_ASCII_COMPACT } from '../auth/login-ascii';
+import { useT } from '../../i18n/use-translation';
+import { DevLoginButton } from '../auth/DevLoginButton';
 
 function GitHubIcon() {
   return (
@@ -10,7 +12,15 @@ function GitHubIcon() {
 
 function ChevronDownIcon() {
   return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M6 9l6 6 6-6" />
     </svg>
   );
@@ -25,6 +35,8 @@ function scrollToSection(id: string) {
 }
 
 export function LandingHero() {
+  const t = useT();
+
   return (
     <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-16">
       <div className="flex flex-col items-center gap-8 font-mono">
@@ -42,29 +54,26 @@ export function LandingHero() {
         </pre>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <h1 className="text-lg font-medium text-text-primary md:text-xl">
-            AI 세션 컨텍스트의 중심
-          </h1>
-          <p className="max-w-md text-sm text-text-tertiary">
-            팀의 Claude Code 세션을 아카이브 · 동기화 · 검색 · 충돌 감지
-          </p>
+          <h1 className="text-lg font-medium text-text-primary md:text-xl">{t('hero.title')}</h1>
+          <p className="max-w-md text-sm text-text-tertiary">{t('hero.subtitle')}</p>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-4">
           <button
             type="button"
             onClick={handleLogin}
             className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
           >
             <GitHubIcon />
-            Continue with GitHub
+            {t('hero.cta.github')}
           </button>
+          {import.meta.env.VITE_DEV_AUTH === 'true' && <DevLoginButton />}
           <button
             type="button"
             onClick={() => scrollToSection('features')}
             className="cursor-pointer rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
           >
-            Features 살펴보기
+            {t('hero.cta.features')}
           </button>
         </div>
       </div>

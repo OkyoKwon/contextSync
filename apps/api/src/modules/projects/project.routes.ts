@@ -1,7 +1,11 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok } from '../../lib/api-response.js';
 import * as projectService from './project.service.js';
-import { createProjectSchema, updateProjectSchema } from './project.schema.js';
+import {
+  createProjectSchema,
+  updateProjectSchema,
+  setMyDirectorySchema,
+} from './project.schema.js';
 import { addCollaboratorSchema } from './collaborator.schema.js';
 import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 
@@ -11,19 +15,12 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
   // Project CRUD
   app.post('/projects', async (request, reply) => {
     const input = createProjectSchema.parse(request.body);
-    const project = await projectService.createProject(
-      app.db,
-      request.user.userId,
-      input,
-    );
+    const project = await projectService.createProject(app.db, request.user.userId, input);
     return reply.status(201).send(ok(project));
   });
 
   app.get('/projects', async (request, reply) => {
-    const projects = await projectService.getProjects(
-      app.db,
-      request.user.userId,
-    );
+    const projects = await projectService.getProjects(app.db, request.user.userId);
     return reply.send(ok(projects));
   });
 
@@ -50,13 +47,21 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.delete<{ Params: { projectId: string } }>(
-    '/projects/:projectId',
+  app.delete<{ Params: { projectId: string } }>('/projects/:projectId', async (request, reply) => {
+    await projectService.deleteProject(app.db, request.params.projectId, request.user.userId);
+    return reply.send(ok(null));
+  });
+
+  // My directory
+  app.patch<{ Params: { projectId: string }; Body: unknown }>(
+    '/projects/:projectId/my-directory',
     async (request, reply) => {
-      await projectService.deleteProject(
+      const { localDirectory } = setMyDirectorySchema.parse(request.body);
+      await projectService.setMyDirectory(
         app.db,
         request.params.projectId,
         request.user.userId,
+        localDirectory,
       );
       return reply.send(ok(null));
     },

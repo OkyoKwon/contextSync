@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../../i18n/use-translation';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 function handleLogin() {
   window.location.href = '/api/auth/github';
@@ -6,6 +8,7 @@ function handleLogin() {
 
 export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -24,13 +27,16 @@ export function LandingNav() {
           <img src="/logo.png" alt="" className="h-6" />
           <span className="font-mono text-sm font-medium text-text-primary">ContextSync</span>
         </div>
-        <button
-          type="button"
-          onClick={handleLogin}
-          className="cursor-pointer rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
-        >
-          GitHub Login
-        </button>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <button
+            type="button"
+            onClick={handleLogin}
+            className="cursor-pointer rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
+          >
+            {t('nav.login')}
+          </button>
+        </div>
       </div>
     </nav>
   );

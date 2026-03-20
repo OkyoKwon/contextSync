@@ -43,6 +43,7 @@ export interface ProjectCollaboratorsTable {
   project_id: string;
   user_id: string;
   role: string;
+  local_directory: string | null;
   added_at: Generated<Date>;
 }
 

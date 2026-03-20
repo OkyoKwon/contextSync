@@ -7,23 +7,25 @@ AI 세션 컨텍스트 관리 플랫폼 — Claude Code 세션을 팀 단위로 
 ```bash
 pnpm install
 docker compose up -d                        # PostgreSQL 16
-cp apps/api/.env.example apps/api/.env      # 환경변수 설정
+cp apps/api/.env.example apps/api/.env      # DEV_AUTH_MODE=true 기본값
 pnpm --filter @context-sync/api migrate     # DB 마이그레이션
+pnpm --filter @context-sync/api seed        # 선택: 샘플 데이터
 pnpm dev                                    # API :3001, Web :5173
+# → http://localhost:5173 → "Dev Login" 클릭
 ```
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | 전체 dev 서버 (tsx watch + Vite HMR) |
-| `pnpm build` | Turborepo 전체 빌드 |
-| `pnpm test` | Vitest 전체 실행 |
-| `pnpm test:coverage` | 커버리지 리포트 (80% 기준) |
-| `pnpm lint` | 전체 린트 |
-| `pnpm typecheck` | 전체 타입 체크 |
-| `pnpm clean` | dist 정리 |
-| `pnpm --filter @context-sync/api migrate` | DB 마이그레이션 실행 |
+| Command                                   | Description                          |
+| ----------------------------------------- | ------------------------------------ |
+| `pnpm dev`                                | 전체 dev 서버 (tsx watch + Vite HMR) |
+| `pnpm build`                              | Turborepo 전체 빌드                  |
+| `pnpm test`                               | Vitest 전체 실행                     |
+| `pnpm test:coverage`                      | 커버리지 리포트 (80% 기준)           |
+| `pnpm lint`                               | 전체 린트                            |
+| `pnpm typecheck`                          | 전체 타입 체크                       |
+| `pnpm clean`                              | dist 정리                            |
+| `pnpm --filter @context-sync/api migrate` | DB 마이그레이션 실행                 |
 
 ## Project Structure
 
@@ -122,16 +124,22 @@ interface ApiResponse<T> {
 클래스가 아닌 순수 함수 export. 첫 번째 인자로 `db` 전달:
 
 ```typescript
-export async function createProject(db: Db, userId: string, input: CreateProjectInput): Promise<Project>
+export async function createProject(
+  db: Db,
+  userId: string,
+  input: CreateProjectInput,
+): Promise<Project>;
 ```
 
 ### Environment
 
 `apps/api/.env`에서 관리. `config/env.ts`가 Zod로 시작 시 검증.
 
-필수: `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`
+필수: `DATABASE_URL`, `JWT_SECRET`, `FRONTEND_URL`
 
-선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`
+조건부: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (`DEV_AUTH_MODE=false`일 때 필수)
+
+선택: `DEV_AUTH_MODE` (로컬 개발용 OAuth 우회), `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`
 
 ### Frontend State
 
@@ -148,19 +156,19 @@ export async function createProject(db: Db, userId: string, input: CreateProject
 
 소스 파일 수정 시 관련 문서도 함께 업데이트한다.
 
-| 소스 경로 | 문서 |
-|-----------|------|
-| `apps/web/src/components/ui/` | `docs/디자인시스템.md` |
-| `apps/web/src/index.css` | `docs/디자인시스템.md` |
-| `apps/web/src/stores/theme.store.ts`, `hooks/use-theme.ts` | `docs/디자인시스템.md` |
-| `apps/web/src/components/layout/` | `docs/디자인시스템.md` |
-| `apps/api/src/modules/` (새 모듈) | `docs/아키텍쳐.md`, `CLAUDE.md` |
-| `apps/api/src/database/migrations/` (새 마이그레이션) | `docs/아키텍쳐.md`, `CLAUDE.md` |
-| `apps/api/src/database/types.ts` | `docs/아키텍쳐.md` |
-| `apps/api/src/config/env.ts` | `docs/아키텍쳐.md`, `CLAUDE.md` |
-| `apps/api/src/app.ts` | `docs/아키텍쳐.md` |
-| `apps/web/src/routes.tsx` | `docs/아키텍쳐.md` |
-| `packages/shared/src/` | `docs/아키텍쳐.md` |
+| 소스 경로                                                  | 문서                            |
+| ---------------------------------------------------------- | ------------------------------- |
+| `apps/web/src/components/ui/`                              | `docs/디자인시스템.md`          |
+| `apps/web/src/index.css`                                   | `docs/디자인시스템.md`          |
+| `apps/web/src/stores/theme.store.ts`, `hooks/use-theme.ts` | `docs/디자인시스템.md`          |
+| `apps/web/src/components/layout/`                          | `docs/디자인시스템.md`          |
+| `apps/api/src/modules/` (새 모듈)                          | `docs/아키텍쳐.md`, `CLAUDE.md` |
+| `apps/api/src/database/migrations/` (새 마이그레이션)      | `docs/아키텍쳐.md`, `CLAUDE.md` |
+| `apps/api/src/database/types.ts`                           | `docs/아키텍쳐.md`              |
+| `apps/api/src/config/env.ts`                               | `docs/아키텍쳐.md`, `CLAUDE.md` |
+| `apps/api/src/app.ts`                                      | `docs/아키텍쳐.md`              |
+| `apps/web/src/routes.tsx`                                  | `docs/아키텍쳐.md`              |
+| `packages/shared/src/`                                     | `docs/아키텍쳐.md`              |
 
 상세 문서: [디자인시스템](docs/디자인시스템.md) · [아키텍쳐](docs/아키텍쳐.md)
 대량 변경 시 `doc-updater` 에이전트로 일괄 동기화.

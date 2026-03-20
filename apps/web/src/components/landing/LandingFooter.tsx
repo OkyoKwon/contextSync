@@ -1,3 +1,5 @@
+import { useT } from '../../i18n/use-translation';
+
 function GitHubIcon() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -11,23 +13,23 @@ function handleLogin() {
 }
 
 export function LandingFooter() {
+  const t = useT();
+
   return (
     <footer className="bg-page">
       <div className="border-t border-border-default py-20 md:py-28">
         <div className="mx-auto max-w-5xl px-6 text-center">
           <h2 className="font-mono text-lg font-medium text-text-primary md:text-xl">
-            팀의 AI 워크플로우를 동기화하세요
+            {t('footer.cta.title')}
           </h2>
-          <p className="mt-3 font-mono text-sm text-text-tertiary">
-            무료로 시작하세요. 설치 없이 GitHub 계정만으로 바로 사용 가능합니다.
-          </p>
+          <p className="mt-3 font-mono text-sm text-text-tertiary">{t('footer.cta.subtitle')}</p>
           <button
             type="button"
             onClick={handleLogin}
             className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
           >
             <GitHubIcon />
-            Continue with GitHub
+            {t('footer.cta.button')}
           </button>
         </div>
       </div>
@@ -36,9 +38,9 @@ export function LandingFooter() {
         <div className="mx-auto flex max-w-5xl items-center justify-between font-mono text-xs text-text-tertiary/60">
           <span>&copy; {new Date().getFullYear()} ContextSync</span>
           <div className="flex gap-6">
-            <span className="cursor-default">Docs</span>
-            <span className="cursor-default">GitHub</span>
-            <span className="cursor-default">Contact</span>
+            <span className="cursor-default">{t('footer.link.docs')}</span>
+            <span className="cursor-default">{t('footer.link.github')}</span>
+            <span className="cursor-default">{t('footer.link.contact')}</span>
           </div>
         </div>
       </div>

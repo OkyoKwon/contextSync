@@ -10,6 +10,7 @@ const ACTION_LABELS: Record<ActivityAction, string> = {
   conflict_resolved: 'resolved a conflict',
   collaborator_added: 'added a collaborator',
   collaborator_removed: 'removed a collaborator',
+  directory_updated: 'updated their directory',
 };
 
 function formatRelativeTime(dateStr: string): string {

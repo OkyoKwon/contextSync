@@ -24,7 +24,7 @@ export function ChangeDirectoryModal({
 
   const mutation = useMutation({
     mutationFn: (localDirectory: string | null) =>
-      projectsApi.update(projectId, { localDirectory }),
+      projectsApi.setMyDirectory(projectId, localDirectory),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['local-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });

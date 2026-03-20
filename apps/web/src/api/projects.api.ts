@@ -1,4 +1,11 @@
-import type { Project, ProjectWithTeamInfo, Collaborator, CreateProjectInput, UpdateProjectInput, AddCollaboratorInput } from '@context-sync/shared';
+import type {
+  Project,
+  ProjectWithTeamInfo,
+  Collaborator,
+  CreateProjectInput,
+  UpdateProjectInput,
+  AddCollaboratorInput,
+} from '@context-sync/shared';
 import { api } from './client';
 
 export const projectsApi = {
@@ -14,4 +21,6 @@ export const projectsApi = {
     api.post<void>(`/projects/${projectId}/collaborators`, input),
   removeCollaborator: (projectId: string, userId: string) =>
     api.delete<void>(`/projects/${projectId}/collaborators/${userId}`),
+  setMyDirectory: (projectId: string, localDirectory: string | null) =>
+    api.patch<void>(`/projects/${projectId}/my-directory`, { localDirectory }),
 };

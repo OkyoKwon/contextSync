@@ -1,23 +1,25 @@
+import { useT } from '../../i18n/use-translation';
 import { TerminalWindow } from './TerminalWindow';
 import { useInView } from './use-in-view';
 
-const TERMINAL_LINES = [
-  { type: 'prompt', user: 'dev-A', text: 'claude "auth 모듈 리팩토링해줘"' },
-  { type: 'output', text: '→ src/auth/middleware.ts 수정 중...' },
-  { type: 'output', text: '→ src/auth/session.ts 수정 중...' },
-  { type: 'spacer' },
-  { type: 'prompt', user: 'dev-B', text: 'claude "세션 관리 로직 개선해줘"' },
-  { type: 'output', text: '→ src/auth/session.ts 수정 중...' },
-  { type: 'output', text: '→ src/auth/token.ts 수정 중...' },
-  { type: 'spacer' },
-  { type: 'conflict', text: '⚠ CONFLICT: src/auth/session.ts — 2명이 동시 작업 중' },
-  { type: 'spacer' },
-  { type: 'solution', text: '$ contextsync detect --project team-alpha' },
-  { type: 'solution', text: '✓ 충돌 사전 감지 완료 — dev-A, dev-B에게 알림 전송' },
-] as const;
-
 export function ProblemStatement() {
   const { ref, isVisible } = useInView();
+  const t = useT();
+
+  const terminalLines = [
+    { type: 'prompt', user: 'dev-A', text: t('problem.terminal.prompt1') },
+    { type: 'output', text: t('problem.terminal.output1') },
+    { type: 'output', text: t('problem.terminal.output2') },
+    { type: 'spacer', text: '' },
+    { type: 'prompt', user: 'dev-B', text: t('problem.terminal.prompt2') },
+    { type: 'output', text: t('problem.terminal.output3') },
+    { type: 'output', text: t('problem.terminal.output4') },
+    { type: 'spacer', text: '' },
+    { type: 'conflict', text: t('problem.terminal.conflict') },
+    { type: 'spacer', text: '' },
+    { type: 'solution', text: '$ contextsync detect --project team-alpha' },
+    { type: 'solution', text: t('problem.terminal.resolved') },
+  ] as const;
 
   return (
     <section
@@ -29,12 +31,12 @@ export function ProblemStatement() {
     >
       <div className="mx-auto max-w-5xl px-6">
         <p className="mb-12 text-center font-mono text-xs uppercase tracking-widest text-text-muted">
-          // Why ContextSync
+          {t('problem.sectionLabel')}
         </p>
 
         <TerminalWindow title="~/team-project" className="mx-auto max-w-2xl">
           <div className="space-y-1">
-            {TERMINAL_LINES.map((line, i) => {
+            {terminalLines.map((line, i) => {
               if (line.type === 'spacer') {
                 return <div key={i} className="h-3" />;
               }
@@ -71,7 +73,9 @@ export function ProblemStatement() {
         </TerminalWindow>
 
         <p className="mt-12 text-center font-mono text-sm text-text-tertiary">
-          팀이 AI와 함께 일할 때, <span className="text-text-primary font-medium">컨텍스트 동기화는 필수</span>입니다
+          {t('problem.conclusion')}
+          <span className="text-text-primary font-medium">{t('problem.conclusionHighlight')}</span>
+          {t('problem.conclusionEnd')}
         </p>
       </div>
     </section>

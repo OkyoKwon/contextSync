@@ -13,6 +13,7 @@ import { searchRoutes } from './modules/search/search.routes.js';
 import { notificationRoutes } from './modules/notifications/notification.routes.js';
 import { prdAnalysisRoutes } from './modules/prd-analysis/prd-analysis.routes.js';
 import { activityRoutes } from './modules/activity/activity.routes.js';
+import { planRoutes } from './modules/plans/plan.routes.js';
 
 export async function buildApp(env: Env) {
   const app = Fastify({
@@ -29,6 +30,12 @@ export async function buildApp(env: Env) {
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
 
   await app.register(authRoutes, { prefix: '/api/auth' });
+
+  if (env.DEV_AUTH_MODE === 'true') {
+    const { devAuthRoutes } = await import('./modules/auth/dev-auth.routes.js');
+    await app.register(devAuthRoutes, { prefix: '/api/auth' });
+    app.log.warn('DEV_AUTH_MODE enabled — do not use in production');
+  }
   await app.register(projectRoutes, { prefix: '/api' });
   await app.register(sessionRoutes, { prefix: '/api' });
   await app.register(conflictRoutes, { prefix: '/api' });
@@ -36,6 +43,7 @@ export async function buildApp(env: Env) {
   await app.register(notificationRoutes, { prefix: '/api' });
   await app.register(prdAnalysisRoutes, { prefix: '/api' });
   await app.register(activityRoutes, { prefix: '/api' });
+  await app.register(planRoutes, { prefix: '/api' });
 
   app.get('/api/health', async () => ({ status: 'ok' }));
 

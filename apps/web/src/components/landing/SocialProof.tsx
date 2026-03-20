@@ -1,25 +1,25 @@
+import { useT } from '../../i18n/use-translation';
+import type { TranslationKey } from '../../i18n/types';
 import { useInView } from './use-in-view';
 
-const STATS = [
-  { value: '100+', label: '팀' },
-  { value: '10,000+', label: '세션 아카이브' },
-  { value: '5,000+', label: '충돌 사전 방지' },
-  { value: '87%+', label: '평균 달성률' },
-] as const;
+const STATS: readonly { readonly value: string; readonly labelKey: TranslationKey }[] = [
+  { value: '100+', labelKey: 'social.stat.0.label' },
+  { value: '10,000+', labelKey: 'social.stat.1.label' },
+  { value: '5,000+', labelKey: 'social.stat.2.label' },
+  { value: '87%+', labelKey: 'social.stat.3.label' },
+];
 
-const TESTIMONIALS = [
-  {
-    quote: '"Claude Code 세션이 날아가는 게 제일 무서웠는데, 이제 팀 전체 히스토리가 검색 가능해졌어요."',
-    author: '— 프론트엔드 리드, 스타트업 A',
-  },
-  {
-    quote: '"같은 파일 동시 작업하다 머지 지옥 빠지는 일이 확 줄었습니다. 충돌 감지가 핵심이에요."',
-    author: '— CTO, 스타트업 B',
-  },
-] as const;
+const TESTIMONIALS: readonly {
+  readonly quoteKey: TranslationKey;
+  readonly authorKey: TranslationKey;
+}[] = [
+  { quoteKey: 'social.testimonial.0.quote', authorKey: 'social.testimonial.0.author' },
+  { quoteKey: 'social.testimonial.1.quote', authorKey: 'social.testimonial.1.author' },
+];
 
 export function SocialProof() {
   const { ref, isVisible } = useInView();
+  const t = useT();
 
   return (
     <section
@@ -30,31 +30,28 @@ export function SocialProof() {
     >
       <div className="mx-auto max-w-5xl px-6">
         <p className="mb-12 text-center font-mono text-xs uppercase tracking-widest text-text-muted">
-          // By the Numbers
+          {t('social.sectionLabel')}
         </p>
 
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {STATS.map((stat) => (
-            <div key={stat.label} className="text-center">
+            <div key={stat.labelKey} className="text-center">
               <div className="font-mono text-2xl font-bold text-text-primary md:text-3xl">
                 {stat.value}
               </div>
-              <div className="mt-1 font-mono text-xs text-text-muted">{stat.label}</div>
+              <div className="mt-1 font-mono text-xs text-text-muted">{t(stat.labelKey)}</div>
             </div>
           ))}
         </div>
 
         <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {TESTIMONIALS.map((t) => (
-            <blockquote
-              key={t.author}
-              className="border-l-2 border-text-muted pl-4"
-            >
+          {TESTIMONIALS.map((item) => (
+            <blockquote key={item.quoteKey} className="border-l-2 border-text-muted pl-4">
               <p className="font-mono text-sm leading-relaxed text-text-secondary">
-                {t.quote}
+                {t(item.quoteKey)}
               </p>
               <footer className="mt-3 font-mono text-xs text-text-muted">
-                {t.author}
+                {t(item.authorKey)}
               </footer>
             </blockquote>
           ))}

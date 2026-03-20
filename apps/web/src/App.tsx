@@ -5,6 +5,7 @@ import { AppRoutes } from './routes';
 import { LoginModal } from './components/auth/LoginModal';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useThemeSync } from './hooks/use-theme';
+import { useLocaleSync } from './hooks/use-locale-sync';
 import { useThemeStore } from './stores/theme.store';
 
 const queryClient = new QueryClient({
@@ -18,6 +19,7 @@ const queryClient = new QueryClient({
 
 export function App() {
   useThemeSync();
+  useLocaleSync();
   const theme = useThemeStore((s) => s.theme);
 
   return (

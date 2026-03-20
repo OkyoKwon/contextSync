@@ -11,6 +11,7 @@ import { SessionDetailPage } from './pages/SessionDetailPage';
 import { ConflictsPage } from './pages/ConflictsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PrdAnalysisPage } from './pages/PrdAnalysisPage';
+import { PlansPage } from './pages/PlansPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
@@ -50,6 +51,7 @@ export function AppRoutes() {
         <Route path="local-sessions" element={<Navigate to="/project" replace />} />
         <Route path="conflicts" element={<ConflictsPage />} />
         <Route path="prd-analysis" element={<PrdAnalysisPage />} />
+        <Route path="plans" element={<PlansPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/team" element={<Navigate to="/settings" replace />} />
         <Route path="settings/project" element={<Navigate to="/settings" replace />} />

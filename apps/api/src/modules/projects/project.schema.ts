@@ -13,3 +13,7 @@ export const updateProjectSchema = z.object({
   repoUrl: z.string().url().optional(),
   localDirectory: z.string().max(1024).nullable().optional(),
 });
+
+export const setMyDirectorySchema = z.object({
+  localDirectory: z.string().max(1024).nullable(),
+});

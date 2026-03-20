@@ -1,9 +1,24 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve, normalize } from 'node:path';
 import { homedir } from 'node:os';
 import type { Db } from '../../database/client.js';
-import type { LocalDirectory, LocalProjectGroup, LocalSessionInfo, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, RecalculateTokenResult, ProjectConversation, UnifiedMessage } from '@context-sync/shared';
-import { parseClaudeCodeSession, parseClaudeCodeSessionWithTimestamps } from './parsers/claude-code-session.parser.js';
+import type {
+  LocalDirectory,
+  LocalProjectGroup,
+  LocalSessionInfo,
+  LocalSessionDetail,
+  LocalSessionMessage,
+  SyncSessionResult,
+  SyncSingleResult,
+  RecalculateTokenResult,
+  ProjectConversation,
+  UnifiedMessage,
+  BrowseDirectoryEntry,
+} from '@context-sync/shared';
+import {
+  parseClaudeCodeSession,
+  parseClaudeCodeSessionWithTimestamps,
+} from './parsers/claude-code-session.parser.js';
 import { importParsedSession } from './session-import.service.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 
@@ -100,19 +115,38 @@ export async function listLocalSessions(
   projectId: string,
   activeOnly = true,
 ): Promise<readonly LocalProjectGroup[]> {
-  // Look up the project's linked local_directory
+  // Look up the project's linked local_directory and owner
   const project = await db
     .selectFrom('projects')
-    .select(['local_directory'])
+    .select(['local_directory', 'owner_id'])
     .where('id', '=', projectId)
     .executeTakeFirst();
 
-  if (!project?.local_directory) return [];
+  // Collect all member directories (owner + collaborators with local_directory set)
+  const directoriesToScan: string[] = [];
+  if (project?.local_directory) {
+    directoriesToScan.push(project.local_directory);
+  }
 
-  const encodedDir = encodeProjectPath(project.local_directory);
+  const collabRows = await db
+    .selectFrom('project_collaborators')
+    .select(['local_directory'])
+    .where('project_id', '=', projectId)
+    .where('local_directory', 'is not', null)
+    .execute();
+
+  for (const row of collabRows) {
+    if (row.local_directory) {
+      directoriesToScan.push(row.local_directory);
+    }
+  }
+
+  if (directoriesToScan.length === 0) return [];
+
+  const encodedDirs = new Set(directoriesToScan.map(encodeProjectPath));
 
   const allSessionFiles = await findSessionFiles();
-  const sessionFiles = allSessionFiles.filter((f) => f.dir === encodedDir);
+  const sessionFiles = allSessionFiles.filter((f) => encodedDirs.has(f.dir));
 
   if (sessionFiles.length === 0) return [];
 
@@ -133,7 +167,7 @@ export async function listLocalSessions(
   for (const file of sessionFiles) {
     const sessionId = file.fileName.replace('.jsonl', '');
     const projectPath = decodeProjectPath(file.dir);
-    const isActive = (now - file.lastModifiedMs) < ACTIVE_THRESHOLD_MS;
+    const isActive = now - file.lastModifiedMs < ACTIVE_THRESHOLD_MS;
 
     try {
       const content = await readFile(file.fullPath, 'utf-8');
@@ -171,9 +205,7 @@ export async function listLocalSessions(
     const totalSessionCount = sorted.length;
 
     // Determine which sessions to include in the list
-    const displaySessions = activeOnly
-      ? sorted.filter((s) => s.isActive)
-      : sorted;
+    const displaySessions = activeOnly ? sorted.filter((s) => s.isActive) : sorted;
 
     return {
       projectPath,
@@ -286,9 +318,7 @@ export async function getProjectConversation(
   allMessages.sort((a, b) => (a.timestamp < b.timestamp ? -1 : a.timestamp > b.timestamp ? 1 : 0));
 
   // Apply cursor filter
-  const filtered = cursor
-    ? allMessages.filter((m) => m.timestamp > cursor)
-    : allMessages;
+  const filtered = cursor ? allMessages.filter((m) => m.timestamp > cursor) : allMessages;
 
   // Slice for pagination
   const sliced = filtered.slice(0, limit + 1);
@@ -417,10 +447,39 @@ export async function recalculateTokenUsage(
       if (err instanceof Error && err.message.includes('ENOENT')) {
         skipped++;
       } else {
-        errors.push(`${row.external_session_id}: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        errors.push(
+          `${row.external_session_id}: ${err instanceof Error ? err.message : 'Unknown error'}`,
+        );
       }
     }
   }
 
   return { updatedSessions, updatedMessages, skipped, errors };
+}
+
+const DANGEROUS_PATH_SEGMENTS = ['..', '\0'];
+
+function isPathSafe(dirPath: string): boolean {
+  const normalized = normalize(dirPath);
+  if (!normalized.startsWith('/')) return false;
+  return !DANGEROUS_PATH_SEGMENTS.some((seg) => normalized.includes(seg));
+}
+
+export async function browseDirectory(dirPath?: string): Promise<readonly BrowseDirectoryEntry[]> {
+  const targetPath = dirPath ? resolve(dirPath) : homedir();
+
+  if (!isPathSafe(targetPath)) {
+    throw Object.assign(new Error('Invalid directory path'), { statusCode: 400 });
+  }
+
+  const entries = await readdir(targetPath, { withFileTypes: true });
+
+  return entries
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((entry) => ({
+      name: entry.name,
+      path: join(targetPath, entry.name),
+      isDirectory: true,
+    }));
 }

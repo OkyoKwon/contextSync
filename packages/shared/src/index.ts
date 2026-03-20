@@ -2,7 +2,12 @@
 export type { ApiResponse, PaginationMeta, PaginationQuery } from './types/api.js';
 export type { User, UserRole, NotificationSettings } from './types/user.js';
 export type { Collaborator, AddCollaboratorInput } from './types/collaborator.js';
-export type { Project, CreateProjectInput, UpdateProjectInput, ProjectWithTeamInfo } from './types/project.js';
+export type {
+  Project,
+  CreateProjectInput,
+  UpdateProjectInput,
+  ProjectWithTeamInfo,
+} from './types/project.js';
 export type {
   Session,
   SessionSource,
@@ -17,7 +22,19 @@ export type {
   DashboardStats,
   MemberActivity,
 } from './types/session.js';
-export type { LocalDirectory, LocalSessionInfo, LocalProjectGroup, LocalSessionDetail, LocalSessionMessage, SyncSessionResult, SyncSingleResult, RecalculateTokenResult, UnifiedMessage, ProjectConversation, BrowseDirectoryEntry } from './types/sync.js';
+export type {
+  LocalDirectory,
+  LocalSessionInfo,
+  LocalProjectGroup,
+  LocalSessionDetail,
+  LocalSessionMessage,
+  SyncSessionResult,
+  SyncSingleResult,
+  RecalculateTokenResult,
+  UnifiedMessage,
+  ProjectConversation,
+  BrowseDirectoryEntry,
+} from './types/sync.js';
 export type {
   TokenUsagePeriod,
   TokenUsageStats,
@@ -45,10 +62,16 @@ export type {
 } from './types/prd-analysis.js';
 
 export type { ActivityAction, ActivityEntry } from './types/activity.js';
+export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
 
 // Constants
 export { USER_ROLES } from './constants/roles.js';
-export { SESSION_SOURCES, SESSION_STATUSES, MESSAGE_ROLES, MESSAGE_CONTENT_TYPES } from './constants/session-status.js';
+export {
+  SESSION_SOURCES,
+  SESSION_STATUSES,
+  MESSAGE_ROLES,
+  MESSAGE_CONTENT_TYPES,
+} from './constants/session-status.js';
 export {
   CONFLICT_TYPES,
   CONFLICT_SEVERITIES,

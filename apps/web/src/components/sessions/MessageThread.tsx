@@ -1,6 +1,4 @@
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { useThemeStore } from '../../stores/theme.store';
+import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 
 export interface DisplayMessage {
   readonly role: 'user' | 'assistant';
@@ -16,7 +14,10 @@ export function MessageThread({ messages }: MessageThreadProps) {
   return (
     <div className="space-y-4">
       {messages.map((message, index) => (
-        <MessageBubble key={'id' in message ? (message as { id: string }).id : index} message={message} />
+        <MessageBubble
+          key={'id' in message ? (message as { id: string }).id : index}
+          message={message}
+        />
       ))}
     </div>
   );
@@ -24,7 +25,6 @@ export function MessageThread({ messages }: MessageThreadProps) {
 
 export function MessageBubble({ message }: { readonly message: DisplayMessage }) {
   const isUser = message.role === 'user';
-  const theme = useThemeStore((s) => s.theme);
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -41,9 +41,7 @@ export function MessageBubble({ message }: { readonly message: DisplayMessage })
             <span className="ml-1 opacity-50">({message.modelUsed})</span>
           )}
         </div>
-        <div className={`prose prose-sm max-w-none ${theme === 'dark' ? 'prose-invert' : ''}`}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-        </div>
+        <MarkdownRenderer content={message.content} />
       </div>
     </div>
   );

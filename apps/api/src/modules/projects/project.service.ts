@@ -1,5 +1,11 @@
 import type { Db } from '../../database/client.js';
-import type { Project, CreateProjectInput, UpdateProjectInput, ProjectWithTeamInfo, Collaborator } from '@context-sync/shared';
+import type {
+  Project,
+  CreateProjectInput,
+  UpdateProjectInput,
+  ProjectWithTeamInfo,
+  Collaborator,
+} from '@context-sync/shared';
 import { NotFoundError, ForbiddenError } from '../../plugins/error-handler.plugin.js';
 import * as projectRepo from './project.repository.js';
 import * as collabRepo from './collaborator.repository.js';
@@ -14,11 +20,28 @@ export async function createProject(
   return projectRepo.createProject(db, userId, input);
 }
 
-export async function getProjects(
-  db: Db,
-  userId: string,
-): Promise<readonly ProjectWithTeamInfo[]> {
-  return projectRepo.findProjectsWithTeamInfo(db, userId);
+export async function getProjects(db: Db, userId: string): Promise<readonly ProjectWithTeamInfo[]> {
+  const projects = await projectRepo.findProjectsWithTeamInfo(db, userId);
+
+  // Fetch this user's collaborator directories for all projects in one query
+  const projectIds = projects.map((p) => p.id);
+  const collabDirs =
+    projectIds.length > 0
+      ? await db
+          .selectFrom('project_collaborators')
+          .select(['project_id', 'local_directory'])
+          .where('user_id', '=', userId)
+          .where('project_id', 'in', projectIds)
+          .execute()
+      : [];
+
+  const collabDirMap = new Map(collabDirs.map((r) => [r.project_id, r.local_directory]));
+
+  return projects.map((project) => ({
+    ...project,
+    myLocalDirectory:
+      project.ownerId === userId ? project.localDirectory : (collabDirMap.get(project.id) ?? null),
+  }));
 }
 
 export async function getProject(
@@ -29,7 +52,13 @@ export async function getProject(
   const project = await projectRepo.findProjectByIdWithTeamInfo(db, projectId);
   if (!project) throw new NotFoundError('Project');
   await assertAccess(db, project, userId);
-  return project;
+
+  if (project.ownerId === userId) {
+    return { ...project, myLocalDirectory: project.localDirectory };
+  }
+
+  const collab = await collabRepo.findCollaboratorByProjectAndUser(db, projectId, userId);
+  return { ...project, myLocalDirectory: collab?.localDirectory ?? null };
 }
 
 export async function updateProject(
@@ -44,11 +73,7 @@ export async function updateProject(
   return projectRepo.updateProject(db, projectId, input);
 }
 
-export async function deleteProject(
-  db: Db,
-  projectId: string,
-  userId: string,
-): Promise<void> {
+export async function deleteProject(db: Db, projectId: string, userId: string): Promise<void> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
   assertOwner(project, userId);
@@ -106,7 +131,36 @@ export async function removeCollaborator(
   });
 }
 
-export async function assertProjectAccess(db: Db, projectId: string, userId: string): Promise<Project> {
+export async function setMyDirectory(
+  db: Db,
+  projectId: string,
+  userId: string,
+  localDirectory: string | null,
+): Promise<void> {
+  const role = await getUserRoleInProject(db, projectId, userId);
+  if (!role) throw new ForbiddenError('Not a project member');
+
+  if (role === 'owner') {
+    await projectRepo.updateProject(db, projectId, { localDirectory });
+  } else {
+    await collabRepo.updateCollaboratorDirectory(db, projectId, userId, localDirectory);
+  }
+
+  logActivity(db, {
+    projectId,
+    userId,
+    action: 'directory_updated',
+    entityType: 'project',
+    entityId: projectId,
+    metadata: { localDirectory },
+  });
+}
+
+export async function assertProjectAccess(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<Project> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
   await assertAccess(db, project, userId);

@@ -80,3 +80,9 @@ export interface ProjectConversation {
   readonly hasMore: boolean;
   readonly nextCursor: string | null;
 }
+
+export interface BrowseDirectoryEntry {
+  readonly name: string;
+  readonly path: string;
+  readonly isDirectory: boolean;
+}

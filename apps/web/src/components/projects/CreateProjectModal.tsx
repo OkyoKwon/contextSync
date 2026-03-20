@@ -28,11 +28,7 @@ function StepIndicator({ current, total }: { readonly current: Step; readonly to
         return (
           <div key={stepNum} className="flex items-center gap-2">
             {i > 0 && (
-              <div
-                className={`h-px w-6 ${
-                  isCompleted ? 'bg-blue-500' : 'bg-border-default'
-                }`}
-              />
+              <div className={`h-px w-6 ${isCompleted ? 'bg-blue-500' : 'bg-border-default'}`} />
             )}
             <div
               className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
@@ -45,7 +41,12 @@ function StepIndicator({ current, total }: { readonly current: Step; readonly to
             >
               {isCompleted ? (
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M5 13l4 4L19 7"
+                  />
                 </svg>
               ) : (
                 stepNum
@@ -152,20 +153,15 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
           setPrdStatus('idle');
         }
       } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : 'Failed to process PRD document',
-        );
+        toast.error(error instanceof Error ? error.message : 'Failed to process PRD document');
         setPrdStatus('idle');
       }
     },
     [createdProjectId, queryClient, resetState, onClose, navigate],
   );
 
-  const stepTitle = step === 1
-    ? 'Create Project'
-    : step === 2
-      ? 'Link Directory'
-      : 'Upload PRD';
+  const stepTitle =
+    step === 1 ? 'Create Project' : step === 2 ? 'Link Working Directory' : 'Upload PRD';
 
   const isBusy = createMutation.isPending || prdStatus === 'uploading' || prdStatus === 'analyzing';
 
@@ -213,11 +209,7 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
             }
           }}
         >
-          <DirectoryPicker
-            value={localDirectory}
-            onChange={setLocalDirectory}
-            defaultToActive
-          />
+          <DirectoryPicker value={localDirectory} onChange={setLocalDirectory} defaultToActive />
           {createMutation.isError && (
             <p className="text-sm text-red-400">
               {createMutation.error instanceof Error
@@ -251,8 +243,19 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
           {prdStatus === 'uploading' && (
             <div className="flex items-center justify-center gap-2 py-4 text-sm text-text-secondary">
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Uploading document...
             </div>
@@ -260,8 +263,19 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
           {prdStatus === 'analyzing' && (
             <div className="flex items-center justify-center gap-2 py-4 text-sm text-text-secondary">
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Analyzing PRD...
             </div>

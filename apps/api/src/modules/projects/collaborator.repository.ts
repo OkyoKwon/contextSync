@@ -13,6 +13,7 @@ export async function findCollaboratorsByProjectId(
       'project_collaborators.project_id',
       'project_collaborators.user_id',
       'project_collaborators.role',
+      'project_collaborators.local_directory',
       'project_collaborators.added_at',
       'users.name as user_name',
       'users.email as user_email',
@@ -27,6 +28,7 @@ export async function findCollaboratorsByProjectId(
     projectId: row.project_id,
     userId: row.user_id,
     role: row.role as Collaborator['role'],
+    localDirectory: row.local_directory,
     addedAt: row.added_at.toISOString(),
     userName: row.user_name,
     userEmail: row.user_email,
@@ -46,11 +48,7 @@ export async function addCollaborator(
     .execute();
 }
 
-export async function removeCollaborator(
-  db: Db,
-  projectId: string,
-  userId: string,
-): Promise<void> {
+export async function removeCollaborator(db: Db, projectId: string, userId: string): Promise<void> {
   await db
     .deleteFrom('project_collaborators')
     .where('project_id', '=', projectId)
@@ -71,6 +69,7 @@ export async function findCollaboratorByProjectAndUser(
       'project_collaborators.project_id',
       'project_collaborators.user_id',
       'project_collaborators.role',
+      'project_collaborators.local_directory',
       'project_collaborators.added_at',
       'users.name as user_name',
       'users.email as user_email',
@@ -87,6 +86,7 @@ export async function findCollaboratorByProjectAndUser(
     projectId: row.project_id,
     userId: row.user_id,
     role: row.role as Collaborator['role'],
+    localDirectory: row.local_directory,
     addedAt: row.added_at.toISOString(),
     userName: row.user_name,
     userEmail: row.user_email,
@@ -94,11 +94,21 @@ export async function findCollaboratorByProjectAndUser(
   };
 }
 
-export async function isCollaborator(
+export async function updateCollaboratorDirectory(
   db: Db,
   projectId: string,
   userId: string,
-): Promise<boolean> {
+  localDirectory: string | null,
+): Promise<void> {
+  await db
+    .updateTable('project_collaborators')
+    .set({ local_directory: localDirectory })
+    .where('project_id', '=', projectId)
+    .where('user_id', '=', userId)
+    .execute();
+}
+
+export async function isCollaborator(db: Db, projectId: string, userId: string): Promise<boolean> {
   const row = await db
     .selectFrom('project_collaborators')
     .select('id')

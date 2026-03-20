@@ -5,6 +5,7 @@ export interface Collaborator {
   readonly projectId: string;
   readonly userId: string;
   readonly role: UserRole;
+  readonly localDirectory: string | null;
   readonly addedAt: string;
   readonly userName?: string;
   readonly userEmail?: string;

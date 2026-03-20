@@ -4,7 +4,8 @@ export type ActivityAction =
   | 'conflict_detected'
   | 'conflict_resolved'
   | 'collaborator_added'
-  | 'collaborator_removed';
+  | 'collaborator_removed'
+  | 'directory_updated';
 
 export interface ActivityEntry {
   readonly id: string;
