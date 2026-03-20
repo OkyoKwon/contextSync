@@ -42,3 +42,14 @@ body {
   background-color: var(--color-page);
   color: var(--color-text-primary);
 }
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
