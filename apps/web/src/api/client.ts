@@ -62,7 +62,7 @@ async function request<T>(
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  if (!(options.body instanceof FormData)) {
+  if (options.body != null && !(options.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
   }
 
