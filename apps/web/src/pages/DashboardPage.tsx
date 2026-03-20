@@ -1,13 +1,9 @@
-import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router';
-import type { SessionSource } from '@context-sync/shared';
 import { useTimeline, useDashboardStats } from '../hooks/use-sessions';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { useRequireProject } from '../hooks/use-require-project';
 import { DashboardStatsView } from '../components/dashboard/DashboardStats';
 import { Timeline } from '../components/dashboard/Timeline';
-import { TimelineFilters } from '../components/dashboard/TimelineFilters';
 import { ActiveConflictsSidebar } from '../components/dashboard/ActiveConflictsSidebar';
 import { HotFiles } from '../components/dashboard/HotFiles';
 import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
@@ -20,13 +16,6 @@ import { getGreeting } from '../lib/date';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { PendingInvitations } from '../components/dashboard/PendingInvitations';
 
-const VALID_SOURCES: ReadonlySet<string> = new Set(['claude_code', 'claude_ai', 'api', 'manual']);
-
-function parseSourceParam(value: string | null): SessionSource | null {
-  if (value && VALID_SOURCES.has(value)) return value as SessionSource;
-  return null;
-}
-
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -37,33 +26,9 @@ export function DashboardPage() {
 
   const isTeam = projectData?.data?.isTeam ?? false;
 
-  const [searchParams, setSearchParams] = useSearchParams();
-  const activeSource = parseSourceParam(searchParams.get('source'));
-
-  const handleFilterChange = useCallback(
-    (source: SessionSource | null) => {
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (source) {
-            next.set('source', source);
-          } else {
-            next.delete('source');
-          }
-          return next;
-        },
-        { replace: true },
-      );
-    },
-    [setSearchParams],
-  );
-
   const stats = statsData?.data;
 
-  const filteredEntries = useMemo(() => {
-    const allEntries = timelineData?.data ?? [];
-    return activeSource ? allEntries.filter((e) => e.source === activeSource) : allEntries;
-  }, [timelineData?.data, activeSource]);
+  const entries = timelineData?.data ?? [];
 
   const greeting = getGreeting(new Date().getHours());
   const displayName = user?.name?.split(' ')[0] ?? 'there';
@@ -90,7 +55,7 @@ export function DashboardPage() {
     );
   }
 
-  const hasSessions = filteredEntries.length > 0 || timelineLoading;
+  const hasSessions = entries.length > 0 || timelineLoading;
 
   if (!timelineLoading && !hasSessions) {
     return (
@@ -132,11 +97,10 @@ export function DashboardPage() {
 
       <div className="mt-6 grid grid-cols-3 gap-6">
         <div className="col-span-2">
-          <div className="mb-3 flex items-center justify-between gap-4">
+          <div className="mb-3">
             <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
-            <TimelineFilters activeSource={activeSource} onFilterChange={handleFilterChange} />
           </div>
-          <Timeline entries={filteredEntries} isLoading={timelineLoading} />
+          <Timeline entries={entries} isLoading={timelineLoading} />
         </div>
         <div className="space-y-4">
           {isTeam && <TeamActivityPanel />}
