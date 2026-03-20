@@ -1,20 +1,40 @@
 import type { SessionImportData } from '@context-sync/shared';
-import { findFirstMeaningfulTitle, generateTitle, UNTITLED } from './title.utils.js';
+import { findFirstMeaningfulTitle, generateTitle, stripSystemXmlContent, UNTITLED } from './title.utils.js';
+
+interface ClaudeUsage {
+  readonly input_tokens?: number;
+  readonly output_tokens?: number;
+  readonly cache_creation_input_tokens?: number;
+  readonly cache_read_input_tokens?: number;
+}
 
 interface ClaudeCodeRecord {
   readonly type?: string;
+  readonly requestId?: string;
   readonly message?: {
     readonly role?: string;
     readonly content?: string | readonly ClaudeContentBlock[];
     readonly model?: string;
-    readonly usage?: {
-      readonly input_tokens?: number;
-      readonly output_tokens?: number;
-    };
+    readonly usage?: ClaudeUsage;
   };
   readonly snapshot?: {
     readonly trackedFileBackups?: Readonly<Record<string, unknown>>;
   };
+}
+
+function sumUsageTokens(usage: ClaudeUsage): number {
+  return (usage.input_tokens ?? 0)
+    + (usage.output_tokens ?? 0)
+    + (usage.cache_creation_input_tokens ?? 0)
+    + (usage.cache_read_input_tokens ?? 0);
+}
+
+interface PendingAssistantTurn {
+  textParts: string[];
+  toolNames: string[];
+  model: string | undefined;
+  usage: ClaudeUsage | undefined;
+  timestamp: string | undefined;
 }
 
 interface ClaudeContentBlock {
@@ -34,7 +54,39 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
   const filePaths = new Set<string>();
   let model: string | undefined;
   let branch: string | undefined;
-  let firstTimestamp: string | undefined;
+
+  let currentRequestId: string | undefined;
+  let pendingTurn: PendingAssistantTurn | undefined;
+
+  const flushPendingTurn = () => {
+    if (!pendingTurn) return;
+
+    const content = pendingTurn.textParts.length > 0
+      ? pendingTurn.textParts.join('\n\n')
+      : pendingTurn.toolNames.length > 0
+        ? `[Tool use: ${pendingTurn.toolNames.join(', ')}]`
+        : null;
+
+    if (content) {
+      const turnModel = pendingTurn.model ?? model;
+      const tokensUsed = pendingTurn.usage ? sumUsageTokens(pendingTurn.usage) : undefined;
+
+      messages.push({
+        role: 'assistant',
+        content,
+        contentType: 'response',
+        modelUsed: turnModel,
+        tokensUsed: tokensUsed || undefined,
+      });
+
+      if (pendingTurn.model) {
+        model = pendingTurn.model;
+      }
+    }
+
+    pendingTurn = undefined;
+    currentRequestId = undefined;
+  };
 
   for (const line of lines) {
     let record: ClaudeCodeRecord;
@@ -44,38 +96,38 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
       continue;
     }
 
-    if (!firstTimestamp && 'timestamp' in record) {
-      firstTimestamp = String((record as Record<string, unknown>)['timestamp']);
-    }
-
     if (record.type === 'user' && typeof record.message?.content === 'string') {
-      messages.push({
-        role: 'user',
-        content: record.message.content,
-        contentType: 'prompt',
-      });
+      const cleaned = stripSystemXmlContent(record.message.content);
+      if (cleaned) {
+        flushPendingTurn();
+        messages.push({
+          role: 'user',
+          content: cleaned,
+          contentType: 'prompt',
+        });
+      }
     }
 
     if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
-      const textBlocks = (record.message.content as readonly ClaudeContentBlock[])
-        .filter((block) => block.type === 'text' && block.text);
+      const reqId = record.requestId;
 
-      if (textBlocks.length > 0) {
-        const content = textBlocks.map((block) => block.text!).join('\n\n');
-        messages.push({
-          role: 'assistant',
-          content,
-          contentType: 'response',
-          modelUsed: record.message.model ?? model,
-          tokensUsed: record.message.usage
-            ? (record.message.usage.input_tokens ?? 0) + (record.message.usage.output_tokens ?? 0)
-            : undefined,
-        });
-
-        if (record.message.model) {
-          model = record.message.model;
-        }
+      // New request → flush previous turn
+      if (reqId && reqId !== currentRequestId) {
+        flushPendingTurn();
+        currentRequestId = reqId;
+        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: undefined };
+      } else if (!pendingTurn) {
+        // No requestId or first record — start a new turn
+        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: undefined };
       }
+
+      const blocks = record.message.content as readonly ClaudeContentBlock[];
+      for (const block of blocks) {
+        if (block.type === 'text' && block.text) pendingTurn.textParts.push(block.text);
+        if (block.type === 'tool_use' && block.name) pendingTurn.toolNames.push(block.name);
+      }
+      if (record.message.model) pendingTurn.model = record.message.model;
+      if (record.message.usage) pendingTurn.usage = record.message.usage;
     }
 
     if (record.snapshot?.trackedFileBackups) {
@@ -88,6 +140,8 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
       branch = String((record as Record<string, unknown>)['gitBranch']);
     }
   }
+
+  flushPendingTurn();
 
   if (messages.length === 0) {
     throw new Error('No conversation messages found in Claude Code session');
@@ -132,6 +186,39 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
   let branch: string | undefined;
   let lastTimestamp: string = new Date(0).toISOString();
 
+  let currentRequestId: string | undefined;
+  let pendingTurn: PendingAssistantTurn | undefined;
+
+  const flushPendingTurn = () => {
+    if (!pendingTurn) return;
+
+    const content = pendingTurn.textParts.length > 0
+      ? pendingTurn.textParts.join('\n\n')
+      : pendingTurn.toolNames.length > 0
+        ? `[Tool use: ${pendingTurn.toolNames.join(', ')}]`
+        : null;
+
+    if (content) {
+      const turnModel = pendingTurn.model ?? model;
+      const tokensUsed = pendingTurn.usage ? sumUsageTokens(pendingTurn.usage) : undefined;
+
+      messages.push({
+        role: 'assistant',
+        content,
+        timestamp: pendingTurn.timestamp ?? lastTimestamp,
+        modelUsed: turnModel,
+        tokensUsed: tokensUsed || undefined,
+      });
+
+      if (pendingTurn.model) {
+        model = pendingTurn.model;
+      }
+    }
+
+    pendingTurn = undefined;
+    currentRequestId = undefined;
+  };
+
   for (const line of lines) {
     let record: ClaudeCodeRecord;
     try {
@@ -145,33 +232,36 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
     }
 
     if (record.type === 'user' && typeof record.message?.content === 'string') {
-      messages.push({
-        role: 'user',
-        content: record.message.content,
-        timestamp: lastTimestamp,
-      });
+      const cleaned = stripSystemXmlContent(record.message.content);
+      if (cleaned) {
+        flushPendingTurn();
+        messages.push({
+          role: 'user',
+          content: cleaned,
+          timestamp: lastTimestamp,
+        });
+      }
     }
 
     if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
-      const textBlocks = (record.message.content as readonly ClaudeContentBlock[])
-        .filter((block) => block.type === 'text' && block.text);
+      const reqId = record.requestId;
 
-      if (textBlocks.length > 0) {
-        const content = textBlocks.map((block) => block.text!).join('\n\n');
-        messages.push({
-          role: 'assistant',
-          content,
-          timestamp: lastTimestamp,
-          modelUsed: record.message.model ?? model,
-          tokensUsed: record.message.usage
-            ? (record.message.usage.input_tokens ?? 0) + (record.message.usage.output_tokens ?? 0)
-            : undefined,
-        });
-
-        if (record.message.model) {
-          model = record.message.model;
-        }
+      if (reqId && reqId !== currentRequestId) {
+        flushPendingTurn();
+        currentRequestId = reqId;
+        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: lastTimestamp };
+      } else if (!pendingTurn) {
+        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: lastTimestamp };
       }
+
+      const blocks = record.message.content as readonly ClaudeContentBlock[];
+      for (const block of blocks) {
+        if (block.type === 'text' && block.text) pendingTurn.textParts.push(block.text);
+        if (block.type === 'tool_use' && block.name) pendingTurn.toolNames.push(block.name);
+      }
+      if (record.message.model) pendingTurn.model = record.message.model;
+      if (record.message.usage) pendingTurn.usage = record.message.usage;
+      pendingTurn.timestamp = lastTimestamp;
     }
 
     if (record.snapshot?.trackedFileBackups) {
@@ -184,6 +274,8 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
       branch = String((record as Record<string, unknown>)['gitBranch']);
     }
   }
+
+  flushPendingTurn();
 
   const userContents = messages
     .filter((m) => m.role === 'user')
@@ -223,10 +315,13 @@ export function previewClaudeCodeSession(raw: string, maxLines = 200): {
     }
 
     if (record.type === 'user' && typeof record.message?.content === 'string') {
-      if (!firstMessage || firstMessage === UNTITLED) {
-        firstMessage = generateTitle(record.message.content);
+      const cleaned = stripSystemXmlContent(record.message.content);
+      if (cleaned) {
+        if (!firstMessage || firstMessage === UNTITLED) {
+          firstMessage = generateTitle(record.message.content);
+        }
+        messageCount++;
       }
-      messageCount++;
     }
 
     if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
@@ -249,7 +344,10 @@ export function previewClaudeCodeSession(raw: string, maxLines = 200): {
       }
 
       if (record.type === 'user' && typeof record.message?.content === 'string') {
-        messageCount++;
+        const cleaned = stripSystemXmlContent(record.message.content);
+        if (cleaned) {
+          messageCount++;
+        }
       }
 
       if (record.type === 'assistant' && Array.isArray(record.message?.content)) {

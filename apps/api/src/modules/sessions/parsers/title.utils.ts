@@ -27,12 +27,17 @@ export function findFirstMeaningfulTitle(contents: readonly string[]): string {
   return UNTITLED;
 }
 
-export function generateTitle(rawContent: string): string {
+export function stripSystemXmlContent(rawContent: string): string {
   let content = rawContent;
-
-  // 1. Strip XML tags and their content
   content = content.replace(XML_TAG_PATTERN, '');
   content = content.replace(SELF_CLOSING_TAG_PATTERN, '');
+  content = content.replace(/\s+/g, ' ').trim();
+  return content;
+}
+
+export function generateTitle(rawContent: string): string {
+  // 1. Strip XML tags and their content
+  let content = stripSystemXmlContent(rawContent);
 
   // 2. Extract plan name from markdown header
   const planMatch = IMPLEMENT_PLAN_PREFIX.test(content)
