@@ -33,7 +33,7 @@ export function PrdCurrentDocument({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-text-primary">{document.title}</p>
           <p className="text-sm text-text-tertiary">
-            {document.fileName}  ·  업로드: {formatDate(document.createdAt)}
+            {document.fileName}  ·  Uploaded: {formatDate(document.createdAt)}
           </p>
           {lastAnalysis?.completedAt != null && lastAnalysis.overallRate != null && (
             <p className="mt-1 text-xs text-text-tertiary">
@@ -50,7 +50,7 @@ export function PrdCurrentDocument({
           onClick={onChangeFile}
           disabled={isAnalyzing}
         >
-          파일 변경
+          Change File
         </Button>
         <Button
           variant="primary"
@@ -58,7 +58,7 @@ export function PrdCurrentDocument({
           onClick={onReanalyze}
           disabled={isAnalyzing}
         >
-          {isAnalyzing ? '분석 중...' : '분석 업데이트'}
+          {isAnalyzing ? 'Analyzing...' : 'Re-analyze'}
         </Button>
       </div>
     </div>

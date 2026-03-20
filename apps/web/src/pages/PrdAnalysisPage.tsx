@@ -68,8 +68,8 @@ export function PrdAnalysisPage() {
       {!startAnalysisMutation.isPending && !displayAnalysis && !isLoadingLatest && (
         <Card padding="lg" className="text-center text-sm text-text-tertiary">
           {hasDocument
-            ? '문서가 업로드되었습니다. 분석 업데이트를 클릭하세요.'
-            : 'PRD 문서를 업로드하여 시작하세요.'}
+            ? 'Document uploaded. Click Re-analyze to start.'
+            : 'Upload a PRD document to get started.'}
         </Card>
       )}
 

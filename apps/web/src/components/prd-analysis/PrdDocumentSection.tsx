@@ -44,7 +44,7 @@ export function PrdDocumentSection({
       { oldDocumentId: currentDocument.id, file },
       {
         onSuccess: () => {
-          toast.success('PRD document replaced. 이전 분석 결과는 유지됩니다.');
+          toast.success('PRD document replaced. Previous analysis results are preserved.');
           setIsChangingFile(false);
         },
         onError: (err) => toast.error(err.message),
@@ -92,13 +92,13 @@ export function PrdDocumentSection({
           isUploading={replaceMutation.isPending}
         />
         <div className="flex items-center justify-between">
-          <p className="text-xs text-text-tertiary">이전 분석 결과는 유지됩니다</p>
+          <p className="text-xs text-text-tertiary">Previous analysis results will be preserved</p>
           <button
             type="button"
             onClick={() => setIsChangingFile(false)}
             className="text-sm text-text-tertiary underline hover:text-text-secondary"
           >
-            취소
+            Cancel
           </button>
         </div>
       </div>

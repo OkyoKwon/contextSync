@@ -45,7 +45,7 @@ export function PrdDropZone({ onFileDrop, isUploading, compact = false }: PrdDro
     <div
       {...getRootProps()}
       role="button"
-      aria-label="PRD 문서 업로드"
+      aria-label="Upload PRD document"
       className={`cursor-pointer rounded-lg border-2 border-dashed text-center transition-colors ${
         compact ? 'p-4 sm:p-6' : 'p-6 sm:p-8'
       } ${
