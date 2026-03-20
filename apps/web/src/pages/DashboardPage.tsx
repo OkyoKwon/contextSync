@@ -14,6 +14,7 @@ import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
 import { Spinner } from '../components/ui/Spinner';
 import { getGreeting } from '../lib/date';
 import { showToast } from '../lib/toast';
+import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 
 const VALID_SOURCES: ReadonlySet<string> = new Set(['claude_code', 'claude_ai', 'api', 'manual']);
 
@@ -86,9 +87,8 @@ export function DashboardPage() {
     return (
       <div>
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-text-primary">
-            {greeting}, {displayName}
-          </h1>
+          <PageBreadcrumb pageName="Dashboard" />
+          <p className="mt-1 text-sm text-text-secondary">{greeting}, {displayName}</p>
         </div>
         <EmptyDashboard hasProject={false} hasSessions={false} />
       </div>
@@ -101,9 +101,8 @@ export function DashboardPage() {
     return (
       <div>
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-text-primary">
-            {greeting}, {displayName}
-          </h1>
+          <PageBreadcrumb pageName="Dashboard" />
+          <p className="mt-1 text-sm text-text-secondary">{greeting}, {displayName}</p>
         </div>
         <EmptyDashboard hasProject hasSessions={false} />
       </div>
@@ -114,14 +113,15 @@ export function DashboardPage() {
     <div>
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-text-primary">
+          <PageBreadcrumb pageName="Dashboard" />
+          <p className="mt-1 text-sm text-text-secondary">
             {greeting}, {displayName}
-          </h1>
-          {stats && (
-            <p className="mt-1 text-sm text-text-secondary">
-              {stats.todaySessions} session{stats.todaySessions !== 1 ? 's' : ''} today, {stats.activeConflicts} active conflict{stats.activeConflicts !== 1 ? 's' : ''}
-            </p>
-          )}
+            {stats && (
+              <span className="text-text-tertiary">
+                {' · '}{stats.todaySessions} session{stats.todaySessions !== 1 ? 's' : ''} today, {stats.activeConflicts} active conflict{stats.activeConflicts !== 1 ? 's' : ''}
+              </span>
+            )}
+          </p>
         </div>
         <button
           onClick={handleExport}
