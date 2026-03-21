@@ -21,7 +21,7 @@ export interface Database {
 
 export interface UsersTable {
   id: Generated<string>;
-  github_id: number;
+  github_id: number | null;
   email: string;
   name: string;
   avatar_url: string | null;

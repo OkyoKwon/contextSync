@@ -1,6 +1,6 @@
 export interface User {
   readonly id: string;
-  readonly githubId: number;
+  readonly githubId: number | null;
   readonly email: string;
   readonly name: string;
   readonly avatarUrl: string | null;

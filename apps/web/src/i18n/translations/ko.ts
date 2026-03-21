@@ -2,12 +2,12 @@ import type { TranslationKeys } from '../types';
 
 export const ko: TranslationKeys = {
   // Nav
-  'nav.login': 'GitHub Login',
+  'nav.login': '로그인',
 
   // Hero
   'hero.title': 'AI 세션 컨텍스트의 중심',
   'hero.subtitle': 'Claude Code 세션을 관리하세요 — 혼자서도, 팀과 함께도',
-  'hero.cta.github': 'Continue with GitHub',
+  'hero.cta.login': '시작하기',
   'hero.cta.features': 'Features 살펴보기',
 
   // Problem Statement
@@ -195,7 +195,7 @@ export const ko: TranslationKeys = {
   // Footer
   'footer.cta.title': 'AI 워크플로우를 동기화하세요',
   'footer.cta.subtitle': '무료로 시작하세요. Docker로 로컬 실행하거나 팀 DB에 연결하세요.',
-  'footer.cta.button': 'Continue with GitHub',
+  'footer.cta.button': '시작하기',
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',
   'footer.link.contact': 'Contact',

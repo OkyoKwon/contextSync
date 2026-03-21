@@ -5,9 +5,17 @@ AI 세션 컨텍스트 관리 플랫폼 — Claude Code 세션을 팀 단위로 
 ## Quick Start
 
 ```bash
+git clone <repo> && cd contextSync
+pnpm setup                                  # 원커맨드: install + DB + migrate + seed
+pnpm dev                                    # API :3001, Web :5173
+```
+
+수동 셋업:
+
+```bash
 pnpm install
 docker compose up -d                        # PostgreSQL 16
-cp apps/api/.env.example apps/api/.env      # GitHub OAuth 설정 필요
+cp apps/api/.env.example apps/api/.env      # JWT_SECRET 자동 기본값 있음
 pnpm --filter @context-sync/api migrate     # DB 마이그레이션
 pnpm --filter @context-sync/api seed        # 선택: 샘플 데이터
 pnpm dev                                    # API :3001, Web :5173
@@ -61,7 +69,7 @@ packages/
 
 - **Backend:** Fastify 5, Kysely 0.27, PostgreSQL 16, `@fastify/jwt`
 - **Frontend:** React 19, Vite 6, Tailwind CSS 4, Zustand 5, React Query 5, React Router 7
-- **Auth:** GitHub OAuth → JWT
+- **Auth:** Email/Name 로컬 인증 → JWT
 - **Build:** TypeScript 5.7 (strict), Turborepo, tsx (dev)
 - **Test:** Vitest 3, Testing Library
 
@@ -98,7 +106,7 @@ interface ApiResponse<T> {
 ### Database
 
 - **Kysely** query builder (full ORM 아님), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–017)
+- **Migrations:** `apps/api/src/database/migrations/` (001–019)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **스키마 타입:** `apps/api/src/database/types.ts`
 
@@ -134,7 +142,9 @@ export async function createProject(
 
 `apps/api/.env`에서 관리. `config/env.ts`가 Zod로 시작 시 검증.
 
-필수: `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`
+필수: `DATABASE_URL`
+
+기본값 있음: `JWT_SECRET` (개발용 기본값 내장, 프로덕션에서는 반드시 override), `FRONTEND_URL`
 
 선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`, `DATABASE_PROVIDER` (`self-hosted` | `supabase`, 기본 `self-hosted`)
 

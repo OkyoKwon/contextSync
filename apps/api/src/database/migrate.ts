@@ -4,13 +4,16 @@ import path from 'path';
 import { Kysely, Migrator, FileMigrationProvider, PostgresDialect } from 'kysely';
 import pg from 'pg';
 
-async function main() {
-  const connectionString = process.env['DATABASE_URL'];
-  if (!connectionString) {
-    throw new Error('DATABASE_URL is required');
-  }
+export interface MigrationOptions {
+  readonly connectionString: string;
+  readonly deploymentMode?: string;
+  readonly sslEnabled?: boolean;
+  readonly sslCaPath?: string;
+}
 
-  const deploymentMode = process.env['DEPLOYMENT_MODE'] ?? 'personal';
+export async function runMigrations(options: MigrationOptions): Promise<void> {
+  const { connectionString, deploymentMode, sslEnabled = false, sslCaPath } = options;
+
   if (deploymentMode === 'team-member') {
     console.warn(
       'WARNING: Migrations are skipped in team-member mode. ' +
@@ -19,8 +22,6 @@ async function main() {
     return;
   }
 
-  const sslEnabled = process.env['DATABASE_SSL'] === 'true';
-  const sslCaPath = process.env['DATABASE_SSL_CA'];
   const sslConfig = sslEnabled
     ? {
         rejectUnauthorized: true,
@@ -54,12 +55,31 @@ async function main() {
   });
 
   if (error) {
-    console.error('Migration failed:', error);
-    process.exit(1);
+    await db.destroy();
+    throw error;
   }
 
   await db.destroy();
   console.log('All migrations completed');
+}
+
+async function main() {
+  const connectionString = process.env['DATABASE_URL'];
+  if (!connectionString) {
+    throw new Error('DATABASE_URL is required');
+  }
+
+  try {
+    await runMigrations({
+      connectionString,
+      deploymentMode: process.env['DEPLOYMENT_MODE'] ?? 'personal',
+      sslEnabled: process.env['DATABASE_SSL'] === 'true',
+      sslCaPath: process.env['DATABASE_SSL_CA'],
+    });
+  } catch (error) {
+    console.error('Migration failed:', error);
+    process.exit(1);
+  }
 }
 
 main();

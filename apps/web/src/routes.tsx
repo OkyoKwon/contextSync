@@ -4,7 +4,6 @@ import { useAuthStore } from './stores/auth.store';
 import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
-import { OAuthCallbackPage } from './pages/OAuthCallbackPage';
 
 const OnboardingPage = lazy(() =>
   import('./pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })),
@@ -69,7 +68,6 @@ export function AppRoutes() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/docs" element={<DocsPage />} />
-        <Route path="/auth/callback" element={<OAuthCallbackPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/invitations/accept" element={<InvitationAcceptPage />} />
         <Route path="/invitations/expired" element={<InvitationExpiredPage />} />

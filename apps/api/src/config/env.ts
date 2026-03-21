@@ -7,9 +7,7 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().url(),
 
-  GITHUB_CLIENT_ID: z.string().min(1),
-  GITHUB_CLIENT_SECRET: z.string().min(1),
-  JWT_SECRET: z.string().min(32),
+  JWT_SECRET: z.string().min(32).default('contextsync-dev-jwt-secret-do-not-use-in-production!!'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 

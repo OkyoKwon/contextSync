@@ -12,7 +12,7 @@ AI session context management platform — archive, sync, search, and manage Cla
 | Frontend | React 19, Vite 6, Tailwind CSS 4, Zustand, React Query |
 | Backend  | Fastify 5, Kysely, Zod                                 |
 | Database | PostgreSQL 16                                          |
-| Auth     | GitHub OAuth + JWT                                     |
+| Auth     | Email/Name local auth + JWT                            |
 | Monorepo | pnpm workspaces + Turborepo                            |
 
 ## Getting Started
@@ -23,13 +23,15 @@ AI session context management platform — archive, sync, search, and manage Cla
 - **pnpm 9+** (`corepack enable`)
 - **Docker** (for personal and team-host modes only — not needed for team-member)
 
-### Quick Setup (Interactive)
+### Quick Setup (One Command)
 
 ```bash
 pnpm install
-bash scripts/setup.sh    # Interactive wizard: picks mode, writes .env
+pnpm setup               # Installs deps, starts DB, migrates, seeds
 pnpm dev
 ```
+
+> Or run `bash scripts/setup.sh` (without `--defaults`) for an interactive wizard with deployment mode selection.
 
 ### Manual Setup
 
@@ -39,7 +41,7 @@ pnpm dev
 ```bash
 pnpm install
 docker compose up -d
-cp apps/api/.env.example apps/api/.env    # Set GitHub OAuth credentials
+cp apps/api/.env.example apps/api/.env    # JWT_SECRET has dev default
 pnpm --filter @context-sync/api migrate
 pnpm --filter @context-sync/api seed      # Optional: sample data
 pnpm dev
@@ -76,27 +78,25 @@ No Docker required.
 
 </details>
 
-Open `http://localhost:5173` and sign in with GitHub.
+Open `http://localhost:5173` and sign in with your name and email.
 
 API runs at `http://localhost:3001`.
 
 ### Environment Variables
 
-| Variable               | Required | Description                                                        |
-| ---------------------- | -------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`         | Yes      | PostgreSQL connection string                                       |
-| `GITHUB_CLIENT_ID`     | Yes      | GitHub OAuth app client ID                                         |
-| `GITHUB_CLIENT_SECRET` | Yes      | GitHub OAuth app client secret                                     |
-| `JWT_SECRET`           | Yes      | JWT signing key (min 32 chars)                                     |
-| `JWT_EXPIRES_IN`       | No       | Token expiry (default: `7d`)                                       |
-| `FRONTEND_URL`         | No       | Frontend URL (default: `http://localhost:5173`)                    |
-| `ANTHROPIC_API_KEY`    | No       | For PRD analysis feature                                           |
-| `SLACK_WEBHOOK_URL`    | No       | Slack notification webhook                                         |
-| `RESEND_API_KEY`       | No       | Email notifications                                                |
-| `DEPLOYMENT_MODE`      | No       | `personal` (default), `team-host`, or `team-member`                |
-| `DATABASE_SSL`         | No       | Enable SSL for DB connection (default: `false`)                    |
-| `DATABASE_SSL_CA`      | No       | Path to CA certificate for self-signed certs                       |
-| `RUN_MIGRATIONS`       | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
+| Variable            | Required | Description                                                        |
+| ------------------- | -------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`      | Yes      | PostgreSQL connection string                                       |
+| `JWT_SECRET`        | No       | JWT signing key (min 32 chars, dev default built-in)               |
+| `JWT_EXPIRES_IN`    | No       | Token expiry (default: `7d`)                                       |
+| `FRONTEND_URL`      | No       | Frontend URL (default: `http://localhost:5173`)                    |
+| `ANTHROPIC_API_KEY` | No       | For PRD analysis feature                                           |
+| `SLACK_WEBHOOK_URL` | No       | Slack notification webhook                                         |
+| `RESEND_API_KEY`    | No       | Email notifications                                                |
+| `DEPLOYMENT_MODE`   | No       | `personal` (default), `team-host`, or `team-member`                |
+| `DATABASE_SSL`      | No       | Enable SSL for DB connection (default: `false`)                    |
+| `DATABASE_SSL_CA`   | No       | Path to CA certificate for self-signed certs                       |
+| `RUN_MIGRATIONS`    | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
 
 ## Project Structure
 

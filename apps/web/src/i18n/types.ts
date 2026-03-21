@@ -9,7 +9,7 @@ export interface TranslationKeys {
   // Hero
   readonly 'hero.title': string;
   readonly 'hero.subtitle': string;
-  readonly 'hero.cta.github': string;
+  readonly 'hero.cta.login': string;
   readonly 'hero.cta.features': string;
 
   // Problem Statement

@@ -2,12 +2,12 @@ import type { TranslationKeys } from '../types';
 
 export const ja: TranslationKeys = {
   // Nav
-  'nav.login': 'GitHub Login',
+  'nav.login': 'ログイン',
 
   // Hero
   'hero.title': 'AIセッションコンテキストの中心',
   'hero.subtitle': 'Claude Codeセッションを管理 — ソロでもチームでも',
-  'hero.cta.github': 'Continue with GitHub',
+  'hero.cta.login': '始める',
   'hero.cta.features': '機能を見る',
 
   // Problem Statement
@@ -196,7 +196,7 @@ export const ja: TranslationKeys = {
   // Footer
   'footer.cta.title': 'AIワークフローを同期しよう',
   'footer.cta.subtitle': '無料で始めましょう。Dockerでローカル実行、またはチームDBに接続。',
-  'footer.cta.button': 'Continue with GitHub',
+  'footer.cta.button': '始める',
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',
   'footer.link.contact': 'Contact',

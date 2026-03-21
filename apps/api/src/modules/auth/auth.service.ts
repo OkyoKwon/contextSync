@@ -1,21 +1,19 @@
 import type { Db } from '../../database/client.js';
-import type { GitHubProfile } from './github-oauth.client.js';
+import type { LoginInput } from './auth.schema.js';
 import type { User } from '@context-sync/shared';
 
-export async function findOrCreateUser(db: Db, profile: GitHubProfile): Promise<User> {
+export async function findOrCreateByEmail(db: Db, input: LoginInput): Promise<User> {
   const existing = await db
     .selectFrom('users')
     .selectAll()
-    .where('github_id', '=', profile.githubId)
+    .where('email', '=', input.email)
     .executeTakeFirst();
 
   if (existing) {
     const updated = await db
       .updateTable('users')
       .set({
-        name: profile.name,
-        email: profile.email,
-        avatar_url: profile.avatarUrl,
+        name: input.name,
         updated_at: new Date(),
       })
       .where('id', '=', existing.id)
@@ -28,10 +26,9 @@ export async function findOrCreateUser(db: Db, profile: GitHubProfile): Promise<
   const created = await db
     .insertInto('users')
     .values({
-      github_id: profile.githubId,
-      email: profile.email,
-      name: profile.name,
-      avatar_url: profile.avatarUrl,
+      email: input.email,
+      name: input.name,
+      avatar_url: null,
     })
     .returningAll()
     .executeTakeFirstOrThrow();
@@ -40,18 +37,14 @@ export async function findOrCreateUser(db: Db, profile: GitHubProfile): Promise<
 }
 
 export async function findUserById(db: Db, id: string): Promise<User | null> {
-  const row = await db
-    .selectFrom('users')
-    .selectAll()
-    .where('id', '=', id)
-    .executeTakeFirst();
+  const row = await db.selectFrom('users').selectAll().where('id', '=', id).executeTakeFirst();
 
   return row ? toUser(row) : null;
 }
 
 function toUser(row: {
   id: string;
-  github_id: number;
+  github_id: number | null;
   email: string;
   name: string;
   avatar_url: string | null;
@@ -61,7 +54,7 @@ function toUser(row: {
 }): User {
   return {
     id: row.id,
-    githubId: row.github_id,
+    githubId: row.github_id ?? null,
     email: row.email,
     name: row.name,
     avatarUrl: row.avatar_url,

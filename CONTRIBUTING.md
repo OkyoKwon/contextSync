@@ -15,30 +15,18 @@ Thank you for your interest in contributing to ContextSync! This guide will help
 git clone https://github.com/<your-username>/contextSync.git
 cd contextSync
 
-# 2. Install dependencies
-pnpm install
+# 2. One-command setup (installs deps, starts DB, runs migrations, seeds data)
+pnpm setup
 
-# 3. Start PostgreSQL (skip for team-member mode)
-docker compose up -d
-
-# 4. Configure environment (set GitHub OAuth credentials)
-cp apps/api/.env.example apps/api/.env
-
-# 5. Run database migrations
-pnpm --filter @context-sync/api migrate
-
-# 6. (Optional) Load sample data
-pnpm --filter @context-sync/api seed
-
-# 7. Start dev servers
+# 3. Start dev servers
 pnpm dev
 # API → http://localhost:3001
 # Web → http://localhost:5173
 ```
 
-> **Tip:** Run `bash scripts/setup.sh` for an interactive setup wizard.
+> **Tip:** Run `bash scripts/setup.sh` (without `--defaults`) for an interactive setup wizard with deployment mode selection.
 
-Sign in with GitHub OAuth at `http://localhost:5173`.
+Sign in with your name and email at `http://localhost:5173`.
 
 ## Project Structure
 

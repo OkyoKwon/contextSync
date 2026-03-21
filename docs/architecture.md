@@ -21,7 +21,6 @@ graph TB
     end
 
     subgraph External
-        GH[GitHub OAuth]
         Claude[Anthropic API<br/>Claude]
     end
 
@@ -31,7 +30,6 @@ graph TB
 
     Web -->|REST /api| API
     API --> DB
-    API --> GH
     API --> Claude
     Web -.->|import| PKG
     API -.->|import| PKG
@@ -116,7 +114,7 @@ Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (o
 
 | Module          | Route Prefix                                        | Purpose                                                             |
 | --------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
-| `auth`          | `/api/auth`                                         | GitHub OAuth, JWT issuance/refresh                                  |
+| `auth`          | `/api/auth`                                         | Email/name local auth, JWT issuance/refresh                         |
 | `projects`      | `/api/projects`                                     | Project CRUD, collaborator management                               |
 | `sessions`      | `/api/projects/:id/sessions`                        | Session management, import/export, local sync, token usage          |
 | `conflicts`     | `/api/projects/:id/conflicts`                       | Conflict detection, status management (detected→reviewing→resolved) |
@@ -188,7 +186,7 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 
 | Table                   | Purpose                   | Key Columns                                                                |
 | ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
-| `users`                 | GitHub OAuth profiles     | github_id, email, name, avatar_url                                         |
+| `users`                 | User profiles             | github_id (nullable), email, name, avatar_url                              |
 | `projects`              | Project metadata          | owner_id, name, description, repo_url, local_directory                     |
 | `project_collaborators` | Role-based access         | project_id, user_id, role (owner/admin/member)                             |
 | `sessions`              | Claude Code sessions      | title, source, status, file_paths[], module_names[], tags[], search_vector |
@@ -207,7 +205,7 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 - `messages.search_vector` (tsvector) — message content search
 - PostgreSQL FTS with `plainto_tsquery`
 
-### Migrations (13)
+### Migrations (19)
 
 `apps/api/src/database/migrations/`
 
@@ -236,16 +234,12 @@ sequenceDiagram
     participant U as User
     participant W as Web (React)
     participant A as API (Fastify)
-    participant G as GitHub
 
-    U->>W: Click login
-    W->>A: GET /api/auth/github
-    A->>G: OAuth redirect
-    G->>A: GET /api/auth/github/callback?code=...
-    A->>G: Exchange code → access_token
-    G-->>A: User profile
+    U->>W: Enter name + email
+    W->>A: POST /api/auth/login {name, email}
+    A->>A: Find or create user by email
     A->>A: Issue JWT (userId, email)
-    A-->>W: Return JWT token
+    A-->>W: Return JWT token + user
     W->>W: Save to Zustand store (localStorage)
 
     Note over W,A: All subsequent requests
@@ -278,7 +272,6 @@ sequenceDiagram
 ```
 /login                          → LoginPage
 /docs                           → DocsPage (public)
-/auth/callback                  → OAuth callback
 /onboarding                     → OnboardingPage
 /invitations/accept?token=...   → InvitationAcceptPage (public, stores token for post-login)
 /invitations/expired            → InvitationExpiredPage (public)
@@ -429,17 +422,15 @@ Managed in `apps/api/.env`, validated at startup by `config/env.ts` using Zod.
 
 ### Required
 
-| Variable               | Description                             |
-| ---------------------- | --------------------------------------- |
-| `DATABASE_URL`         | PostgreSQL connection URL               |
-| `GITHUB_CLIENT_ID`     | GitHub OAuth App ID                     |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth Secret                     |
-| `JWT_SECRET`           | JWT signing key (minimum 32 characters) |
+| Variable       | Description               |
+| -------------- | ------------------------- |
+| `DATABASE_URL` | PostgreSQL connection URL |
 
 ### Optional (with defaults)
 
 | Variable            | Default                    | Description                                             |
 | ------------------- | -------------------------- | ------------------------------------------------------- |
+| `JWT_SECRET`        | (dev default built-in)     | JWT signing key (min 32 chars, override in production)  |
 | `PORT`              | `3001`                     | API server port                                         |
 | `HOST`              | `0.0.0.0`                  | Bind host                                               |
 | `NODE_ENV`          | `development`              | Environment                                             |

@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useT } from '../../i18n/use-translation';
 import { LanguageSwitcher } from './LanguageSwitcher';
 
-function handleLogin() {
-  window.location.href = '/api/auth/github';
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 export function LandingNav({ isAuthenticated }: { readonly isAuthenticated: boolean }) {
@@ -38,7 +38,7 @@ export function LandingNav({ isAuthenticated }: { readonly isAuthenticated: bool
           ) : (
             <button
               type="button"
-              onClick={handleLogin}
+              onClick={scrollToTop}
               className="cursor-pointer rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
             >
               {t('nav.login')}

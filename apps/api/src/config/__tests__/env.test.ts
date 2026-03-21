@@ -3,9 +3,6 @@ import { loadEnv } from '../env.js';
 
 const REQUIRED_ENV = {
   DATABASE_URL: 'postgresql://localhost:5432/test',
-  GITHUB_CLIENT_ID: 'test-id',
-  GITHUB_CLIENT_SECRET: 'test-secret',
-  JWT_SECRET: 'a'.repeat(32),
 };
 
 function withEnv(overrides: Record<string, string | undefined>, fn: () => void) {

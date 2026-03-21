@@ -11,6 +11,7 @@
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
     "clean": "turbo clean",
+    "setup": "bash scripts/setup.sh --defaults",
     "prepare": "husky"
   },
   "devDependencies": {

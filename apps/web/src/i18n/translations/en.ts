@@ -2,12 +2,12 @@ import type { TranslationKeys } from '../types';
 
 export const en: TranslationKeys = {
   // Nav
-  'nav.login': 'GitHub Login',
+  'nav.login': 'Log In',
 
   // Hero
   'hero.title': 'The Hub for AI Session Context',
   'hero.subtitle': 'Manage your Claude Code sessions — solo or with your team',
-  'hero.cta.github': 'Continue with GitHub',
+  'hero.cta.login': 'Get Started',
   'hero.cta.features': 'Explore Features',
 
   // Problem Statement
@@ -199,7 +199,7 @@ export const en: TranslationKeys = {
   // Footer
   'footer.cta.title': 'Sync your AI workflow',
   'footer.cta.subtitle': 'Start for free. Run locally with Docker, or connect to a shared team DB.',
-  'footer.cta.button': 'Continue with GitHub',
+  'footer.cta.button': 'Get Started',
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',
   'footer.link.contact': 'Contact',

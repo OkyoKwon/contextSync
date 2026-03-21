@@ -20,12 +20,11 @@ async function main() {
   const user1 = await db
     .insertInto('users')
     .values({
-      github_id: 0,
       email: 'dev@contextsync.local',
       name: 'Dev User',
       avatar_url: null,
     })
-    .onConflict((oc) => oc.column('github_id').doNothing())
+    .onConflict((oc) => oc.column('email').doNothing())
     .returningAll()
     .executeTakeFirst();
 
@@ -33,12 +32,11 @@ async function main() {
   const user2 = await db
     .insertInto('users')
     .values({
-      github_id: 1,
       email: 'collaborator@contextsync.local',
       name: 'Dev Collaborator',
       avatar_url: null,
     })
-    .onConflict((oc) => oc.column('github_id').doNothing())
+    .onConflict((oc) => oc.column('email').doNothing())
     .returningAll()
     .executeTakeFirst();
 
@@ -47,8 +45,8 @@ async function main() {
     const existingUsers = await db
       .selectFrom('users')
       .selectAll()
-      .where('github_id', 'in', [0, 1])
-      .orderBy('github_id', 'asc')
+      .where('email', 'in', ['dev@contextsync.local', 'collaborator@contextsync.local'])
+      .orderBy('email', 'asc')
       .execute();
 
     if (existingUsers.length < 2) {

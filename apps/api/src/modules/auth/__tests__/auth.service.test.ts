@@ -1,21 +1,45 @@
 import { describe, it, expect } from 'vitest';
-import { buildGitHubAuthUrl } from '../github-oauth.client.js';
+import { loginSchema } from '../auth.schema.js';
 
-describe('GitHub OAuth', () => {
-  describe('buildGitHubAuthUrl', () => {
-    it('should build correct OAuth URL with client ID and redirect URI', () => {
-      const url = buildGitHubAuthUrl('test-client-id', 'http://localhost:5173/auth/callback');
-
-      expect(url).toContain('https://github.com/login/oauth/authorize');
-      expect(url).toContain('client_id=test-client-id');
-      expect(url).toContain('redirect_uri=http');
-      expect(url).toContain('scope=read%3Auser+user%3Aemail');
+describe('Auth', () => {
+  describe('loginSchema', () => {
+    it('should accept valid name and email', () => {
+      const result = loginSchema.safeParse({ name: 'Test User', email: 'test@example.com' });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toEqual({ name: 'Test User', email: 'test@example.com' });
+      }
     });
 
-    it('should encode redirect URI properly', () => {
-      const url = buildGitHubAuthUrl('id', 'http://example.com/callback?test=1');
+    it('should reject empty name', () => {
+      const result = loginSchema.safeParse({ name: '', email: 'test@example.com' });
+      expect(result.success).toBe(false);
+    });
 
-      expect(url).toContain('redirect_uri=http%3A%2F%2Fexample.com%2Fcallback%3Ftest%3D1');
+    it('should reject missing name', () => {
+      const result = loginSchema.safeParse({ email: 'test@example.com' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject invalid email', () => {
+      const result = loginSchema.safeParse({ name: 'Test', email: 'not-an-email' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject missing email', () => {
+      const result = loginSchema.safeParse({ name: 'Test' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject name longer than 255 characters', () => {
+      const result = loginSchema.safeParse({ name: 'a'.repeat(256), email: 'test@example.com' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject email longer than 255 characters', () => {
+      const longEmail = `${'a'.repeat(244)}@example.com`;
+      const result = loginSchema.safeParse({ name: 'Test', email: longEmail });
+      expect(result.success).toBe(false);
     });
   });
 });
