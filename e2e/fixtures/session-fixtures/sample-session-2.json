@@ -1,0 +1,13 @@
+{
+  "title": "Auth Refactoring",
+  "source": "claude_code",
+  "branch": "refactor/auth",
+  "tags": ["backend", "refactor"],
+  "messages": [
+    { "role": "user", "content": "Refactor src/auth/login.ts to use the new pattern" },
+    {
+      "role": "assistant",
+      "content": "I'll update src/auth/login.ts, src/auth/register.ts, and src/auth/middleware.ts"
+    }
+  ]
+}

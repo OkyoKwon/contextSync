@@ -1,0 +1,18 @@
+{
+  "title": "Auth Feature Implementation",
+  "source": "claude_code",
+  "branch": "feature/auth",
+  "tags": ["backend"],
+  "messages": [
+    { "role": "user", "content": "Update src/auth/login.ts to add input validation" },
+    {
+      "role": "assistant",
+      "content": "I'll modify src/auth/login.ts and src/utils/validators.ts to add validation logic."
+    },
+    { "role": "user", "content": "Now update src/auth/middleware.ts" },
+    {
+      "role": "assistant",
+      "content": "Done. Updated src/auth/middleware.ts with token verification."
+    }
+  ]
+}
