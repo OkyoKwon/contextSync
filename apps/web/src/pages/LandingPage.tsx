@@ -7,7 +7,6 @@ import { DeployModes } from '../components/landing/DeployModes';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { TerminalDemo } from '../components/landing/TerminalDemo';
 import { TechStack } from '../components/landing/TechStack';
-import { SocialProof } from '../components/landing/SocialProof';
 import { Contributing } from '../components/landing/Contributing';
 import { LandingFooter } from '../components/landing/LandingFooter';
 
@@ -23,7 +22,6 @@ export function LandingPage() {
       <HowItWorks />
       <TerminalDemo />
       <TechStack />
-      <SocialProof />
       <Contributing />
       <LandingFooter />
     </div>
