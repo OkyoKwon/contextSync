@@ -11,6 +11,7 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['__tests__/**/*.test.{ts,tsx}', 'src/**/__tests__/**/*.test.{ts,tsx}'],
+    passWithNoTests: true,
     coverage: {
       provider: 'v8',
       // TODO: 테스트 추가 후 점진적으로 임계값 상향 (목표 80%)
