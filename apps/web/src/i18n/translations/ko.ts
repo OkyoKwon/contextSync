@@ -192,6 +192,36 @@ export const ko: TranslationKeys = {
   'deployModes.2.detail.1': '충돌 감지 및 알림 완전 지원',
   'deployModes.2.detail.2': '공유 세션, 검색, 대시보드',
 
+  // Login
+  'login.backToHome': '\u2190 홈으로',
+
+  // Nav (additional)
+  'nav.docs': '문서',
+  'nav.github': 'GitHub',
+
+  // Hero (additional)
+  'hero.cta.viewOnGithub': 'View on GitHub',
+
+  // Quick Start
+  'quickstart.sectionLabel': '// Quick Start',
+  'quickstart.title': '3개 명령어로 시작',
+  'quickstart.prerequisites': '필수 조건: Node.js 22 \u00b7 pnpm 9+ \u00b7 Docker',
+  'quickstart.copied': '복사됨!',
+
+  // Tech Stack
+  'techstack.sectionLabel': '// Built With',
+  'techstack.frontend': 'Frontend',
+  'techstack.backend': 'Backend',
+  'techstack.database': 'Database',
+  'techstack.tooling': 'Tooling',
+
+  // Contributing
+  'contributing.sectionLabel': '// Open Source',
+  'contributing.title': 'MIT 라이선스 & 기여 환영',
+  'contributing.subtitle': 'Star, fork, 또는 이슈를 열어주세요 — 모든 기여를 환영합니다.',
+  'contributing.guide': '기여 가이드 읽기',
+  'contributing.issues': '이슈 제출',
+
   // Footer
   'footer.cta.title': 'AI 워크플로우를 동기화하세요',
   'footer.cta.subtitle': '무료로 시작하세요. Docker로 로컬 실행하거나 팀 DB에 연결하세요.',
@@ -199,4 +229,6 @@ export const ko: TranslationKeys = {
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',
   'footer.link.contact': 'Contact',
+  'footer.link.contributing': 'Contributing',
+  'footer.link.license': 'MIT License',
 };

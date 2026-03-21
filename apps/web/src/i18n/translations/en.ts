@@ -196,6 +196,36 @@ export const en: TranslationKeys = {
   'deployModes.2.detail.1': 'Full conflict detection & notifications',
   'deployModes.2.detail.2': 'Shared sessions, search, and dashboards',
 
+  // Login
+  'login.backToHome': '\u2190 Back to home',
+
+  // Nav (additional)
+  'nav.docs': 'Docs',
+  'nav.github': 'GitHub',
+
+  // Hero (additional)
+  'hero.cta.viewOnGithub': 'View on GitHub',
+
+  // Quick Start
+  'quickstart.sectionLabel': '// Quick Start',
+  'quickstart.title': '3 commands to get started',
+  'quickstart.prerequisites': 'Prerequisites: Node.js 22 \u00b7 pnpm 9+ \u00b7 Docker',
+  'quickstart.copied': 'Copied!',
+
+  // Tech Stack
+  'techstack.sectionLabel': '// Built With',
+  'techstack.frontend': 'Frontend',
+  'techstack.backend': 'Backend',
+  'techstack.database': 'Database',
+  'techstack.tooling': 'Tooling',
+
+  // Contributing
+  'contributing.sectionLabel': '// Open Source',
+  'contributing.title': 'MIT Licensed & Open to Contributions',
+  'contributing.subtitle': 'Star, fork, or open an issue \u2014 all contributions welcome.',
+  'contributing.guide': 'Read the Contributing Guide',
+  'contributing.issues': 'Report an Issue',
+
   // Footer
   'footer.cta.title': 'Sync your AI workflow',
   'footer.cta.subtitle': 'Start for free. Run locally with Docker, or connect to a shared team DB.',
@@ -203,4 +233,6 @@ export const en: TranslationKeys = {
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',
   'footer.link.contact': 'Contact',
+  'footer.link.contributing': 'Contributing',
+  'footer.link.license': 'MIT License',
 };

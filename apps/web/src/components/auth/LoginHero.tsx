@@ -8,26 +8,6 @@ interface LoginHeroProps {
   readonly compact?: boolean;
 }
 
-function ChevronDownIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M6 9l6 6 6-6" />
-    </svg>
-  );
-}
-
-function scrollToFeatures() {
-  document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-}
-
 export function LoginHero({ compact = false }: LoginHeroProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -117,17 +97,6 @@ export function LoginHero({ compact = false }: LoginHeroProps) {
           {isLoading ? 'Logging in...' : 'Get Started'}
         </button>
       </form>
-
-      {!compact && (
-        <button
-          type="button"
-          aria-label="Scroll to features"
-          onClick={scrollToFeatures}
-          className="mt-4 animate-bounce text-text-tertiary/60 transition-colors hover:text-text-tertiary"
-        >
-          <ChevronDownIcon />
-        </button>
-      )}
     </div>
   );
 }

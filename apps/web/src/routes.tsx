@@ -5,6 +5,9 @@ import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
 
+const LandingPage = lazy(() =>
+  import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })),
+);
 const OnboardingPage = lazy(() =>
   import('./pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })),
 );
@@ -66,34 +69,33 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/invitations/accept" element={<InvitationAcceptPage />} />
         <Route path="/invitations/expired" element={<InvitationExpiredPage />} />
         <Route
-          path="/"
           element={
             <ProtectedRoute>
               <AppLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="project" element={<ProjectPage />} />
-          <Route path="project/sessions/:sessionId" element={<SessionDetailPage />} />
-          <Route path="sessions" element={<Navigate to="/project" replace />} />
-          <Route path="sessions/:sessionId" element={<SessionRedirect />} />
-          <Route path="local-sessions" element={<Navigate to="/project" replace />} />
-          <Route path="conflicts" element={<ConflictsPage />} />
-          <Route path="prd-analysis" element={<PrdAnalysisPage />} />
-          <Route path="ai-evaluation" element={<AiEvaluationPage />} />
-          <Route path="plans" element={<PlansPage />} />
-          <Route path="admin" element={<AdminPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="settings/team" element={<Navigate to="/settings" replace />} />
-          <Route path="settings/project" element={<Navigate to="/settings" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/project" element={<ProjectPage />} />
+          <Route path="/project/sessions/:sessionId" element={<SessionDetailPage />} />
+          <Route path="/sessions" element={<Navigate to="/project" replace />} />
+          <Route path="/sessions/:sessionId" element={<SessionRedirect />} />
+          <Route path="/local-sessions" element={<Navigate to="/project" replace />} />
+          <Route path="/conflicts" element={<ConflictsPage />} />
+          <Route path="/prd-analysis" element={<PrdAnalysisPage />} />
+          <Route path="/ai-evaluation" element={<AiEvaluationPage />} />
+          <Route path="/plans" element={<PlansPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/team" element={<Navigate to="/settings" replace />} />
+          <Route path="/settings/project" element={<Navigate to="/settings" replace />} />
         </Route>
       </Routes>
     </Suspense>

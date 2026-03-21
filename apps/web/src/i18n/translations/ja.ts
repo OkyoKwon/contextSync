@@ -193,6 +193,36 @@ export const ja: TranslationKeys = {
   'deployModes.2.detail.1': 'コンフリクト検知＆通知をフルサポート',
   'deployModes.2.detail.2': '共有セッション、検索、ダッシュボード',
 
+  // Login
+  'login.backToHome': '\u2190 ホームへ',
+
+  // Nav (additional)
+  'nav.docs': 'ドキュメント',
+  'nav.github': 'GitHub',
+
+  // Hero (additional)
+  'hero.cta.viewOnGithub': 'View on GitHub',
+
+  // Quick Start
+  'quickstart.sectionLabel': '// Quick Start',
+  'quickstart.title': '3つのコマンドで始める',
+  'quickstart.prerequisites': '前提条件: Node.js 22 \u00b7 pnpm 9+ \u00b7 Docker',
+  'quickstart.copied': 'コピーしました！',
+
+  // Tech Stack
+  'techstack.sectionLabel': '// Built With',
+  'techstack.frontend': 'Frontend',
+  'techstack.backend': 'Backend',
+  'techstack.database': 'Database',
+  'techstack.tooling': 'Tooling',
+
+  // Contributing
+  'contributing.sectionLabel': '// Open Source',
+  'contributing.title': 'MITライセンス & コントリビューション歓迎',
+  'contributing.subtitle': 'Star、fork、またはissueを開いてください — すべての貢献を歓迎します。',
+  'contributing.guide': 'コントリビューションガイドを読む',
+  'contributing.issues': 'Issueを報告',
+
   // Footer
   'footer.cta.title': 'AIワークフローを同期しよう',
   'footer.cta.subtitle': '無料で始めましょう。Dockerでローカル実行、またはチームDBに接続。',
@@ -200,4 +230,6 @@ export const ja: TranslationKeys = {
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',
   'footer.link.contact': 'Contact',
+  'footer.link.contributing': 'Contributing',
+  'footer.link.license': 'MIT License',
 };

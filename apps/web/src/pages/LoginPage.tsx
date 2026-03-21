@@ -1,29 +1,23 @@
+import { Navigate } from 'react-router';
 import { useAuthStore } from '../stores/auth.store';
-import { LandingNav } from '../components/landing/LandingNav';
-import { LandingHero } from '../components/landing/LandingHero';
-import { ProblemStatement } from '../components/landing/ProblemStatement';
-import { FeatureShowcase } from '../components/landing/FeatureShowcase';
-import { DeployModes } from '../components/landing/DeployModes';
-import { HowItWorks } from '../components/landing/HowItWorks';
-import { TerminalDemo } from '../components/landing/TerminalDemo';
-import { SocialProof } from '../components/landing/SocialProof';
-import { LandingFooter } from '../components/landing/LandingFooter';
+import { LoginHero } from '../components/auth/LoginHero';
+import { useT } from '../i18n/use-translation';
 
 export function LoginPage() {
   const token = useAuthStore((s) => s.token);
-  const isAuthenticated = token !== null;
+  const t = useT();
+
+  if (token) return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="min-h-screen bg-page font-mono">
-      <LandingNav isAuthenticated={isAuthenticated} />
-      <LandingHero isAuthenticated={isAuthenticated} />
-      <ProblemStatement />
-      <FeatureShowcase />
-      <DeployModes />
-      <HowItWorks />
-      <TerminalDemo />
-      <SocialProof />
-      <LandingFooter isAuthenticated={isAuthenticated} />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-page px-6 font-mono">
+      <LoginHero />
+      <a
+        href="/"
+        className="mt-8 text-xs text-text-tertiary transition-colors hover:text-text-secondary"
+      >
+        {t('login.backToHome')}
+      </a>
     </div>
   );
 }

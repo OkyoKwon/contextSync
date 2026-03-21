@@ -21,11 +21,7 @@ function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 }
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-export function LandingHero({ isAuthenticated }: { readonly isAuthenticated: boolean }) {
+export function LandingHero() {
   const t = useT();
 
   return (
@@ -50,29 +46,20 @@ export function LandingHero({ isAuthenticated }: { readonly isAuthenticated: boo
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4">
-          {isAuthenticated ? (
-            <a
-              href="/dashboard"
-              className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              Go to Dashboard
-            </a>
-          ) : (
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              {t('hero.cta.login')}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={() => scrollToSection('features')}
-            className="cursor-pointer rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
+          <a
+            href="/login"
+            className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
           >
-            {t('hero.cta.features')}
-          </button>
+            {t('hero.cta.login')}
+          </a>
+          <a
+            href="https://github.com/OkyoKwon/contextSync"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
+          >
+            {t('hero.cta.viewOnGithub')}
+          </a>
         </div>
       </div>
 

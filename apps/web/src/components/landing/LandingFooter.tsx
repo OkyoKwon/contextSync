@@ -80,11 +80,7 @@ function ContactModal({
   );
 }
 
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-export function LandingFooter({ isAuthenticated }: { readonly isAuthenticated: boolean }) {
+export function LandingFooter() {
   const t = useT();
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -96,22 +92,12 @@ export function LandingFooter({ isAuthenticated }: { readonly isAuthenticated: b
             {t('footer.cta.title')}
           </h2>
           <p className="mt-3 font-mono text-sm text-text-tertiary">{t('footer.cta.subtitle')}</p>
-          {isAuthenticated ? (
-            <a
-              href="/dashboard"
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              Go to Dashboard
-            </a>
-          ) : (
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              {t('footer.cta.button')}
-            </button>
-          )}
+          <a
+            href="/login"
+            className="mt-8 inline-flex items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+          >
+            {t('footer.cta.button')}
+          </a>
         </div>
       </div>
 
@@ -129,6 +115,22 @@ export function LandingFooter({ isAuthenticated }: { readonly isAuthenticated: b
               className="transition-colors hover:text-text-secondary"
             >
               {t('footer.link.github')}
+            </a>
+            <a
+              href="https://github.com/OkyoKwon/contextSync/blob/main/CONTRIBUTING.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-text-secondary"
+            >
+              {t('footer.link.contributing')}
+            </a>
+            <a
+              href="https://github.com/OkyoKwon/contextSync/blob/main/LICENSE"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-text-secondary"
+            >
+              {t('footer.link.license')}
             </a>
             <button
               type="button"

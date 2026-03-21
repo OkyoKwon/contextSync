@@ -164,6 +164,36 @@ export interface TranslationKeys {
   readonly 'deployModes.2.detail.1': string;
   readonly 'deployModes.2.detail.2': string;
 
+  // Login
+  readonly 'login.backToHome': string;
+
+  // Nav (additional)
+  readonly 'nav.docs': string;
+  readonly 'nav.github': string;
+
+  // Hero (additional)
+  readonly 'hero.cta.viewOnGithub': string;
+
+  // Quick Start
+  readonly 'quickstart.sectionLabel': string;
+  readonly 'quickstart.title': string;
+  readonly 'quickstart.prerequisites': string;
+  readonly 'quickstart.copied': string;
+
+  // Tech Stack
+  readonly 'techstack.sectionLabel': string;
+  readonly 'techstack.frontend': string;
+  readonly 'techstack.backend': string;
+  readonly 'techstack.database': string;
+  readonly 'techstack.tooling': string;
+
+  // Contributing
+  readonly 'contributing.sectionLabel': string;
+  readonly 'contributing.title': string;
+  readonly 'contributing.subtitle': string;
+  readonly 'contributing.guide': string;
+  readonly 'contributing.issues': string;
+
   // Footer
   readonly 'footer.cta.title': string;
   readonly 'footer.cta.subtitle': string;
@@ -171,4 +201,6 @@ export interface TranslationKeys {
   readonly 'footer.link.docs': string;
   readonly 'footer.link.github': string;
   readonly 'footer.link.contact': string;
+  readonly 'footer.link.contributing': string;
+  readonly 'footer.link.license': string;
 }
