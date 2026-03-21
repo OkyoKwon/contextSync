@@ -31,6 +31,7 @@ const PlansPage = lazy(() => import('./pages/PlansPage').then((m) => ({ default:
 const AiEvaluationPage = lazy(() =>
   import('./pages/AiEvaluationPage').then((m) => ({ default: m.AiEvaluationPage })),
 );
+const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })));
 const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsPage })));
 const InvitationAcceptPage = lazy(() =>
   import('./pages/InvitationAcceptPage').then((m) => ({ default: m.InvitationAcceptPage })),
@@ -91,6 +92,7 @@ export function AppRoutes() {
           <Route path="prd-analysis" element={<PrdAnalysisPage />} />
           <Route path="ai-evaluation" element={<AiEvaluationPage />} />
           <Route path="plans" element={<PlansPage />} />
+          <Route path="admin" element={<AdminPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/team" element={<Navigate to="/settings" replace />} />
           <Route path="settings/project" element={<Navigate to="/settings" replace />} />

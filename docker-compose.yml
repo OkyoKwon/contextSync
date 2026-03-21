@@ -15,9 +15,33 @@ services:
       timeout: 5s
       retries: 5
 
+  # Auto-generate self-signed SSL certs for team-host mode.
+  # To use your own CA-signed certs, place them in docker/ssl/ before starting.
+  ssl-init:
+    image: alpine/openssl
+    profiles: ['team-host']
+    volumes:
+      - ./docker/ssl:/ssl
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      if [ -f /ssl/server.crt ] && [ -f /ssl/server.key ]; then
+        echo 'SSL certs already exist — skipping.';
+      else
+        openssl req -new -x509 -days 365 -nodes
+        -subj '/CN=contextsync-postgres'
+        -keyout /ssl/server.key -out /ssl/server.crt 2>/dev/null &&
+        chmod 600 /ssl/server.key && chmod 644 /ssl/server.crt &&
+        echo 'SSL certs generated.';
+      fi
+      "
+
   postgres-team:
     image: postgres:16-alpine
     profiles: ['team-host']
+    depends_on:
+      ssl-init:
+        condition: service_completed_successfully
     ports:
       - '${DB_EXTERNAL_PORT:-5432}:5432'
     environment:
@@ -38,6 +62,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  # When using DATABASE_PROVIDER=supabase, the postgres-team service is not needed.
+  # Set your Supabase connection string in DATABASE_URL and start without --profile team-host.
 
 volumes:
   pgdata:

@@ -16,6 +16,8 @@ import { activityRoutes } from './modules/activity/activity.routes.js';
 import { planRoutes } from './modules/plans/plan.routes.js';
 import { invitationRoutes } from './modules/invitations/invitation.routes.js';
 import { aiEvaluationRoutes } from './modules/ai-evaluation/ai-evaluation.routes.js';
+import { adminRoutes } from './modules/admin/admin.routes.js';
+import { runMigrations } from './modules/admin/admin.service.js';
 
 export async function buildApp(env: Env) {
   const app = Fastify({
@@ -46,8 +48,19 @@ export async function buildApp(env: Env) {
   await app.register(planRoutes, { prefix: '/api' });
   await app.register(invitationRoutes, { prefix: '/api' });
   await app.register(aiEvaluationRoutes, { prefix: '/api' });
+  await app.register(adminRoutes, { prefix: '/api' });
 
   app.get('/api/health', async () => ({ status: 'ok' }));
+
+  if (env.RUN_MIGRATIONS && env.DEPLOYMENT_MODE !== 'team-member') {
+    const result = await runMigrations(db);
+    for (const name of result.applied) {
+      app.log.info(`Migration "${name}" applied`);
+    }
+    if (result.errors.length > 0) {
+      app.log.error(`Migration errors: ${result.errors.join(', ')}`);
+    }
+  }
 
   return app;
 }

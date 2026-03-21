@@ -38,7 +38,7 @@ apps/
       database/     client.ts (Kysely), types.ts, migrations/
       plugins/      auth, cors, error-handler
       lib/          api-response.ts (ok, fail, paginated)
-      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, users
+      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, users, admin
   web/          # React 19 SPA (Vite 6)
     src/
       api/          API 클라이언트
@@ -136,7 +136,7 @@ export async function createProject(
 
 필수: `DATABASE_URL`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `JWT_SECRET`, `FRONTEND_URL`
 
-선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`
+선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`, `DATABASE_PROVIDER` (`self-hosted` | `supabase`, 기본 `self-hosted`)
 
 ### Frontend State
 

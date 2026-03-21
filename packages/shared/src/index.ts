@@ -65,6 +65,17 @@ export type { ActivityAction, ActivityEntry } from './types/activity.js';
 export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
 export type { Invitation, InvitationStatus, CreateInvitationInput } from './types/invitation.js';
 export type {
+  AdminStatus,
+  DatabaseHealth,
+  ConnectionPoolStats,
+  SslStatus,
+  MigrationInfo,
+  MigrationRunResult,
+  DatabaseProvider,
+  DeploymentMode,
+  AdminConfig,
+} from './types/admin.js';
+export type {
   AiEvaluation,
   AiEvaluationStatus,
   ProficiencyTier,

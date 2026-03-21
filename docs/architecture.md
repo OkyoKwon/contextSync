@@ -112,7 +112,7 @@ Client → Routes (Zod validation) → Service (authorization) → Repository (K
 Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (object mapping) ← DB
 ```
 
-### 9 Modules
+### 10 Modules
 
 | Module          | Route Prefix                                        | Purpose                                                             |
 | --------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
@@ -125,6 +125,7 @@ Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (o
 | `prd-analysis`  | `/api/projects/:id/prd`                             | PRD upload, Claude API analysis, requirement tracking               |
 | `invitations`   | `/api/invitations`, `/api/projects/:id/invitations` | Project invitation with token/link, accept/decline workflow         |
 | `users`         | `/api/users`                                        | User profiles                                                       |
+| `admin`         | `/api/admin`                                        | DB health, migration management, team config (team-host only)       |
 
 ### Service Conventions
 
@@ -288,6 +289,7 @@ sequenceDiagram
   ├── /conflicts                → ConflictsPage
   ├── /prd-analysis             → PrdAnalysisPage
   ├── /plans                    → PlansPage
+  ├── /admin                    → AdminPage (team-host mode, owner/admin only)
   └── /settings                 → SettingsPage
 ```
 
@@ -363,6 +365,7 @@ Imported as `@context-sync/shared` by both API and Web.
 | `collaborator.ts` | `Collaborator`, `AddCollaboratorInput`                                         |
 | `invitation.ts`   | `Invitation`, `InvitationStatus`, `CreateInvitationInput`                      |
 | `sync.ts`         | Sync-related types                                                             |
+| `admin.ts`        | `AdminStatus`, `AdminConfig`, `MigrationInfo`, `MigrationRunResult`            |
 
 ### Constants (6 files)
 
