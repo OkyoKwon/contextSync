@@ -28,6 +28,9 @@ const PrdAnalysisPage = lazy(() =>
   import('./pages/PrdAnalysisPage').then((m) => ({ default: m.PrdAnalysisPage })),
 );
 const PlansPage = lazy(() => import('./pages/PlansPage').then((m) => ({ default: m.PlansPage })));
+const AiEvaluationPage = lazy(() =>
+  import('./pages/AiEvaluationPage').then((m) => ({ default: m.AiEvaluationPage })),
+);
 const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsPage })));
 const InvitationAcceptPage = lazy(() =>
   import('./pages/InvitationAcceptPage').then((m) => ({ default: m.InvitationAcceptPage })),
@@ -86,6 +89,7 @@ export function AppRoutes() {
           <Route path="local-sessions" element={<Navigate to="/project" replace />} />
           <Route path="conflicts" element={<ConflictsPage />} />
           <Route path="prd-analysis" element={<PrdAnalysisPage />} />
+          <Route path="ai-evaluation" element={<AiEvaluationPage />} />
           <Route path="plans" element={<PlansPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/team" element={<Navigate to="/settings" replace />} />

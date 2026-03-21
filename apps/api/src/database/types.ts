@@ -14,6 +14,9 @@ export interface Database {
   prd_analyses: PrdAnalysesTable;
   prd_requirements: PrdRequirementsTable;
   activity_log: ActivityLogTable;
+  ai_evaluations: AiEvaluationsTable;
+  ai_evaluation_dimensions: AiEvaluationDimensionsTable;
+  ai_evaluation_evidence: AiEvaluationEvidenceTable;
 }
 
 export interface UsersTable {
@@ -172,6 +175,56 @@ export interface ActivityLogTable {
   entity_id: string | null;
   metadata: Generated<string>;
   created_at: Generated<Date>;
+}
+
+export interface AiEvaluationsTable {
+  id: Generated<string>;
+  project_id: string;
+  target_user_id: string;
+  triggered_by_user_id: string;
+  status: Generated<string>;
+  overall_score: number | null;
+  prompt_quality_score: number | null;
+  task_complexity_score: number | null;
+  iteration_pattern_score: number | null;
+  context_utilization_score: number | null;
+  ai_capability_leverage_score: number | null;
+  proficiency_tier: string | null;
+  sessions_analyzed: Generated<number>;
+  messages_analyzed: Generated<number>;
+  date_range_start: Date;
+  date_range_end: Date;
+  model_used: string;
+  input_tokens_used: Generated<number>;
+  output_tokens_used: Generated<number>;
+  error_message: string | null;
+  improvement_summary: string | null;
+  created_at: Generated<Date>;
+  completed_at: Date | null;
+}
+
+export interface AiEvaluationDimensionsTable {
+  id: Generated<string>;
+  evaluation_id: string;
+  dimension: string;
+  score: number;
+  confidence: number;
+  summary: string;
+  strengths: Generated<string[]>;
+  weaknesses: Generated<string[]>;
+  suggestions: Generated<string[]>;
+  sort_order: Generated<number>;
+}
+
+export interface AiEvaluationEvidenceTable {
+  id: Generated<string>;
+  dimension_id: string;
+  message_id: string | null;
+  session_id: string | null;
+  excerpt: string;
+  sentiment: Generated<string>;
+  annotation: string;
+  sort_order: Generated<number>;
 }
 
 export interface PromptTemplatesTable {

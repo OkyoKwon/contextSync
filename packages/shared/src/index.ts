@@ -64,6 +64,19 @@ export type {
 export type { ActivityAction, ActivityEntry } from './types/activity.js';
 export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
 export type { Invitation, InvitationStatus, CreateInvitationInput } from './types/invitation.js';
+export type {
+  AiEvaluation,
+  AiEvaluationStatus,
+  ProficiencyTier,
+  EvaluationDimension,
+  EvidenceSentiment,
+  AiEvaluationDimensionDetail,
+  AiEvaluationEvidence,
+  AiEvaluationWithDetails,
+  AiEvaluationHistoryEntry,
+  TeamEvaluationSummaryEntry,
+  TriggerEvaluationInput,
+} from './types/ai-evaluation.js';
 
 // Constants
 export { USER_ROLES } from './constants/roles.js';
@@ -89,6 +102,20 @@ export {
   MAX_PRD_FILE_SIZE,
 } from './constants/prd-analysis.js';
 export { INVITATION_STATUSES, INVITATION_EXPIRY_DAYS } from './constants/invitation-status.js';
+export {
+  AI_EVALUATION_STATUSES,
+  PROFICIENCY_TIERS,
+  EVALUATION_DIMENSIONS,
+  EVIDENCE_SENTIMENTS,
+  DIMENSION_WEIGHTS,
+  DIMENSION_LABELS,
+  PROFICIENCY_TIER_RANGES,
+  EVALUATION_COOLDOWN_HOURS,
+  MIN_MESSAGES_FOR_EVALUATION,
+  MAX_SESSIONS_LIMIT,
+  DEFAULT_MAX_SESSIONS,
+  DEFAULT_DATE_RANGE_DAYS,
+} from './constants/ai-evaluation.js';
 
 // Validators
 export { validateSessionImport } from './validators/session.validator.js';
