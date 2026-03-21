@@ -19,6 +19,17 @@ const envSchema = z.object({
   SLACK_WEBHOOK_URL: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default('noreply@contextsync.dev'),
+
+  DEPLOYMENT_MODE: z.enum(['personal', 'team-host', 'team-member']).default('personal'),
+  DATABASE_SSL: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  DATABASE_SSL_CA: z.string().optional(),
+  RUN_MIGRATIONS: z
+    .enum(['true', 'false'])
+    .default('true')
+    .transform((v) => v === 'true'),
 });
 
 export type Env = z.infer<typeof envSchema>;

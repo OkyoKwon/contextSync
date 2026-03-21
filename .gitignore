@@ -24,6 +24,9 @@ Thumbs.db
 # Test
 coverage/
 
+# Docker SSL certs
+docker/ssl/
+
 # Build
 *.js.map
 *.d.ts.map

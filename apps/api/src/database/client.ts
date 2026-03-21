@@ -1,14 +1,29 @@
+import { readFileSync } from 'node:fs';
 import { Kysely, PostgresDialect } from 'kysely';
 import pg from 'pg';
 import type { Database } from './types.js';
 
-export function createDb(connectionString: string): Kysely<Database> {
+export interface DbOptions {
+  readonly connectionString: string;
+  readonly ssl?: boolean;
+  readonly sslCaPath?: string;
+}
+
+export function createDb(options: DbOptions): Kysely<Database> {
+  const sslConfig = options.ssl
+    ? {
+        rejectUnauthorized: true,
+        ...(options.sslCaPath ? { ca: readFileSync(options.sslCaPath, 'utf-8') } : {}),
+      }
+    : false;
+
   const dialect = new PostgresDialect({
     pool: new pg.Pool({
-      connectionString,
+      connectionString: options.connectionString,
       max: 20,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 5_000,
+      ssl: sslConfig,
     }),
   });
 

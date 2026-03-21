@@ -2,18 +2,43 @@ services:
   postgres:
     image: postgres:16-alpine
     ports:
-      - "5432:5432"
+      - '${DB_PORT:-5432}:5432'
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: contextsync
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-contextsync}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-team:
+    image: postgres:16-alpine
+    profiles: ['team-host']
+    ports:
+      - '${DB_EXTERNAL_PORT:-5432}:5432'
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required for team-host}
+      POSTGRES_DB: ${POSTGRES_DB:-contextsync}
+    volumes:
+      - pgdata-team:/var/lib/postgresql/data
+      - ./docker/ssl:/var/lib/postgresql/ssl:ro
+      - ./docker/initdb.d:/docker-entrypoint-initdb.d:ro
+    command: >
+      postgres
+        -c ssl=on
+        -c ssl_cert_file=/var/lib/postgresql/ssl/server.crt
+        -c ssl_key_file=/var/lib/postgresql/ssl/server.key
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
 
 volumes:
   pgdata:
+  pgdata-team:

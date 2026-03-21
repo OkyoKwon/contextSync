@@ -1,4 +1,5 @@
 import { promises as fs } from 'fs';
+import { readFileSync } from 'node:fs';
 import path from 'path';
 import { Kysely, Migrator, FileMigrationProvider, PostgresDialect } from 'kysely';
 import pg from 'pg';
@@ -9,9 +10,27 @@ async function main() {
     throw new Error('DATABASE_URL is required');
   }
 
+  const deploymentMode = process.env['DEPLOYMENT_MODE'] ?? 'personal';
+  if (deploymentMode === 'team-member') {
+    console.warn(
+      'WARNING: Migrations are skipped in team-member mode. ' +
+        'The team host is responsible for running migrations.',
+    );
+    return;
+  }
+
+  const sslEnabled = process.env['DATABASE_SSL'] === 'true';
+  const sslCaPath = process.env['DATABASE_SSL_CA'];
+  const sslConfig = sslEnabled
+    ? {
+        rejectUnauthorized: true,
+        ...(sslCaPath ? { ca: readFileSync(sslCaPath, 'utf-8') } : {}),
+      }
+    : false;
+
   const db = new Kysely({
     dialect: new PostgresDialect({
-      pool: new pg.Pool({ connectionString }),
+      pool: new pg.Pool({ connectionString, ssl: sslConfig }),
     }),
   });
 

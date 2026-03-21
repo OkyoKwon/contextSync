@@ -21,7 +21,11 @@ export async function buildApp(env: Env) {
     logger: env.NODE_ENV !== 'test',
   });
 
-  const db = createDb(env.DATABASE_URL);
+  const db = createDb({
+    connectionString: env.DATABASE_URL,
+    ssl: env.DATABASE_SSL,
+    sslCaPath: env.DATABASE_SSL_CA,
+  });
   app.decorate('db', db);
   app.decorate('env', env);
 
