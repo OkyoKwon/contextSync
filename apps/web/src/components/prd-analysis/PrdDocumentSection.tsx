@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '../../lib/toast';
 import type { PrdAnalysisWithRequirements } from '@context-sync/shared';
-import { usePrdDocuments, useUploadPrdDocument, useReplacePrdDocument } from '../../hooks/use-prd-analysis';
+import {
+  usePrdDocuments,
+  useUploadPrdDocument,
+  useReplacePrdDocument,
+} from '../../hooks/use-prd-analysis';
 import { PrdDropZone } from './PrdDropZone';
 import { PrdCurrentDocument } from './PrdCurrentDocument';
 
@@ -29,10 +33,10 @@ export function PrdDocumentSection({
       { file },
       {
         onSuccess: () => {
-          toast.success('PRD document uploaded');
+          showToast.success('PRD document uploaded');
           setIsChangingFile(false);
         },
-        onError: (err) => toast.error(err.message),
+        onError: (err) => showToast.error(err.message),
       },
     );
   };
@@ -44,10 +48,10 @@ export function PrdDocumentSection({
       { oldDocumentId: currentDocument.id, file },
       {
         onSuccess: () => {
-          toast.success('PRD document replaced. Previous analysis results are preserved.');
+          showToast.success('PRD document replaced. Previous analysis results are preserved.');
           setIsChangingFile(false);
         },
-        onError: (err) => toast.error(err.message),
+        onError: (err) => showToast.error(err.message),
       },
     );
   };
@@ -74,10 +78,7 @@ export function PrdDocumentSection({
   if (!currentDocument) {
     return (
       <div className="transition-opacity">
-        <PrdDropZone
-          onFileDrop={handleUpload}
-          isUploading={uploadMutation.isPending}
-        />
+        <PrdDropZone onFileDrop={handleUpload} isUploading={uploadMutation.isPending} />
       </div>
     );
   }
@@ -86,11 +87,7 @@ export function PrdDocumentSection({
   if (isChangingFile) {
     return (
       <div className="space-y-3 transition-opacity">
-        <PrdDropZone
-          compact
-          onFileDrop={handleReplace}
-          isUploading={replaceMutation.isPending}
-        />
+        <PrdDropZone compact onFileDrop={handleReplace} isUploading={replaceMutation.isPending} />
         <div className="flex items-center justify-between">
           <p className="text-xs text-text-tertiary">Previous analysis results will be preserved</p>
           <button

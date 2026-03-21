@@ -5,12 +5,30 @@ import { CreateProjectModal } from '../projects/CreateProjectModal';
 import { useConflicts } from '../../hooks/use-conflicts';
 import { useMyInvitations } from '../../hooks/use-invitations';
 import { useAdminConfig } from '../../hooks/use-admin';
+import { useUiStore } from '../../stores/ui.store';
+import { Tooltip } from '../ui/Tooltip';
+import {
+  DashboardIcon,
+  ConversationsIcon,
+  ConflictsIcon,
+  PrdAnalysisIcon,
+  AiEvaluationIcon,
+  PlansIcon,
+  AdminIcon,
+  SettingsIcon,
+  DocsIcon,
+} from './sidebar-icons';
 
 interface NavItem {
   readonly to: string;
   readonly label: string;
   readonly icon: () => React.ReactNode;
   readonly badge?: number;
+}
+
+interface NavSection {
+  readonly label: string;
+  readonly items: readonly NavItem[];
 }
 
 export function Sidebar() {
@@ -22,213 +40,189 @@ export function Sidebar() {
   const { data: adminConfig } = useAdminConfig();
   const isAdmin = adminConfig?.data?.deploymentMode === 'team-host';
 
-  const navItems: readonly NavItem[] = [
-    { to: '/dashboard', label: 'Dashboard', icon: DashboardIcon, badge: pendingInvitationCount },
-    { to: '/project', label: 'Conversations', icon: ConversationsIcon },
-    { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
-    { to: '/prd-analysis', label: 'PRD Tracker', icon: PrdAnalysisIcon },
-    { to: '/ai-evaluation', label: 'AI Evaluation', icon: AiEvaluationIcon },
-    { to: '/plans', label: 'Plans', icon: PlansIcon },
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: AdminIcon } as const] : []),
-    { to: '/settings', label: 'Settings', icon: SettingsIcon },
+  const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+
+  const sections: readonly NavSection[] = [
+    {
+      label: 'Core',
+      items: [
+        {
+          to: '/dashboard',
+          label: 'Dashboard',
+          icon: DashboardIcon,
+          badge: pendingInvitationCount,
+        },
+        { to: '/project', label: 'Conversations', icon: ConversationsIcon },
+        { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
+      ],
+    },
+    {
+      label: 'Analysis',
+      items: [
+        { to: '/prd-analysis', label: 'PRD Tracker', icon: PrdAnalysisIcon },
+        { to: '/ai-evaluation', label: 'AI Evaluation', icon: AiEvaluationIcon },
+        { to: '/plans', label: 'Plans', icon: PlansIcon },
+      ],
+    },
+    {
+      label: 'System',
+      items: [
+        ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: AdminIcon } as const] : []),
+        { to: '/settings', label: 'Settings', icon: SettingsIcon },
+      ],
+    },
   ];
 
   return (
-    <aside className="flex w-60 flex-col border-r border-border-default bg-surface">
+    <aside
+      className={`flex ${sidebarCollapsed ? 'w-16' : 'w-60'} flex-col border-r border-border-default bg-surface transition-all duration-200`}
+    >
       <div className="flex h-14 items-center gap-2 border-b border-border-default px-4">
-        <img src="/logo.png" alt="ContextSync" className="h-7 w-7" />
-        <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>
+        <img src="/logo.png" alt="ContextSync" className="h-7 w-7 flex-shrink-0" />
+        {!sidebarCollapsed && <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>}
       </div>
-      <div className="border-b border-border-default p-3">
-        <div className="mb-2 flex items-center justify-between px-3">
-          <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-            Projects
-          </p>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex h-5 w-5 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
-            title="Create project"
+
+      {!sidebarCollapsed && (
+        <div className="border-b border-border-default p-3">
+          <div className="mb-2 flex items-center justify-between px-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+              Projects
+            </p>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex h-5 w-5 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+              title="Create project"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v12m6-6H6"
+                />
+              </svg>
+            </button>
+          </div>
+          <ProjectSelector />
+        </div>
+      )}
+
+      <nav className="flex-1 overflow-y-auto p-3">
+        {sections.map((section, sectionIdx) => (
+          <div key={section.label} className={sectionIdx > 0 ? 'mt-4' : ''}>
+            {!sidebarCollapsed && (
+              <p className="mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-text-tertiary">
+                {section.label}
+              </p>
+            )}
+            <div className="space-y-1">
+              {section.items.map((item) =>
+                sidebarCollapsed ? (
+                  <Tooltip
+                    key={item.to}
+                    content={item.label}
+                    position="bottom"
+                    align="left"
+                    width="w-auto"
+                  >
+                    <NavLink
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `relative flex items-center justify-center rounded-lg p-2 transition-colors ${
+                          isActive
+                            ? 'bg-blue-500/10 text-blue-400'
+                            : 'text-text-tertiary hover:bg-interactive-hover hover:text-text-primary'
+                        }`
+                      }
+                    >
+                      <item.icon />
+                      {item.badge != null && item.badge > 0 && (
+                        <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
+                    </NavLink>
+                  </Tooltip>
+                ) : (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? 'bg-blue-500/10 text-blue-400'
+                          : 'text-text-tertiary hover:bg-interactive-hover hover:text-text-primary'
+                      }`
+                    }
+                  >
+                    <item.icon />
+                    <span className="flex-1">{item.label}</span>
+                    {item.badge != null && item.badge > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500/20 px-1.5 text-xs font-semibold text-red-400">
+                        {item.badge > 99 ? '99+' : item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                ),
+              )}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      <div className="border-t border-border-default p-3">
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="flex w-full items-center justify-center rounded-lg p-2 text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <svg
+            className={`h-4 w-4 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
           >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+      </div>
+
+      <div className="border-t border-border-default p-3">
+        {sidebarCollapsed ? (
+          <Tooltip content="Docs" position="bottom" align="left" width="w-auto">
+            <a
+              href="/docs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center rounded-lg p-2 text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+            >
+              <DocsIcon />
+            </a>
+          </Tooltip>
+        ) : (
+          <a
+            href="/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+          >
+            <DocsIcon />
+            <span className="flex-1">Docs</span>
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M12 6v12m6-6H6"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
               />
             </svg>
-          </button>
-        </div>
-        <ProjectSelector />
-      </div>
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-blue-500/10 text-blue-400'
-                  : 'text-text-tertiary hover:bg-interactive-hover hover:text-text-primary'
-              }`
-            }
-          >
-            <item.icon />
-            <span className="flex-1">{item.label}</span>
-            {item.badge != null && item.badge > 0 && (
-              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500/20 px-1.5 text-xs font-semibold text-red-400">
-                {item.badge > 99 ? '99+' : item.badge}
-              </span>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-      <div className="border-t border-border-default p-3">
-        <a
-          href="/docs"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
-        >
-          <DocsIcon />
-          <span className="flex-1">Docs</span>
-          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-            />
-          </svg>
-        </a>
+          </a>
+        )}
       </div>
       <CreateProjectModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
     </aside>
-  );
-}
-
-function DashboardIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-      />
-    </svg>
-  );
-}
-
-function ConversationsIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M20 2H4a2 2 0 00-2 2v12a2 2 0 002 2h3l3 3 3-3h7a2 2 0 002-2V4a2 2 0 00-2-2z"
-      />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 9h8M8 13h5" />
-    </svg>
-  );
-}
-
-function ConflictsIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
-      />
-    </svg>
-  );
-}
-
-function PrdAnalysisIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-      />
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 14l2 2 4-4" />
-    </svg>
-  );
-}
-
-function AiEvaluationIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-      />
-    </svg>
-  );
-}
-
-function PlansIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-      />
-    </svg>
-  );
-}
-
-function DocsIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-      />
-    </svg>
-  );
-}
-
-function AdminIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-      />
-    </svg>
-  );
-}
-
-function SettingsIcon() {
-  return (
-    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.5}
-        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-      />
-    </svg>
   );
 }

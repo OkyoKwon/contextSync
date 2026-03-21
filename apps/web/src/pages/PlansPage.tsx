@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '../lib/toast';
 import { usePlans, usePlanDetail, useDeletePlan } from '../hooks/use-plans';
 import { PlanList } from '../components/plans/PlanList';
 import { PlanViewer } from '../components/plans/PlanViewer';
@@ -24,10 +24,10 @@ export function PlansPage() {
   const handleDelete = (filename: string) => {
     deleteMutation.mutate(filename, {
       onSuccess: () => {
-        toast.success('Plan deleted');
+        showToast.success('Plan deleted');
         setSelectedFilename(null);
       },
-      onError: (err) => toast.error(err.message),
+      onError: (err) => showToast.error(err.message),
     });
   };
 

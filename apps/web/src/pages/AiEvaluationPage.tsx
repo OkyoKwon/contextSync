@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '../lib/toast';
 import {
   useTeamEvaluationSummary,
   useStartEvaluation,
@@ -47,12 +47,12 @@ export function AiEvaluationPage() {
       },
       {
         onSuccess: () => {
-          toast.success('Evaluation completed');
+          showToast.success('Evaluation completed');
           setShowTriggerDialog(false);
           setSelectedUserId(targetUserId);
           setSelectedEvaluationId(null);
         },
-        onError: (err) => toast.error(err.message),
+        onError: (err) => showToast.error(err.message),
       },
     );
   };

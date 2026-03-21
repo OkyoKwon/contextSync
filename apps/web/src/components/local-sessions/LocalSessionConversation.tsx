@@ -73,13 +73,11 @@ function SessionHeader({
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-lg font-semibold text-text-primary">{detail.title}</h2>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            {detail.branch && (
-              <Badge variant="default">{detail.branch}</Badge>
-            )}
+            {detail.branch && <Badge variant="default">{detail.branch}</Badge>}
             {detail.filePaths.slice(0, 5).map((fp) => (
               <span
                 key={fp}
-                className="inline-block rounded bg-surface-hover px-1.5 py-0.5 text-xs text-text-tertiary"
+                className="inline-block rounded bg-surface-hover px-1.5 py-0.5 font-mono text-xs text-text-tertiary"
                 title={fp}
               >
                 {fp.split('/').pop()}
@@ -90,11 +88,7 @@ function SessionHeader({
             )}
           </div>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => onSync(detail.sessionId)}
-          disabled={isSyncing}
-        >
+        <Button variant="primary" onClick={() => onSync(detail.sessionId)} disabled={isSyncing}>
           {isSyncing ? <Spinner size="sm" /> : 'Sync this session'}
         </Button>
       </div>

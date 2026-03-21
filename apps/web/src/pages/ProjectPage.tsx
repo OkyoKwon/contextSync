@@ -1,13 +1,15 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Link } from 'react-router';
 import { useLocalSessions, useSyncSessions } from '../hooks/use-session-sync';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { LocalSessionList } from '../components/local-sessions/LocalSessionList';
 import { LocalSessionConversation } from '../components/local-sessions/LocalSessionConversation';
 import { ProjectConversationPanel } from '../components/local-sessions/ProjectConversationPanel';
+import { DirectoryGuidance } from '../components/local-sessions/DirectoryGuidance';
+import { SyncStatusIndicator } from '../components/local-sessions/SyncStatusIndicator';
 import { ChangeDirectoryModal } from '../components/projects/ChangeDirectoryModal';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
+import { SessionListSkeleton } from '../components/local-sessions/SessionListSkeleton';
 import { Badge } from '../components/ui/Badge';
 import { shortPath } from '../lib/format';
 import { timeAgo } from '../lib/date';
@@ -192,33 +194,20 @@ export function ProjectPage() {
             {myDirectory ? 'Change My Directory' : 'Link My Directory'}
           </Button>
         </div>
+        <SyncStatusIndicator syncMutation={syncMutation} />
       </div>
 
       {/* Content */}
       {!myDirectory ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4">
-          <div className="text-center">
-            <svg
-              className="mx-auto mb-3 h-12 w-12 text-text-muted"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M2 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z" />
-            </svg>
-            <p className="text-sm text-text-tertiary">
-              Link your local working directory to see your Claude Code sessions here.
-            </p>
-          </div>
-          <Button onClick={() => setIsChangeDirectoryOpen(true)}>Link My Directory</Button>
-        </div>
+        <DirectoryGuidance onOpenDirectoryModal={() => setIsChangeDirectoryOpen(true)} />
       ) : isLoading ? (
-        <div className="flex flex-1 items-center justify-center">
-          <Spinner size="md" />
-          <span className="ml-2 text-sm text-text-tertiary">Scanning local sessions...</span>
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-96 flex-shrink-0 border-r border-border-default">
+            <SessionListSkeleton />
+          </div>
+          <div className="flex flex-1 items-center justify-center">
+            <span className="text-sm text-text-tertiary">Scanning local sessions...</span>
+          </div>
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
@@ -306,71 +295,6 @@ export function ProjectPage() {
               </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Sync result feedback */}
-      {syncMutation.data?.data && (
-        <div className="flex items-center justify-between border-t border-border-default bg-green-500/10 px-6 py-3 text-sm text-green-400">
-          <span>
-            Synced {syncMutation.data.data.syncedCount} session(s).
-            {syncMutation.data.data.results.some((r) => (r.detectedConflicts ?? 0) > 0) && (
-              <>
-                {' '}
-                Conflicts detected —{' '}
-                <Link to="/conflicts" className="underline hover:text-green-300">
-                  view conflicts
-                </Link>
-                .
-              </>
-            )}
-            {syncMutation.data.data.results.some((r) => !r.success) && (
-              <span className="text-red-400">
-                {' '}
-                {syncMutation.data.data.results.filter((r) => !r.success).length} session(s) failed.
-              </span>
-            )}
-          </span>
-          <button
-            type="button"
-            onClick={() => syncMutation.reset()}
-            className="ml-4 text-green-400 hover:text-green-300"
-            aria-label="Dismiss"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {syncMutation.error && (
-        <div className="flex items-center justify-between border-t border-border-default bg-red-500/10 px-6 py-3 text-sm text-red-400">
-          <span>
-            {syncMutation.error instanceof Error ? syncMutation.error.message : 'Sync failed'}
-          </span>
-          <button
-            type="button"
-            onClick={() => syncMutation.reset()}
-            className="ml-4 text-red-400 hover:text-red-300"
-            aria-label="Dismiss"
-          >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
       )}
 

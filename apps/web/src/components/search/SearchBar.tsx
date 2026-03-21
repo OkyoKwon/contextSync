@@ -1,57 +1,31 @@
-import { useState, useCallback } from 'react';
-import DOMPurify from 'dompurify';
-import { useNavigate } from 'react-router';
-import { useSearch } from '../../hooks/use-search';
+import { useState } from 'react';
+import { SearchOverlay } from './SearchOverlay';
 
 export function SearchBar() {
-  const [query, setQuery] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
+  const [overlayKey, setOverlayKey] = useState(0);
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
-  const { data } = useSearch(query);
-  const results = data?.data?.results ?? [];
-
-  const handleSelect = useCallback(
-    (sessionId: string) => {
-      setIsOpen(false);
-      setQuery('');
-      navigate(`/sessions/${sessionId}`);
-    },
-    [navigate],
-  );
+  const handleOpen = () => {
+    setOverlayKey((k) => k + 1);
+    setIsOverlayOpen(true);
+  };
 
   return (
-    <div className="relative">
-      <input
-        type="text"
-        placeholder="Search sessions..."
+    <>
+      <button
+        type="button"
+        onClick={handleOpen}
         aria-label="Search sessions"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setIsOpen(true);
-        }}
-        onFocus={() => setIsOpen(true)}
-        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
-        className="w-64 rounded-lg border border-border-input bg-page px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-blue-500 focus:outline-none"
-      />
-      {isOpen && results.length > 0 && (
-        <div className="absolute top-full mt-1 w-96 rounded-lg border border-border-default bg-surface shadow-lg">
-          {results.slice(0, 8).map((result) => (
-            <button
-              key={result.id}
-              onClick={() => handleSelect(result.sessionId)}
-              className="block w-full px-4 py-2 text-left text-sm hover:bg-surface-hover"
-            >
-              <div className="font-medium text-text-primary">{result.title}</div>
-              <div
-                className="mt-0.5 text-xs text-text-tertiary"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(result.highlight) }}
-              />
-            </button>
-          ))}
-        </div>
+        className="flex w-64 items-center justify-between rounded-lg border border-border-input bg-page px-3 py-1.5 text-sm text-text-muted transition-colors hover:border-blue-500/50"
+      >
+        <span>Search sessions...</span>
+        <kbd className="rounded border border-border-default bg-surface-hover px-1.5 py-0.5 text-[10px] font-medium text-text-muted">
+          ⌘K
+        </kbd>
+      </button>
+      {isOverlayOpen && (
+        <SearchOverlay key={overlayKey} isOpen onClose={() => setIsOverlayOpen(false)} />
       )}
-    </div>
+    </>
   );
 }

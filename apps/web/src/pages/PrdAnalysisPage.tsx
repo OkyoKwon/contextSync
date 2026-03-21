@@ -1,6 +1,12 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
-import { useStartAnalysis, useLatestPrdAnalysis, usePrdAnalysisDetail, usePrdDocuments, usePrdAnalysisHistory } from '../hooks/use-prd-analysis';
+import { showToast } from '../lib/toast';
+import {
+  useStartAnalysis,
+  useLatestPrdAnalysis,
+  usePrdAnalysisDetail,
+  usePrdDocuments,
+  usePrdAnalysisHistory,
+} from '../hooks/use-prd-analysis';
 import { useRequireProject } from '../hooks/use-require-project';
 import { PrdDocumentSection } from '../components/prd-analysis/PrdDocumentSection';
 import { PrdStickyDocumentBar } from '../components/prd-analysis/PrdStickyDocumentBar';
@@ -24,20 +30,18 @@ export function PrdAnalysisPage() {
   const historyEntries = historyData?.data ?? [];
 
   const displayAnalysis = selectedAnalysisId
-    ? detailData?.data ?? null
-    : latestData?.data ?? null;
+    ? (detailData?.data ?? null)
+    : (latestData?.data ?? null);
 
   const currentDocument = (documentsData?.data ?? [])[0] ?? null;
   const hasDocument = currentDocument !== null;
 
   const completedEntries = historyEntries.filter((e) => e.status === 'completed');
-  const previousRate = completedEntries.length >= 2
-    ? completedEntries[1]?.overallRate ?? null
-    : null;
+  const previousRate =
+    completedEntries.length >= 2 ? (completedEntries[1]?.overallRate ?? null) : null;
 
-  const previousAnalysisId = completedEntries.length >= 2
-    ? completedEntries[1]?.id ?? null
-    : null;
+  const previousAnalysisId =
+    completedEntries.length >= 2 ? (completedEntries[1]?.id ?? null) : null;
 
   const { data: previousDetailData } = usePrdAnalysisDetail(previousAnalysisId);
   const previousRequirements = previousDetailData?.data?.requirements ?? null;
@@ -45,10 +49,10 @@ export function PrdAnalysisPage() {
   const handleStartAnalysis = (documentId: string) => {
     startAnalysisMutation.mutate(documentId, {
       onSuccess: () => {
-        toast.success('Analysis completed');
+        showToast.success('Analysis completed');
         setSelectedAnalysisId(null);
       },
-      onError: (err) => toast.error(err.message),
+      onError: (err) => showToast.error(err.message),
     });
   };
 

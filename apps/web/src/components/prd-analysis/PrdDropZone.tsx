@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { toast } from 'sonner';
+import { showToast } from '../../lib/toast';
 import { SUPPORTED_PRD_EXTENSIONS, MAX_PRD_FILE_SIZE } from '@context-sync/shared';
 
 interface PrdDropZoneProps {
@@ -16,13 +16,13 @@ export function PrdDropZone({ onFileDrop, isUploading, compact = false }: PrdDro
       if (!file) return;
 
       const ext = `.${file.name.split('.').pop()?.toLowerCase()}`;
-      if (!SUPPORTED_PRD_EXTENSIONS.includes(ext as typeof SUPPORTED_PRD_EXTENSIONS[number])) {
-        toast.error(`Unsupported file type. Supported: ${SUPPORTED_PRD_EXTENSIONS.join(', ')}`);
+      if (!SUPPORTED_PRD_EXTENSIONS.includes(ext as (typeof SUPPORTED_PRD_EXTENSIONS)[number])) {
+        showToast.error(`Unsupported file type. Supported: ${SUPPORTED_PRD_EXTENSIONS.join(', ')}`);
         return;
       }
 
       if (file.size > MAX_PRD_FILE_SIZE) {
-        toast.error(`File exceeds maximum size of ${MAX_PRD_FILE_SIZE / 1024}KB`);
+        showToast.error(`File exceeds maximum size of ${MAX_PRD_FILE_SIZE / 1024}KB`);
         return;
       }
 
@@ -57,8 +57,18 @@ export function PrdDropZone({ onFileDrop, isUploading, compact = false }: PrdDro
       <input {...getInputProps()} />
       <div className="flex flex-col items-center gap-2">
         {!compact && (
-          <svg className="h-10 w-10 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          <svg
+            className="h-10 w-10 text-text-tertiary"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            />
           </svg>
         )}
         <p className="text-sm text-text-secondary">

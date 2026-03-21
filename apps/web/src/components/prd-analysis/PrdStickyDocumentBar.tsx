@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { showToast } from '../../lib/toast';
 import type { PrdDocument, PrdAnalysisWithRequirements } from '@context-sync/shared';
 import { useReplacePrdDocument } from '../../hooks/use-prd-analysis';
 import { Button } from '../ui/Button';
@@ -34,10 +34,10 @@ export function PrdStickyDocumentBar({
       { oldDocumentId: document.id, file },
       {
         onSuccess: () => {
-          toast.success('PRD document replaced. Previous analysis results are preserved.');
+          showToast.success('PRD document replaced. Previous analysis results are preserved.');
           setIsChangingFile(false);
         },
-        onError: (err) => toast.error(err.message),
+        onError: (err) => showToast.error(err.message),
       },
     );
   };
@@ -46,17 +46,23 @@ export function PrdStickyDocumentBar({
     onStartAnalysis(document.id);
   };
 
-  const analyzeLabel = isAnalyzing
-    ? 'Analyzing...'
-    : lastAnalysis
-      ? 'Re-analyze'
-      : 'Analyze';
+  const analyzeLabel = isAnalyzing ? 'Analyzing...' : lastAnalysis ? 'Re-analyze' : 'Analyze';
 
   return (
     <div className="sticky top-0 z-10 -mx-6 border-b border-border-default bg-page/95 px-6 py-3 backdrop-blur-sm">
       <div className="mx-auto flex max-w-4xl items-center gap-3">
-        <svg className="h-5 w-5 shrink-0 text-text-tertiary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <svg
+          className="h-5 w-5 shrink-0 text-text-tertiary"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
         <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-primary">
           {document.fileName}
@@ -75,12 +81,7 @@ export function PrdStickyDocumentBar({
           >
             {isChangingFile ? 'Cancel' : 'Change File'}
           </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleAnalyze}
-            disabled={isAnalyzing}
-          >
+          <Button variant="primary" size="sm" onClick={handleAnalyze} disabled={isAnalyzing}>
             {analyzeLabel}
           </Button>
         </div>

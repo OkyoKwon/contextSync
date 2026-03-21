@@ -1,8 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import type { LocalProjectGroup, LocalSessionInfo } from '@context-sync/shared';
 import { Badge } from '../ui/Badge';
 import { shortPath } from '../../lib/format';
 import { timeAgo } from '../../lib/date';
+import {
+  SessionFilters,
+  filterSession,
+  sortSessions,
+  type FilterType,
+  type SortType,
+} from './SessionFilters';
 
 function formatTokenCount(tokens: number): string {
   if (tokens >= 1_000_000) {
@@ -13,6 +21,10 @@ function formatTokenCount(tokens: number): string {
   }
   return String(tokens);
 }
+
+type VirtualItem =
+  | { readonly type: 'group'; readonly group: LocalProjectGroup }
+  | { readonly type: 'session'; readonly session: LocalSessionInfo; readonly groupPath: string };
 
 interface LocalSessionListProps {
   readonly groups: readonly LocalProjectGroup[];
@@ -32,27 +44,50 @@ export function LocalSessionList({
   onSelectProject,
 }: LocalSessionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [sort, setSort] = useState<SortType>('recent');
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const filteredGroups = useMemo(() => {
-    if (!searchQuery.trim()) return groups;
-
     const query = searchQuery.toLowerCase();
     return groups
       .map((group) => {
-        const matchesPath = shortPath(group.projectPath).toLowerCase().includes(query);
-        const filteredSessions = group.sessions.filter(
-          (s) => matchesPath || s.firstMessage.toLowerCase().includes(query),
-        );
-        if (filteredSessions.length === 0) return null;
+        const matchesPath = !query || shortPath(group.projectPath).toLowerCase().includes(query);
+        const filtered = group.sessions
+          .filter((s) => matchesPath || s.firstMessage.toLowerCase().includes(query))
+          .filter((s) => filterSession(s, filter));
+        const sorted = sortSessions(filtered, sort);
+        if (sorted.length === 0) return null;
         return {
           ...group,
-          sessions: filteredSessions as readonly LocalSessionInfo[],
-          totalMessages: filteredSessions.reduce((sum, s) => sum + s.messageCount, 0),
-          totalSessionCount: filteredSessions.length,
+          sessions: sorted as readonly LocalSessionInfo[],
+          totalMessages: sorted.reduce((sum, s) => sum + s.messageCount, 0),
+          totalSessionCount: sorted.length,
         } as LocalProjectGroup;
       })
       .filter((g): g is LocalProjectGroup => g !== null);
-  }, [groups, searchQuery]);
+  }, [groups, searchQuery, filter, sort]);
+
+  const flatItems = useMemo(() => {
+    const items: VirtualItem[] = [];
+    for (const group of filteredGroups) {
+      items.push({ type: 'group', group });
+      for (const session of group.sessions) {
+        items.push({ type: 'session', session, groupPath: group.projectPath });
+      }
+    }
+    return items;
+  }, [filteredGroups]);
+
+  const virtualizer = useVirtualizer({
+    count: flatItems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: (index) => {
+      const item = flatItems[index];
+      return item?.type === 'group' ? 52 : 64;
+    },
+    overscan: 5,
+  });
 
   return (
     <div className="flex h-full flex-col">
@@ -64,9 +99,17 @@ export function LocalSessionList({
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full rounded-md border border-border-input bg-page px-3 py-1.5 text-sm text-text-primary placeholder:text-text-muted focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
+        <div className="mt-2">
+          <SessionFilters
+            activeFilter={filter}
+            activeSort={sort}
+            onFilterChange={setFilter}
+            onSortChange={setSort}
+          />
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3">
+      <div ref={parentRef} className="flex-1 overflow-y-auto">
         {filteredGroups.length === 0 && (
           <div className="py-8 text-center text-sm text-text-tertiary">
             {searchQuery ? (
@@ -86,18 +129,38 @@ export function LocalSessionList({
           </div>
         )}
 
-        <div className="space-y-4">
-          {filteredGroups.map((group) => (
-            <ProjectGroup
-              key={group.projectPath}
-              group={group}
-              selectedSessionId={selectedSessionId}
-              isProjectSelected={group.projectPath === selectedProjectPath}
-              onSelectSession={onSelectSession}
-              onSelectProject={onSelectProject}
-            />
-          ))}
-        </div>
+        {flatItems.length > 0 && (
+          <div className="relative w-full" style={{ height: `${virtualizer.getTotalSize()}px` }}>
+            {virtualizer.getVirtualItems().map((virtualRow) => {
+              const item = flatItems[virtualRow.index];
+              if (!item) return null;
+              return (
+                <div
+                  key={virtualRow.key}
+                  className="absolute left-0 top-0 w-full px-3"
+                  style={{
+                    height: `${virtualRow.size}px`,
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                >
+                  {item.type === 'group' ? (
+                    <GroupHeader
+                      group={item.group}
+                      isProjectSelected={item.group.projectPath === selectedProjectPath}
+                      onSelectProject={onSelectProject}
+                    />
+                  ) : (
+                    <SessionRow
+                      session={item.session}
+                      isSelected={item.session.sessionId === selectedSessionId}
+                      onSelect={() => onSelectSession(item.session.sessionId)}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -119,64 +182,47 @@ function FolderIcon({ className }: { readonly className?: string }) {
   );
 }
 
-function ProjectGroup({
+function GroupHeader({
   group,
-  selectedSessionId,
   isProjectSelected,
-  onSelectSession,
   onSelectProject,
 }: {
   readonly group: LocalProjectGroup;
-  readonly selectedSessionId: string | null;
   readonly isProjectSelected: boolean;
-  readonly onSelectSession: (sessionId: string) => void;
   readonly onSelectProject: (projectPath: string) => void;
 }) {
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => onSelectProject(group.projectPath)}
-        className={`mb-1.5 flex w-full items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
-          isProjectSelected
-            ? 'border-blue-500 bg-blue-500/10'
-            : 'border-border-default bg-zinc-800/50 hover:border-border-input hover:bg-surface-hover'
-        }`}
-      >
-        <FolderIcon
-          className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`}
-        />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`truncate text-sm font-semibold ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}
-            >
-              {shortPath(group.projectPath)}
-            </span>
-            {group.isActive && (
-              <Badge variant="default" className="whitespace-nowrap">
-                Current
-              </Badge>
-            )}
-          </div>
-          <span className="text-xs text-text-muted">
-            {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} ·{' '}
-            {group.totalMessages} msgs
+    <button
+      type="button"
+      onClick={() => onSelectProject(group.projectPath)}
+      className={`flex w-full items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
+        isProjectSelected
+          ? 'border-blue-500 bg-blue-500/10'
+          : 'border-border-default bg-zinc-800/50 hover:border-border-input hover:bg-surface-hover'
+      }`}
+    >
+      <FolderIcon
+        className={`h-4 w-4 flex-shrink-0 ${isProjectSelected ? 'text-blue-400' : 'text-text-muted'}`}
+      />
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`truncate text-sm font-semibold ${isProjectSelected ? 'text-blue-400' : 'text-text-secondary'}`}
+          >
+            {shortPath(group.projectPath)}
           </span>
+          {group.isActive && (
+            <Badge variant="default" className="whitespace-nowrap">
+              Current
+            </Badge>
+          )}
         </div>
-      </button>
-
-      <div className="space-y-1 pl-3 border-l border-border-default ml-2">
-        {group.sessions.map((session) => (
-          <SessionRow
-            key={session.sessionId}
-            session={session}
-            isSelected={session.sessionId === selectedSessionId}
-            onSelect={() => onSelectSession(session.sessionId)}
-          />
-        ))}
+        <span className="text-xs text-text-muted">
+          {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} ·{' '}
+          {group.totalMessages} msgs
+        </span>
       </div>
-    </div>
+    </button>
   );
 }
 

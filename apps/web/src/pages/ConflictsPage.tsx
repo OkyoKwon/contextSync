@@ -5,7 +5,7 @@ import { useRequireProject } from '../hooks/use-require-project';
 import { ConflictList } from '../components/conflicts/ConflictList';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
-import { Spinner } from '../components/ui/Spinner';
+import { ConflictsSkeleton } from '../components/conflicts/ConflictsSkeleton';
 
 export function ConflictsPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -17,8 +17,11 @@ export function ConflictsPage() {
 
   if (isProjectLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Spinner />
+      <div>
+        <div className="mb-6">
+          <PageBreadcrumb pageName="Conflicts" />
+        </div>
+        <ConflictsSkeleton />
       </div>
     );
   }
@@ -43,7 +46,9 @@ export function ConflictsPage() {
       <div className="mb-4 flex gap-3">
         <select
           value={severity ?? ''}
-          onChange={(e) => setSeverity((e.target.value || undefined) as ConflictSeverity | undefined)}
+          onChange={(e) =>
+            setSeverity((e.target.value || undefined) as ConflictSeverity | undefined)
+          }
           className="rounded-lg border border-border-input bg-page px-3 py-1.5 text-sm text-text-primary"
         >
           <option value="">All Severities</option>
