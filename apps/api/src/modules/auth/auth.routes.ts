@@ -1,11 +1,18 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { buildGitHubAuthUrl, exchangeCodeForToken, fetchGitHubProfile } from './github-oauth.client.js';
+import {
+  buildGitHubAuthUrl,
+  exchangeCodeForToken,
+  fetchGitHubProfile,
+} from './github-oauth.client.js';
 import { findOrCreateUser, findUserById } from './auth.service.js';
 import { ok, fail } from '../../lib/api-response.js';
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
   app.get('/github', async (_request, reply) => {
-    const callbackUrl = `http://${app.env.HOST === '0.0.0.0' ? 'localhost' : app.env.HOST}:${app.env.PORT}/api/auth/github/callback`;
+    const callbackUrl =
+      app.env.NODE_ENV === 'production'
+        ? `${app.env.FRONTEND_URL.replace(/\/$/, '').replace(/:\d+$/, '')}/api/auth/github/callback`
+        : `http://${app.env.HOST === '0.0.0.0' ? 'localhost' : app.env.HOST}:${app.env.PORT}/api/auth/github/callback`;
     const authUrl = buildGitHubAuthUrl(app.env.GITHUB_CLIENT_ID, callbackUrl);
     reply.redirect(authUrl);
   });

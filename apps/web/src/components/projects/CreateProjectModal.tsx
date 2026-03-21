@@ -173,7 +173,7 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (name.trim()) setStep(2);
+            if (name.trim() && (!repoUrl || /^https?:\/\/.+/.test(repoUrl))) setStep(2);
           }}
           className="space-y-3"
         >
@@ -182,12 +182,17 @@ export function CreateProjectModal({ isOpen, onClose }: CreateProjectModalProps)
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="My Project"
+            required
+            error={name.length > 0 && !name.trim() ? 'Project name cannot be empty' : undefined}
           />
           <Input
             label="Repository URL (optional)"
             value={repoUrl}
             onChange={(e) => setRepoUrl(e.target.value)}
             placeholder="https://github.com/org/repo"
+            error={
+              repoUrl && !/^https?:\/\/.+/.test(repoUrl) ? 'Please enter a valid URL' : undefined
+            }
           />
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={handleClose}>

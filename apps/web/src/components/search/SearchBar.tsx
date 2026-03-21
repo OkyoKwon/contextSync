@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router';
 import { useSearch } from '../../hooks/use-search';
 
@@ -24,6 +25,7 @@ export function SearchBar() {
       <input
         type="text"
         placeholder="Search sessions..."
+        aria-label="Search sessions"
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
@@ -44,7 +46,7 @@ export function SearchBar() {
               <div className="font-medium text-text-primary">{result.title}</div>
               <div
                 className="mt-0.5 text-xs text-text-tertiary"
-                dangerouslySetInnerHTML={{ __html: result.highlight }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(result.highlight) }}
               />
             </button>
           ))}

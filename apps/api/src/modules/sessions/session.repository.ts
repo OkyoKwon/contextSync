@@ -57,11 +57,7 @@ export async function createMessages(
     sort_order: index,
   }));
 
-  const rows = await db
-    .insertInto('messages')
-    .values(values)
-    .returningAll()
-    .execute();
+  const rows = await db.insertInto('messages').values(values).returningAll().execute();
 
   return rows.map(toMessage);
 }
@@ -82,7 +78,8 @@ export async function findSessionsByProjectId(
 
   if (filter.status) query = query.where('sessions.status', '=', filter.status);
   if (filter.userId) query = query.where('sessions.user_id', '=', filter.userId);
-  if (filter.startDate) query = query.where('sessions.created_at', '>=', new Date(filter.startDate));
+  if (filter.startDate)
+    query = query.where('sessions.created_at', '>=', new Date(filter.startDate));
   if (filter.endDate) query = query.where('sessions.created_at', '<=', new Date(filter.endDate));
 
   const sortBy = filter.sortBy === 'updatedAt' ? 'sessions.updated_at' : 'sessions.created_at';
@@ -111,9 +108,7 @@ export async function findSessionsByProjectId(
       .limit(limit)
       .offset(offset)
       .execute(),
-    query
-      .select(db.fn.countAll().as('count'))
-      .executeTakeFirstOrThrow(),
+    query.select(db.fn.countAll().as('count')).executeTakeFirstOrThrow(),
   ]);
 
   return {
@@ -149,7 +144,10 @@ export async function findSessionById(db: Db, id: string): Promise<Session | nul
   return row ? toSessionWithUser(row) : null;
 }
 
-export async function findMessagesBySessionId(db: Db, sessionId: string): Promise<readonly Message[]> {
+export async function findMessagesBySessionId(
+  db: Db,
+  sessionId: string,
+): Promise<readonly Message[]> {
   const rows = await db
     .selectFrom('messages')
     .selectAll()
@@ -215,15 +213,28 @@ export async function findAllSessionsWithMessages(
     .orderBy('created_at', 'asc')
     .execute();
 
-  const results = await Promise.all(
-    sessions.map(async (row) => {
-      const session = toSession(row as Record<string, unknown>);
-      const messages = await findMessagesBySessionId(db, session.id);
-      return { session, messages };
-    }),
-  );
+  if (sessions.length === 0) return [];
 
-  return results;
+  const sessionIds = sessions.map((s) => s.id as string);
+
+  const allMessages = await db
+    .selectFrom('messages')
+    .selectAll()
+    .where('session_id', 'in', sessionIds)
+    .orderBy('sort_order', 'asc')
+    .execute();
+
+  const messagesBySessionId = new Map<string, Message[]>();
+  for (const row of allMessages) {
+    const msg = toMessage(row as Record<string, unknown>);
+    const existing = messagesBySessionId.get(msg.sessionId) ?? [];
+    messagesBySessionId.set(msg.sessionId, [...existing, msg]);
+  }
+
+  return sessions.map((row) => {
+    const session = toSession(row as Record<string, unknown>);
+    return { session, messages: messagesBySessionId.get(session.id) ?? [] };
+  });
 }
 
 function toSession(row: Record<string, unknown>): Session {
@@ -238,7 +249,10 @@ function toSession(row: Record<string, unknown>): Session {
     moduleNames: (row['module_names'] as string[]) ?? [],
     branch: (row['branch'] as string) ?? null,
     tags: (row['tags'] as string[]) ?? [],
-    metadata: typeof row['metadata'] === 'string' ? JSON.parse(row['metadata'] as string) : (row['metadata'] as Record<string, unknown>) ?? {},
+    metadata:
+      typeof row['metadata'] === 'string'
+        ? JSON.parse(row['metadata'] as string)
+        : ((row['metadata'] as Record<string, unknown>) ?? {}),
     createdAt: (row['created_at'] as Date).toISOString(),
     updatedAt: (row['updated_at'] as Date).toISOString(),
   };

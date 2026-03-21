@@ -65,8 +65,11 @@ export async function createInvitation(
   );
   emailChannel
     .send(input.email, `[ContextSync] You've been invited to ${invitation.projectName}`, html)
-    .catch(() => {
-      // fire-and-forget: email failure should not block invitation creation
+    .catch((err: unknown) => {
+      console.warn(
+        '[invitation] Failed to send invitation email:',
+        err instanceof Error ? err.message : err,
+      );
     });
 
   logActivity(db, {

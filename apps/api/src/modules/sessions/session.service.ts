@@ -100,45 +100,49 @@ export async function getDashboardStats(
   const weekStart = new Date(todayStart);
   weekStart.setDate(weekStart.getDate() - 7);
 
-  const [todayResult, weekResult, conflictsResult, membersResult, hotFilesResult] = await Promise.all([
-    db
-      .selectFrom('sessions')
-      .select(db.fn.countAll().as('count'))
-      .where('project_id', '=', projectId)
-      .where('created_at', '>=', todayStart)
-      .executeTakeFirstOrThrow(),
-    db
-      .selectFrom('sessions')
-      .select(db.fn.countAll().as('count'))
-      .where('project_id', '=', projectId)
-      .where('created_at', '>=', weekStart)
-      .executeTakeFirstOrThrow(),
-    db
-      .selectFrom('conflicts')
-      .select(db.fn.countAll().as('count'))
-      .where('project_id', '=', projectId)
-      .where('status', 'in', ['detected', 'reviewing'])
-      .executeTakeFirstOrThrow(),
-    db
-      .selectFrom('sessions')
-      .select(db.fn.count('user_id').distinct().as('count'))
-      .where('project_id', '=', projectId)
-      .where('created_at', '>=', weekStart)
-      .executeTakeFirstOrThrow(),
-    db
-      .selectFrom('sessions')
-      .select([
-        sql<string>`unnest(file_paths)`.as('path'),
-        db.fn.countAll().as('count'),
-      ])
-      .where('project_id', '=', projectId)
-      .where('created_at', '>=', weekStart)
-      .groupBy(sql`unnest(file_paths)`)
-      .orderBy(sql`count(*)`, 'desc')
-      .limit(10)
-      .execute()
-      .catch(() => []),
-  ]);
+  const [todayResult, weekResult, conflictsResult, membersResult, hotFilesResult] =
+    await Promise.all([
+      db
+        .selectFrom('sessions')
+        .select(db.fn.countAll().as('count'))
+        .where('project_id', '=', projectId)
+        .where('created_at', '>=', todayStart)
+        .executeTakeFirstOrThrow(),
+      db
+        .selectFrom('sessions')
+        .select(db.fn.countAll().as('count'))
+        .where('project_id', '=', projectId)
+        .where('created_at', '>=', weekStart)
+        .executeTakeFirstOrThrow(),
+      db
+        .selectFrom('conflicts')
+        .select(db.fn.countAll().as('count'))
+        .where('project_id', '=', projectId)
+        .where('status', 'in', ['detected', 'reviewing'])
+        .executeTakeFirstOrThrow(),
+      db
+        .selectFrom('sessions')
+        .select(db.fn.count('user_id').distinct().as('count'))
+        .where('project_id', '=', projectId)
+        .where('created_at', '>=', weekStart)
+        .executeTakeFirstOrThrow(),
+      db
+        .selectFrom('sessions')
+        .select([sql<string>`unnest(file_paths)`.as('path'), db.fn.countAll().as('count')])
+        .where('project_id', '=', projectId)
+        .where('created_at', '>=', weekStart)
+        .groupBy(sql`unnest(file_paths)`)
+        .orderBy(sql`count(*)`, 'desc')
+        .limit(10)
+        .execute()
+        .catch((err: unknown) => {
+          console.warn(
+            '[session] Failed to query hot file paths:',
+            err instanceof Error ? err.message : err,
+          );
+          return [];
+        }),
+    ]);
 
   return {
     todaySessions: Number(todayResult.count),

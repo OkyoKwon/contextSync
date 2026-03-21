@@ -48,7 +48,9 @@ export const sessionsApi = {
       });
     }
     const qs = params.toString();
-    return api.get<readonly TimelineEntry[]>(`/projects/${projectId}/timeline${qs ? `?${qs}` : ''}`);
+    return api.get<readonly TimelineEntry[]>(
+      `/projects/${projectId}/timeline${qs ? `?${qs}` : ''}`,
+    );
   },
 
   stats: (projectId: string) => api.get<DashboardStats>(`/projects/${projectId}/stats`),
@@ -64,16 +66,14 @@ export const sessionsApi = {
       `/sessions/local/browse${path ? `?path=${encodeURIComponent(path)}` : ''}`,
     ),
 
-  listLocalDirectories: () =>
-    api.get<readonly LocalDirectory[]>('/sessions/local/directories'),
+  listLocalDirectories: () => api.get<readonly LocalDirectory[]>('/sessions/local/directories'),
 
   listLocal: (projectId: string, activeOnly = true) =>
     api.get<readonly LocalProjectGroup[]>(
       `/sessions/local?projectId=${projectId}&activeOnly=${activeOnly}`,
     ),
 
-  getLocal: (sessionId: string) =>
-    api.get<LocalSessionDetail>(`/sessions/local/${sessionId}`),
+  getLocal: (sessionId: string) => api.get<LocalSessionDetail>(`/sessions/local/${sessionId}`),
 
   getLocalProjectConversation: (projectPath: string, cursor?: string, limit = 100) =>
     api.get<ProjectConversation>(
@@ -87,12 +87,20 @@ export const sessionsApi = {
     api.post<RecalculateTokenResult>(`/projects/${projectId}/sessions/recalculate-tokens`),
 
   exportMarkdown: async (projectId: string): Promise<Blob> => {
-    const token = (await import('../stores/auth.store')).useAuthStore.getState().token;
+    const { useAuthStore } = await import('../stores/auth.store');
+    const token = useAuthStore.getState().token;
     const headers: Record<string, string> = {};
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
-    const response = await fetch(`/api/projects/${projectId}/sessions/export/markdown`, { headers });
+    const response = await fetch(`/api/projects/${projectId}/sessions/export/markdown`, {
+      headers,
+    });
     if (!response.ok) {
+      if (response.status === 401) {
+        const { useLoginModal } = await import('../hooks/use-login-modal');
+        useLoginModal.getState().openLoginModal();
+        throw new Error('Session expired. Please log in again.');
+      }
       const errorBody = await response.json().catch(() => null);
       throw new Error(errorBody?.error ?? `Export failed (${response.status})`);
     }

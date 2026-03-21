@@ -14,8 +14,8 @@ export function logActivity(
     readonly metadata?: Record<string, unknown>;
   },
 ): void {
-  activityRepo.insertActivity(db, input).catch(() => {
-    // fire-and-forget: activity logging should not block main flow
+  activityRepo.insertActivity(db, input).catch((err) => {
+    console.warn('[activity] Failed to log activity:', err instanceof Error ? err.message : err);
   });
 }
 

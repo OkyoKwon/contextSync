@@ -1,10 +1,22 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import { ok, fail, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
 import { exportProjectAsMarkdown } from './session-export.service.js';
-import { listLocalDirectories, listLocalSessions, getLocalSessionDetail, getProjectConversation, syncSessions, recalculateTokenUsage, browseDirectory } from './local-session.service.js';
-import { sessionFilterSchema, updateSessionSchema, tokenUsageQuerySchema } from './session.schema.js';
+import {
+  listLocalDirectories,
+  listLocalSessions,
+  getLocalSessionDetail,
+  getProjectConversation,
+  syncSessions,
+  recalculateTokenUsage,
+  browseDirectory,
+} from './local-session.service.js';
+import {
+  sessionFilterSchema,
+  updateSessionSchema,
+  tokenUsageQuerySchema,
+} from './session.schema.js';
 import * as tokenUsageService from './token-usage.service.js';
 
 export const sessionRoutes: FastifyPluginAsync = async (app) => {
@@ -33,7 +45,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const file = await request.file();
       if (!file) {
-        return reply.status(400).send({ success: false, data: null, error: 'No file uploaded' });
+        return reply.status(400).send(fail('No file uploaded'));
       }
 
       const buffer = await file.toBuffer();
@@ -67,17 +79,14 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.get<{ Params: { sessionId: string } }>(
-    '/sessions/:sessionId',
-    async (request, reply) => {
-      const session = await sessionService.getSessionDetail(
-        app.db,
-        request.params.sessionId,
-        request.user.userId,
-      );
-      return reply.send(ok(session));
-    },
-  );
+  app.get<{ Params: { sessionId: string } }>('/sessions/:sessionId', async (request, reply) => {
+    const session = await sessionService.getSessionDetail(
+      app.db,
+      request.params.sessionId,
+      request.user.userId,
+    );
+    return reply.send(ok(session));
+  });
 
   app.patch<{ Params: { sessionId: string }; Body: unknown }>(
     '/sessions/:sessionId',
@@ -93,17 +102,10 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.delete<{ Params: { sessionId: string } }>(
-    '/sessions/:sessionId',
-    async (request, reply) => {
-      await sessionService.deleteSession(
-        app.db,
-        request.params.sessionId,
-        request.user.userId,
-      );
-      return reply.send(ok({ deleted: true }));
-    },
-  );
+  app.delete<{ Params: { sessionId: string } }>('/sessions/:sessionId', async (request, reply) => {
+    await sessionService.deleteSession(app.db, request.params.sessionId, request.user.userId);
+    return reply.send(ok({ deleted: true }));
+  });
 
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/timeline',
@@ -159,20 +161,17 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.get<{ Querystring: { path?: string } }>(
-    '/sessions/local/browse',
-    async (request, reply) => {
-      try {
-        const entries = await browseDirectory(request.query.path || undefined);
-        return reply.send(ok(entries));
-      } catch (err) {
-        if (err instanceof Error && (err as { statusCode?: number }).statusCode === 400) {
-          return reply.status(400).send({ success: false, data: null, error: err.message });
-        }
-        throw err;
+  app.get<{ Querystring: { path?: string } }>('/sessions/local/browse', async (request, reply) => {
+    try {
+      const entries = await browseDirectory(request.query.path || undefined);
+      return reply.send(ok(entries));
+    } catch (err) {
+      if (err instanceof Error && (err as { statusCode?: number }).statusCode === 400) {
+        return reply.status(400).send(fail(err.message));
       }
-    },
-  );
+      throw err;
+    }
+  });
 
   app.get('/sessions/local/directories', async (_request, reply) => {
     const directories = await listLocalDirectories();
@@ -184,7 +183,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { projectId, activeOnly } = request.query;
       if (!projectId) {
-        return reply.status(400).send({ success: false, data: null, error: 'projectId is required' });
+        return reply.status(400).send(fail('projectId is required'));
       }
       const isActiveOnly = activeOnly !== 'false';
       const sessions = await listLocalSessions(app.db, projectId, isActiveOnly);
@@ -197,10 +196,14 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { projectPath, cursor, limit } = request.query;
       if (!projectPath) {
-        return reply.status(400).send({ success: false, data: null, error: 'projectPath is required' });
+        return reply.status(400).send(fail('projectPath is required'));
       }
       const parsedLimit = limit ? parseInt(limit, 10) : 100;
-      const conversation = await getProjectConversation(projectPath, cursor || undefined, parsedLimit);
+      const conversation = await getProjectConversation(
+        projectPath,
+        cursor || undefined,
+        parsedLimit,
+      );
       return reply.send(ok(conversation));
     },
   );
@@ -213,7 +216,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
         return reply.send(ok(detail));
       } catch (err) {
         if (err instanceof Error && (err as NodeJS.ErrnoException).code === 'NOT_FOUND') {
-          return reply.status(404).send({ success: false, data: null, error: err.message });
+          return reply.status(404).send(fail(err.message));
         }
         throw err;
       }
@@ -237,7 +240,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { sessionIds } = request.body;
       if (!Array.isArray(sessionIds) || sessionIds.length === 0) {
-        return reply.status(400).send({ success: false, data: null, error: 'sessionIds must be a non-empty array' });
+        return reply.status(400).send(fail('sessionIds must be a non-empty array'));
       }
 
       const result = await syncSessions(

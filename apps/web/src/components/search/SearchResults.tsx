@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import { Link } from 'react-router';
 import { Badge } from '../ui/Badge';
 import { timeAgo } from '../../lib/date';
@@ -29,15 +30,13 @@ export function SearchResults({ results }: SearchResultsProps) {
           className="block rounded-lg border border-border-default p-3 hover:bg-surface-hover"
         >
           <div className="flex items-center gap-2">
-            <Badge variant={result.type === 'session' ? 'info' : 'default'}>
-              {result.type}
-            </Badge>
+            <Badge variant={result.type === 'session' ? 'info' : 'default'}>{result.type}</Badge>
             <span className="text-sm font-medium text-text-primary">{result.title}</span>
             <span className="ml-auto text-xs text-text-muted">{timeAgo(result.createdAt)}</span>
           </div>
           <div
             className="mt-1 text-xs text-text-tertiary"
-            dangerouslySetInnerHTML={{ __html: result.highlight }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(result.highlight) }}
           />
         </Link>
       ))}
