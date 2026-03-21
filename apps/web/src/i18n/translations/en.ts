@@ -6,8 +6,7 @@ export const en: TranslationKeys = {
 
   // Hero
   'hero.title': 'The Hub for AI Session Context',
-  'hero.subtitle':
-    "Archive, sync, search, and detect conflicts across your team's Claude Code sessions",
+  'hero.subtitle': 'Manage your Claude Code sessions — solo or with your team',
   'hero.cta.github': 'Continue with GitHub',
   'hero.cta.features': 'Explore Features',
 
@@ -21,7 +20,7 @@ export const en: TranslationKeys = {
   'problem.terminal.output4': '→ Modifying src/auth/token.ts...',
   'problem.terminal.conflict': '⚠ CONFLICT: src/auth/session.ts — 2 devs working simultaneously',
   'problem.terminal.resolved': '✓ Conflict pre-detected — notifications sent to dev-A, dev-B',
-  'problem.conclusion': 'When teams work with AI, ',
+  'problem.conclusion': 'Whether solo or in a team, ',
   'problem.conclusionHighlight': 'context sync is essential',
   'problem.conclusionEnd': '',
 
@@ -66,9 +65,9 @@ export const en: TranslationKeys = {
   'howItWorks.step.1.title': 'Analyze',
   'howItWorks.step.1.description':
     'Automatic conflict detection, PRD fulfillment analysis, and token usage tracking.',
-  'howItWorks.step.2.title': 'Collaborate',
+  'howItWorks.step.2.title': 'Scale',
   'howItWorks.step.2.description':
-    'Share sessions with teammates, prevent conflicts proactively, and build team knowledge.',
+    "Start solo, then invite your team when you're ready. Role-based access and conflict detection built in.",
 
   // Social Proof
   'social.sectionLabel': '// By the Numbers',
@@ -177,9 +176,29 @@ export const en: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code stores session data in the .claude/ directory within your project root. ContextSync reads from this directory when you trigger a session scan. The data stays on your machine until you explicitly sync it to a project.',
 
+  // Deploy Modes
+  'deployModes.sectionLabel': '// Deploy Your Way',
+  'deployModes.title': 'One Tool, Three Modes',
+  'deployModes.subtitle': 'From solo archive to full team sync — pick the setup that fits',
+  'deployModes.0.title': 'Personal',
+  'deployModes.0.description': 'Solo developer, local everything',
+  'deployModes.0.detail.0': 'Local Docker PostgreSQL — zero config',
+  'deployModes.0.detail.1': 'Private session archive & search',
+  'deployModes.0.detail.2': 'Token usage tracking & cost analysis',
+  'deployModes.1.title': 'Team Host',
+  'deployModes.1.description': 'Admin hosting a shared DB for the team',
+  'deployModes.1.detail.0': 'SSL-enabled PostgreSQL with team roles',
+  'deployModes.1.detail.1': 'Centralized migrations & access control',
+  'deployModes.1.detail.2': 'Interactive setup wizard included',
+  'deployModes.2.title': 'Team Member',
+  'deployModes.2.description': 'Connect to your team — no Docker needed',
+  'deployModes.2.detail.0': 'Point to the remote DB and run pnpm dev',
+  'deployModes.2.detail.1': 'Full conflict detection & notifications',
+  'deployModes.2.detail.2': 'Shared sessions, search, and dashboards',
+
   // Footer
-  'footer.cta.title': "Sync your team's AI workflow",
-  'footer.cta.subtitle': 'Start for free. No installation — just a GitHub account.',
+  'footer.cta.title': 'Sync your AI workflow',
+  'footer.cta.subtitle': 'Start for free. Run locally with Docker, or connect to a shared team DB.',
   'footer.cta.button': 'Continue with GitHub',
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',

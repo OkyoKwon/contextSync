@@ -6,7 +6,7 @@ export const ja: TranslationKeys = {
 
   // Hero
   'hero.title': 'AIセッションコンテキストの中心',
-  'hero.subtitle': 'チームのClaude Codeセッションをアーカイブ・同期・検索・コンフリクト検知',
+  'hero.subtitle': 'Claude Codeセッションを管理 — ソロでもチームでも',
   'hero.cta.github': 'Continue with GitHub',
   'hero.cta.features': '機能を見る',
 
@@ -20,7 +20,7 @@ export const ja: TranslationKeys = {
   'problem.terminal.output4': '→ src/auth/token.ts を変更中...',
   'problem.terminal.conflict': '⚠ CONFLICT: src/auth/session.ts — 2人が同時作業中',
   'problem.terminal.resolved': '✓ コンフリクト事前検知完了 — dev-A, dev-Bに通知送信',
-  'problem.conclusion': 'チームがAIと働くとき、',
+  'problem.conclusion': 'ソロでもチームでも、',
   'problem.conclusionHighlight': 'コンテキスト同期は必須',
   'problem.conclusionEnd': 'です',
 
@@ -64,9 +64,9 @@ export const ja: TranslationKeys = {
   'howItWorks.step.1.title': 'Analyze',
   'howItWorks.step.1.description':
     'コンフリクト検知、PRD達成率分析、トークン使用量追跡を自動実行。',
-  'howItWorks.step.2.title': 'Collaborate',
+  'howItWorks.step.2.title': 'Scale',
   'howItWorks.step.2.description':
-    'メンバーとセッションを共有し、コンフリクトを事前防止し、ナレッジを蓄積。',
+    'ソロで始めて、準備ができたらチームを招待。ロールベースアクセス制御とコンフリクト検知を内蔵。',
 
   // Social Proof
   'social.sectionLabel': '// By the Numbers',
@@ -173,10 +173,29 @@ export const ja: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Codeはプロジェクトルートの.claude/ディレクトリにセッションデータを保存します。セッションスキャンをトリガーするとこのディレクトリから読み取ります。明示的に同期するまでデータはローカルに残ります。',
 
+  // Deploy Modes
+  'deployModes.sectionLabel': '// Deploy Your Way',
+  'deployModes.title': '1つのツール、3つのモード',
+  'deployModes.subtitle': 'ソロアーカイブからチーム同期まで — 合うセットアップを選択',
+  'deployModes.0.title': 'Personal',
+  'deployModes.0.description': 'ソロ開発者、ローカル環境',
+  'deployModes.0.detail.0': 'ローカルDocker PostgreSQL — 設定不要',
+  'deployModes.0.detail.1': 'プライベートセッションアーカイブ＆検索',
+  'deployModes.0.detail.2': 'トークン使用量追跡＆コスト分析',
+  'deployModes.1.title': 'Team Host',
+  'deployModes.1.description': 'チーム用の共有DBをホスティングする管理者',
+  'deployModes.1.detail.0': 'チームロール付きSSL対応PostgreSQL',
+  'deployModes.1.detail.1': '一元管理のマイグレーション＆アクセス制御',
+  'deployModes.1.detail.2': '対話式セットアップウィザード内蔵',
+  'deployModes.2.title': 'Team Member',
+  'deployModes.2.description': 'チームに接続 — Docker不要',
+  'deployModes.2.detail.0': 'リモートDBを指定してpnpm devを実行',
+  'deployModes.2.detail.1': 'コンフリクト検知＆通知をフルサポート',
+  'deployModes.2.detail.2': '共有セッション、検索、ダッシュボード',
+
   // Footer
-  'footer.cta.title': 'チームのAIワークフローを同期しよう',
-  'footer.cta.subtitle':
-    '無料で始めましょう。インストール不要、GitHubアカウントだけですぐ使えます。',
+  'footer.cta.title': 'AIワークフローを同期しよう',
+  'footer.cta.subtitle': '無料で始めましょう。Dockerでローカル実行、またはチームDBに接続。',
   'footer.cta.button': 'Continue with GitHub',
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',

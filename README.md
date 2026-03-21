@@ -3,7 +3,7 @@
 [![CI](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml/badge.svg)](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-AI session context management platform — archive, sync, search, and detect conflicts across Claude Code sessions for teams.
+AI session context management platform — archive, sync, search, and manage Claude Code sessions — solo or with your team.
 
 ## Tech Stack
 
@@ -21,29 +21,60 @@ AI session context management platform — archive, sync, search, and detect con
 
 - **Node.js 22** (see [.nvmrc](.nvmrc) — run `nvm use`)
 - **pnpm 9+** (`corepack enable`)
-- **Docker** (for PostgreSQL)
+- **Docker** (for personal and team-host modes only — not needed for team-member)
 
-### Setup
+### Quick Setup (Interactive)
 
 ```bash
-# 1. Install dependencies
 pnpm install
-
-# 2. Start PostgreSQL
-docker compose up -d
-
-# 3. Configure environment (set GitHub OAuth credentials)
-cp apps/api/.env.example apps/api/.env
-
-# 4. Run database migrations
-pnpm --filter @context-sync/api migrate
-
-# 5. (Optional) Load sample data
-pnpm --filter @context-sync/api seed
-
-# 6. Start dev servers
+bash scripts/setup.sh    # Interactive wizard: picks mode, writes .env
 pnpm dev
 ```
+
+### Manual Setup
+
+<details>
+<summary>Personal mode (default — solo, local DB)</summary>
+
+```bash
+pnpm install
+docker compose up -d
+cp apps/api/.env.example apps/api/.env    # Set GitHub OAuth credentials
+pnpm --filter @context-sync/api migrate
+pnpm --filter @context-sync/api seed      # Optional: sample data
+pnpm dev
+```
+
+</details>
+
+<details>
+<summary>Team Host (admin hosting shared DB)</summary>
+
+```bash
+pnpm install
+# Place SSL certs in certs/ directory
+docker compose --profile team-host up -d
+cp apps/api/.env.example apps/api/.env
+# Set DEPLOYMENT_MODE=team-host, DATABASE_SSL=true
+pnpm --filter @context-sync/api migrate
+pnpm dev
+```
+
+</details>
+
+<details>
+<summary>Team Member (connecting to remote DB)</summary>
+
+```bash
+pnpm install
+cp apps/api/.env.example apps/api/.env
+# Set DATABASE_URL to remote DB, DATABASE_SSL=true, RUN_MIGRATIONS=false
+pnpm dev
+```
+
+No Docker required.
+
+</details>
 
 Open `http://localhost:5173` and sign in with GitHub.
 
@@ -51,17 +82,21 @@ API runs at `http://localhost:3001`.
 
 ### Environment Variables
 
-| Variable               | Required | Description                                     |
-| ---------------------- | -------- | ----------------------------------------------- |
-| `DATABASE_URL`         | Yes      | PostgreSQL connection string                    |
-| `GITHUB_CLIENT_ID`     | Yes      | GitHub OAuth app client ID                      |
-| `GITHUB_CLIENT_SECRET` | Yes      | GitHub OAuth app client secret                  |
-| `JWT_SECRET`           | Yes      | JWT signing key (min 32 chars)                  |
-| `JWT_EXPIRES_IN`       | No       | Token expiry (default: `7d`)                    |
-| `FRONTEND_URL`         | No       | Frontend URL (default: `http://localhost:5173`) |
-| `ANTHROPIC_API_KEY`    | No       | For PRD analysis feature                        |
-| `SLACK_WEBHOOK_URL`    | No       | Slack notification webhook                      |
-| `RESEND_API_KEY`       | No       | Email notifications                             |
+| Variable               | Required | Description                                                        |
+| ---------------------- | -------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`         | Yes      | PostgreSQL connection string                                       |
+| `GITHUB_CLIENT_ID`     | Yes      | GitHub OAuth app client ID                                         |
+| `GITHUB_CLIENT_SECRET` | Yes      | GitHub OAuth app client secret                                     |
+| `JWT_SECRET`           | Yes      | JWT signing key (min 32 chars)                                     |
+| `JWT_EXPIRES_IN`       | No       | Token expiry (default: `7d`)                                       |
+| `FRONTEND_URL`         | No       | Frontend URL (default: `http://localhost:5173`)                    |
+| `ANTHROPIC_API_KEY`    | No       | For PRD analysis feature                                           |
+| `SLACK_WEBHOOK_URL`    | No       | Slack notification webhook                                         |
+| `RESEND_API_KEY`       | No       | Email notifications                                                |
+| `DEPLOYMENT_MODE`      | No       | `personal` (default), `team-host`, or `team-member`                |
+| `DATABASE_SSL`         | No       | Enable SSL for DB connection (default: `false`)                    |
+| `DATABASE_SSL_CA`      | No       | Path to CA certificate for self-signed certs                       |
+| `RUN_MIGRATIONS`       | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
 
 ## Project Structure
 
@@ -103,6 +138,14 @@ Detects when multiple team members modify the same files simultaneously and clas
 ### Full-text Search
 
 PostgreSQL tsvector-based search across session titles, message content, file paths, and tags.
+
+## Deployment Modes
+
+| Mode          | Docker? | DB          | Use Case                          |
+| ------------- | ------- | ----------- | --------------------------------- |
+| `personal`    | Yes     | Local       | Solo dev, private session archive |
+| `team-host`   | Yes     | Local + SSL | Admin hosting shared DB           |
+| `team-member` | No      | Remote      | Dev connecting to team DB         |
 
 ## Scripts
 

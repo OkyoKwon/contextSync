@@ -3,6 +3,7 @@ import { LandingNav } from '../components/landing/LandingNav';
 import { LandingHero } from '../components/landing/LandingHero';
 import { ProblemStatement } from '../components/landing/ProblemStatement';
 import { FeatureShowcase } from '../components/landing/FeatureShowcase';
+import { DeployModes } from '../components/landing/DeployModes';
 import { HowItWorks } from '../components/landing/HowItWorks';
 import { TerminalDemo } from '../components/landing/TerminalDemo';
 import { SocialProof } from '../components/landing/SocialProof';
@@ -18,6 +19,7 @@ export function LoginPage() {
       <LandingHero isAuthenticated={isAuthenticated} />
       <ProblemStatement />
       <FeatureShowcase />
+      <DeployModes />
       <HowItWorks />
       <TerminalDemo />
       <SocialProof />

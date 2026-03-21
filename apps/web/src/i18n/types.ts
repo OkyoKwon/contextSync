@@ -144,6 +144,26 @@ export interface TranslationKeys {
   readonly 'docs.faq.5.q': string;
   readonly 'docs.faq.5.a': string;
 
+  // Deploy Modes
+  readonly 'deployModes.sectionLabel': string;
+  readonly 'deployModes.title': string;
+  readonly 'deployModes.subtitle': string;
+  readonly 'deployModes.0.title': string;
+  readonly 'deployModes.0.description': string;
+  readonly 'deployModes.0.detail.0': string;
+  readonly 'deployModes.0.detail.1': string;
+  readonly 'deployModes.0.detail.2': string;
+  readonly 'deployModes.1.title': string;
+  readonly 'deployModes.1.description': string;
+  readonly 'deployModes.1.detail.0': string;
+  readonly 'deployModes.1.detail.1': string;
+  readonly 'deployModes.1.detail.2': string;
+  readonly 'deployModes.2.title': string;
+  readonly 'deployModes.2.description': string;
+  readonly 'deployModes.2.detail.0': string;
+  readonly 'deployModes.2.detail.1': string;
+  readonly 'deployModes.2.detail.2': string;
+
   // Footer
   readonly 'footer.cta.title': string;
   readonly 'footer.cta.subtitle': string;

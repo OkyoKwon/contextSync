@@ -6,7 +6,7 @@ export const ko: TranslationKeys = {
 
   // Hero
   'hero.title': 'AI 세션 컨텍스트의 중심',
-  'hero.subtitle': '팀의 Claude Code 세션을 아카이브 · 동기화 · 검색 · 충돌 감지',
+  'hero.subtitle': 'Claude Code 세션을 관리하세요 — 혼자서도, 팀과 함께도',
   'hero.cta.github': 'Continue with GitHub',
   'hero.cta.features': 'Features 살펴보기',
 
@@ -20,7 +20,7 @@ export const ko: TranslationKeys = {
   'problem.terminal.output4': '→ src/auth/token.ts 수정 중...',
   'problem.terminal.conflict': '⚠ CONFLICT: src/auth/session.ts — 2명이 동시 작업 중',
   'problem.terminal.resolved': '✓ 충돌 사전 감지 완료 — dev-A, dev-B에게 알림 전송',
-  'problem.conclusion': '팀이 AI와 함께 일할 때, ',
+  'problem.conclusion': '혼자든 팀이든, ',
   'problem.conclusionHighlight': '컨텍스트 동기화는 필수',
   'problem.conclusionEnd': '입니다',
 
@@ -63,9 +63,9 @@ export const ko: TranslationKeys = {
   'howItWorks.step.1.title': 'Analyze',
   'howItWorks.step.1.description':
     '충돌 감지, PRD 달성률 분석, 토큰 사용량 추적을 자동으로 수행합니다.',
-  'howItWorks.step.2.title': 'Collaborate',
+  'howItWorks.step.2.title': 'Scale',
   'howItWorks.step.2.description':
-    '팀원들과 세션을 공유하고, 충돌을 사전 방지하며, 지식을 축적합니다.',
+    '혼자 시작하고, 준비되면 팀을 초대하세요. 역할 기반 접근 제어와 충돌 감지가 내장되어 있습니다.',
 
   // Social Proof
   'social.sectionLabel': '// By the Numbers',
@@ -172,9 +172,29 @@ export const ko: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 명시적으로 동기화하기 전까지 데이터는 로컬에 남아있습니다.',
 
+  // Deploy Modes
+  'deployModes.sectionLabel': '// Deploy Your Way',
+  'deployModes.title': '하나의 도구, 세 가지 모드',
+  'deployModes.subtitle': '개인 아카이브부터 팀 동기화까지 — 맞는 설정을 선택하세요',
+  'deployModes.0.title': 'Personal',
+  'deployModes.0.description': '솔로 개발자, 로컬 환경',
+  'deployModes.0.detail.0': '로컬 Docker PostgreSQL — 설정 불필요',
+  'deployModes.0.detail.1': '개인 세션 아카이브 및 검색',
+  'deployModes.0.detail.2': '토큰 사용량 추적 및 비용 분석',
+  'deployModes.1.title': 'Team Host',
+  'deployModes.1.description': '팀을 위한 공유 DB를 호스팅하는 관리자',
+  'deployModes.1.detail.0': '팀 역할이 포함된 SSL 지원 PostgreSQL',
+  'deployModes.1.detail.1': '중앙 집중식 마이그레이션 및 접근 제어',
+  'deployModes.1.detail.2': '대화형 설정 마법사 포함',
+  'deployModes.2.title': 'Team Member',
+  'deployModes.2.description': '팀에 연결 — Docker 불필요',
+  'deployModes.2.detail.0': '원격 DB를 가리키고 pnpm dev 실행',
+  'deployModes.2.detail.1': '충돌 감지 및 알림 완전 지원',
+  'deployModes.2.detail.2': '공유 세션, 검색, 대시보드',
+
   // Footer
-  'footer.cta.title': '팀의 AI 워크플로우를 동기화하세요',
-  'footer.cta.subtitle': '무료로 시작하세요. 설치 없이 GitHub 계정만으로 바로 사용 가능합니다.',
+  'footer.cta.title': 'AI 워크플로우를 동기화하세요',
+  'footer.cta.subtitle': '무료로 시작하세요. Docker로 로컬 실행하거나 팀 DB에 연결하세요.',
   'footer.cta.button': 'Continue with GitHub',
   'footer.link.docs': 'Docs',
   'footer.link.github': 'GitHub',

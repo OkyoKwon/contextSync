@@ -6,7 +6,7 @@ Thank you for your interest in contributing to ContextSync! This guide will help
 
 - **Node.js 22** (see [.nvmrc](.nvmrc) — run `nvm use`)
 - **pnpm 9+** (`corepack enable && corepack prepare pnpm@latest --activate`)
-- **Docker** (for PostgreSQL)
+- **Docker** (for personal and team-host modes — not needed for team-member contributors)
 
 ## Quick Setup
 
@@ -18,7 +18,7 @@ cd contextSync
 # 2. Install dependencies
 pnpm install
 
-# 3. Start PostgreSQL
+# 3. Start PostgreSQL (skip for team-member mode)
 docker compose up -d
 
 # 4. Configure environment (set GitHub OAuth credentials)
@@ -35,6 +35,8 @@ pnpm dev
 # API → http://localhost:3001
 # Web → http://localhost:5173
 ```
+
+> **Tip:** Run `bash scripts/setup.sh` for an interactive setup wizard.
 
 Sign in with GitHub OAuth at `http://localhost:5173`.
 

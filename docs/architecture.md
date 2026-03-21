@@ -435,18 +435,22 @@ Managed in `apps/api/.env`, validated at startup by `config/env.ts` using Zod.
 
 ### Optional (with defaults)
 
-| Variable            | Default                    | Description                     |
-| ------------------- | -------------------------- | ------------------------------- |
-| `PORT`              | `3001`                     | API server port                 |
-| `HOST`              | `0.0.0.0`                  | Bind host                       |
-| `NODE_ENV`          | `development`              | Environment                     |
-| `JWT_EXPIRES_IN`    | `7d`                       | Token expiry                    |
-| `FRONTEND_URL`      | `http://localhost:5173`    | CORS origin                     |
-| `ANTHROPIC_API_KEY` | —                          | Claude API key for PRD analysis |
-| `ANTHROPIC_MODEL`   | `claude-sonnet-4-20250514` | Analysis model                  |
-| `SLACK_WEBHOOK_URL` | —                          | Slack notifications             |
-| `RESEND_API_KEY`    | —                          | Email delivery                  |
-| `EMAIL_FROM`        | `noreply@contextsync.dev`  | Sender email                    |
+| Variable            | Default                    | Description                                             |
+| ------------------- | -------------------------- | ------------------------------------------------------- |
+| `PORT`              | `3001`                     | API server port                                         |
+| `HOST`              | `0.0.0.0`                  | Bind host                                               |
+| `NODE_ENV`          | `development`              | Environment                                             |
+| `JWT_EXPIRES_IN`    | `7d`                       | Token expiry                                            |
+| `FRONTEND_URL`      | `http://localhost:5173`    | CORS origin                                             |
+| `ANTHROPIC_API_KEY` | —                          | Claude API key for PRD analysis                         |
+| `ANTHROPIC_MODEL`   | `claude-sonnet-4-20250514` | Analysis model                                          |
+| `SLACK_WEBHOOK_URL` | —                          | Slack notifications                                     |
+| `RESEND_API_KEY`    | —                          | Email delivery                                          |
+| `EMAIL_FROM`        | `noreply@contextsync.dev`  | Sender email                                            |
+| `DEPLOYMENT_MODE`   | `personal`                 | Deployment mode: `personal`, `team-host`, `team-member` |
+| `DATABASE_SSL`      | `false`                    | Enable SSL for PostgreSQL connection                    |
+| `DATABASE_SSL_CA`   | —                          | Path to CA certificate for SSL verification             |
+| `RUN_MIGRATIONS`    | `true`                     | Auto-run migrations (`false` for team-member)           |
 
 ---
 
@@ -461,7 +465,26 @@ services:
     port: 5432
     healthcheck: pg_isready (5s interval)
     volume: pgdata (persistent)
+
+  postgres-team:                    # profile: team-host
+    image: postgres:16-alpine
+    SSL enabled, team roles
+    volume: pgdata-team (persistent)
 ```
+
+### Deployment Modes
+
+| Mode          | Docker? | DB          | Migrations | SSL |
+| ------------- | ------- | ----------- | ---------- | --- |
+| `personal`    | Yes     | Local       | Auto       | Off |
+| `team-host`   | Yes     | Local + SSL | Auto       | On  |
+| `team-member` | No      | Remote      | Disabled   | On  |
+
+- **Personal:** Default mode. Local Docker PostgreSQL, zero config.
+- **Team Host:** Admin runs `docker compose --profile team-host` with SSL certs.
+- **Team Member:** Point `DATABASE_URL` to the remote DB, set `RUN_MIGRATIONS=false`.
+
+Run `bash scripts/setup.sh` for an interactive setup wizard that configures the correct mode.
 
 ### GitHub Actions CI (`.github/workflows/ci.yml`)
 
