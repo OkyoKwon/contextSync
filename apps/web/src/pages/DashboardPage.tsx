@@ -56,9 +56,25 @@ export function DashboardPage() {
     );
   }
 
-  const hasSessions = entries.length > 0 || timelineLoading;
+  const isDataLoading = timelineLoading || statsLoading;
+  const hasSessions = entries.length > 0;
 
-  if (!timelineLoading && !hasSessions) {
+  // 데이터 로딩 중이면 스켈레톤 표시 (EmptyDashboard 플래시 방지)
+  if (isDataLoading) {
+    return (
+      <div>
+        <div className="mb-6">
+          <PageBreadcrumb pageName="Dashboard" />
+          <p className="mt-1 text-sm text-text-secondary">
+            {greeting}, {displayName}
+          </p>
+        </div>
+        <DashboardSkeleton />
+      </div>
+    );
+  }
+
+  if (!hasSessions) {
     return (
       <div>
         <div className="mb-6">
@@ -95,11 +111,7 @@ export function DashboardPage() {
 
       <PendingInvitations />
 
-      {statsLoading ? (
-        <DashboardSkeleton />
-      ) : stats ? (
-        <DashboardStatsView stats={stats} isTeam={isTeam} />
-      ) : null}
+      {stats ? <DashboardStatsView stats={stats} isTeam={isTeam} /> : null}
 
       <div className="mt-6">
         <TokenUsagePanel />
