@@ -22,7 +22,7 @@ export function AppEntryRedirect() {
           const response = await authApi.getMe();
           if (cancelled) return;
           if (response.data) {
-            setAuth(token, response.data);
+            setAuth(token!, response.data);
           }
         } catch {
           // silently ignore — cached user is still usable
