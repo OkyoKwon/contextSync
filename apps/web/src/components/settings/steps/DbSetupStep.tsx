@@ -162,8 +162,8 @@ export function DbSetupStep({
           </div>
           <p className="mt-1.5 text-xs text-text-tertiary">
             {setupMode === 'auto'
-              ? 'Access Token 하나로 프로젝트 생성부터 연결까지 자동으로 진행합니다. Supabase 계정만 있으면 됩니다.'
-              : 'Supabase 대시보드에서 직접 Connection string을 복사해 입력합니다. Project Settings → Database → Connection string 에서 확인할 수 있습니다.'}
+              ? 'Automatically create or connect a Supabase project with just an Access Token. No need to copy connection strings manually.'
+              : 'Paste a connection string directly from the Supabase dashboard. Find it under Project Settings → Database → Connection string.'}
           </p>
         </div>
       )}
@@ -172,7 +172,7 @@ export function DbSetupStep({
       {provider === 'self-hosted' && (
         <div className="rounded-lg border border-border-default bg-bg-secondary p-3">
           <p className="text-xs text-text-tertiary">
-            PostgreSQL 서버의 Connection URL을 직접 입력합니다.
+            Enter the connection URL for your PostgreSQL server.
             <span className="mt-1 block font-mono text-text-muted">
               postgresql://user:password@host:5432/dbname
             </span>

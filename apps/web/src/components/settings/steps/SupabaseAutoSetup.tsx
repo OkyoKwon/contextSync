@@ -130,7 +130,7 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
 
         {hasToken && !showTokenInput ? (
           <div className="ml-7 mt-1 flex items-center justify-between">
-            <p className="text-xs text-text-tertiary">Supabase 계정이 연결되어 있습니다.</p>
+            <p className="text-xs text-text-tertiary">Your Supabase account is connected.</p>
             <div className="flex gap-1">
               <Button variant="ghost" size="sm" onClick={() => setShowTokenInput(true)}>
                 Change
@@ -148,8 +148,9 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
         ) : (
           <div className="ml-7 mt-2 space-y-3">
             <p className="text-xs text-text-tertiary leading-relaxed">
-              Supabase 대시보드에서 Access Token을 발급받아 입력해주세요. 이 토큰으로 프로젝트 목록
-              조회와 새 프로젝트 생성이 가능합니다. 토큰은 암호화되어 안전하게 저장됩니다.
+              Generate an Access Token from the Supabase dashboard and paste it here. This token
+              lets us list your projects and create new ones on your behalf. It will be stored
+              securely with AES-256 encryption.
             </p>
             <Input
               value={tokenInput}
@@ -168,7 +169,7 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
                   <path d="M12.232 4.232a2.5 2.5 0 013.536 3.536l-1.225 1.224a.75.75 0 001.061 1.06l1.224-1.224a4 4 0 00-5.656-5.656l-3 3a4 4 0 00.225 5.865.75.75 0 00.977-1.138 2.5 2.5 0 01-.142-3.667l3-3z" />
                   <path d="M11.603 7.963a.75.75 0 00-.977 1.138 2.5 2.5 0 01.142 3.667l-3 3a2.5 2.5 0 01-3.536-3.536l1.225-1.224a.75.75 0 00-1.061-1.06l-1.224 1.224a4 4 0 105.656 5.656l3-3a4 4 0 00-.225-5.865z" />
                 </svg>
-                Supabase에서 토큰 발급받기
+                Generate token on Supabase
               </a>
               <div className="flex gap-2">
                 {showTokenInput && (
@@ -200,12 +201,12 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
       >
         <div className="flex items-center gap-2 mb-1">
           <StepNumber step={2} completed={false} active={hasToken} />
-          <span className="text-sm font-medium text-text-primary">프로젝트 선택</span>
+          <span className="text-sm font-medium text-text-primary">Select Project</span>
         </div>
 
         {!hasToken ? (
           <p className="ml-7 mt-1 text-xs text-text-muted">
-            위에서 Access Token을 먼저 저장해주세요.
+            Save your Access Token above to continue.
           </p>
         ) : (
           <div className="ml-7 mt-3 space-y-4">
@@ -229,8 +230,8 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
 
             <p className="text-xs text-text-tertiary">
               {tab === 'existing'
-                ? 'Supabase 계정의 프로젝트를 선택하고 DB 비밀번호를 입력하면 자동으로 연결됩니다.'
-                : '새 Supabase 프로젝트를 생성하면 비밀번호가 자동 설정되어 별도 입력 없이 바로 연결됩니다.'}
+                ? 'Pick one of your existing Supabase projects and enter its database password to connect automatically.'
+                : 'Create a brand-new Supabase project. The database password you set here will be used to connect instantly.'}
             </p>
 
             {tab === 'existing' && (
@@ -286,12 +287,14 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
           <Spinner size="sm" />
           <div>
             <p className="text-sm font-medium text-blue-400">
-              {createAndSetupMutation.isPending ? '프로젝트 생성 중...' : '데이터베이스 연결 중...'}
+              {createAndSetupMutation.isPending
+                ? 'Creating project...'
+                : 'Connecting to database...'}
             </p>
             <p className="mt-0.5 text-xs text-blue-400/70">
               {createAndSetupMutation.isPending
-                ? '새 프로젝트를 생성하고 스키마를 구성합니다. 최대 1분 정도 소요될 수 있습니다.'
-                : '연결을 확인하고 스키마를 설정합니다. 잠시만 기다려주세요.'}
+                ? 'Setting up the project and configuring the schema. This may take up to a minute.'
+                : 'Verifying the connection and running schema migrations. Hang tight.'}
             </p>
           </div>
         </div>
@@ -359,7 +362,7 @@ function ExistingProjectForm({
     return (
       <div className="flex items-center justify-center gap-2 py-6">
         <Spinner size="sm" />
-        <span className="text-sm text-text-tertiary">프로젝트 목록을 불러오는 중...</span>
+        <span className="text-sm text-text-tertiary">Loading projects...</span>
       </div>
     );
   }
@@ -367,9 +370,9 @@ function ExistingProjectForm({
   if (projects.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border-default py-6 text-center">
-        <p className="text-sm text-text-tertiary">Supabase 계정에 프로젝트가 없습니다.</p>
+        <p className="text-sm text-text-tertiary">No projects found in your Supabase account.</p>
         <p className="mt-1 text-xs text-text-muted">
-          &ldquo;New Project&rdquo; 탭에서 새 프로젝트를 생성해보세요.
+          Switch to the &ldquo;New Project&rdquo; tab to create one.
         </p>
       </div>
     );
@@ -413,7 +416,7 @@ function ExistingProjectForm({
                   clipRule="evenodd"
                 />
               </svg>
-              <span>이 프로젝트는 현재 비활성 상태입니다. 연결이 실패할 수 있습니다.</span>
+              <span>This project is currently inactive. The connection may fail.</span>
             </div>
           )}
           <div>
@@ -421,11 +424,11 @@ function ExistingProjectForm({
               label="Database Password"
               value={dbPassword}
               onChange={(e) => onPasswordChange(e.target.value)}
-              placeholder="프로젝트 생성 시 설정한 DB 비밀번호"
+              placeholder="The database password you set when creating this project"
               type="password"
             />
             <p className="mt-1 text-xs text-text-muted">
-              Supabase 대시보드 → Project Settings → Database 에서 확인하거나 재설정할 수 있습니다.
+              You can find or reset this in Supabase Dashboard → Project Settings → Database.
             </p>
           </div>
         </>
@@ -488,7 +491,7 @@ function NewProjectForm({
         {isLoadingOrgs ? (
           <div className="flex items-center gap-2 py-2">
             <Spinner size="sm" />
-            <span className="text-xs text-text-tertiary">Organization 목록을 불러오는 중...</span>
+            <span className="text-xs text-text-tertiary">Loading organizations...</span>
           </div>
         ) : (
           <select
@@ -520,7 +523,7 @@ function NewProjectForm({
           ))}
         </select>
         <p className="mt-1 text-xs text-text-muted">
-          팀원들과 가까운 리전을 선택하면 지연 시간이 줄어듭니다.
+          Choose a region close to your team for lower latency.
         </p>
       </div>
 
@@ -529,11 +532,12 @@ function NewProjectForm({
           label="Database Password"
           value={dbPassword}
           onChange={(e) => onPasswordChange(e.target.value)}
-          placeholder="6자 이상의 강력한 비밀번호"
+          placeholder="A strong password (min. 6 characters)"
           type="password"
         />
         <p className="mt-1 text-xs text-text-muted">
-          이 비밀번호는 DB 연결에 사용됩니다. 잊어버리면 Supabase 대시보드에서 재설정할 수 있습니다.
+          This password is used for database connections. You can reset it later in the Supabase
+          dashboard.
         </p>
       </div>
 
