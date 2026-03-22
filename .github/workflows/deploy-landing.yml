@@ -5,13 +5,16 @@ on:
     branches: [main]
     paths:
       - 'apps/web/src/components/landing/**'
+      - 'apps/web/src/components/docs/**'
       - 'apps/web/src/pages/LandingPage.tsx'
       - 'apps/web/src/pages/DocsPage.tsx'
       - 'apps/web/src/i18n/**'
       - 'apps/web/src/landing-entry.tsx'
       - 'apps/web/src/landing-routes.tsx'
       - 'apps/web/landing.html'
+      - 'apps/web/docs.html'
       - 'apps/web/vite.config.landing.ts'
+      - 'apps/web/public/screenshots/**'
       - '.github/workflows/deploy-landing.yml'
   workflow_dispatch:
 
@@ -50,6 +53,8 @@ jobs:
       - name: Prepare GitHub Pages output
         run: |
           mv apps/web/dist-landing/landing.html apps/web/dist-landing/index.html
+          mkdir -p apps/web/dist-landing/docs
+          mv apps/web/dist-landing/docs.html apps/web/dist-landing/docs/index.html
           cp apps/web/dist-landing/index.html apps/web/dist-landing/404.html
 
       - uses: actions/configure-pages@v5

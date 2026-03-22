@@ -14,7 +14,10 @@ export default defineConfig({
   build: {
     outDir: 'dist-landing',
     rollupOptions: {
-      input: path.resolve(__dirname, 'landing.html'),
+      input: {
+        landing: path.resolve(__dirname, 'landing.html'),
+        docs: path.resolve(__dirname, 'docs.html'),
+      },
     },
   },
 });
