@@ -1,5 +1,10 @@
 import type { SessionImportData } from '@context-sync/shared';
-import { findFirstMeaningfulTitle, generateTitle, stripSystemXmlContent, UNTITLED } from './title.utils.js';
+import {
+  findFirstMeaningfulTitle,
+  generateTitle,
+  stripSystemXmlContent,
+  UNTITLED,
+} from './title.utils.js';
 
 interface ClaudeUsage {
   readonly input_tokens?: number;
@@ -23,10 +28,12 @@ interface ClaudeCodeRecord {
 }
 
 function sumUsageTokens(usage: ClaudeUsage): number {
-  return (usage.input_tokens ?? 0)
-    + (usage.output_tokens ?? 0)
-    + (usage.cache_creation_input_tokens ?? 0)
-    + (usage.cache_read_input_tokens ?? 0);
+  return (
+    (usage.input_tokens ?? 0) +
+    (usage.output_tokens ?? 0) +
+    (usage.cache_creation_input_tokens ?? 0) +
+    (usage.cache_read_input_tokens ?? 0)
+  );
 }
 
 interface PendingAssistantTurn {
@@ -61,11 +68,12 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
   const flushPendingTurn = () => {
     if (!pendingTurn) return;
 
-    const content = pendingTurn.textParts.length > 0
-      ? pendingTurn.textParts.join('\n\n')
-      : pendingTurn.toolNames.length > 0
-        ? `[Tool use: ${pendingTurn.toolNames.join(', ')}]`
-        : null;
+    const content =
+      pendingTurn.textParts.length > 0
+        ? pendingTurn.textParts.join('\n\n')
+        : pendingTurn.toolNames.length > 0
+          ? `[Tool use: ${pendingTurn.toolNames.join(', ')}]`
+          : null;
 
     if (content) {
       const turnModel = pendingTurn.model ?? model;
@@ -115,10 +123,22 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
       if (reqId && reqId !== currentRequestId) {
         flushPendingTurn();
         currentRequestId = reqId;
-        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: undefined };
+        pendingTurn = {
+          textParts: [],
+          toolNames: [],
+          model: undefined,
+          usage: undefined,
+          timestamp: undefined,
+        };
       } else if (!pendingTurn) {
         // No requestId or first record — start a new turn
-        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: undefined };
+        pendingTurn = {
+          textParts: [],
+          toolNames: [],
+          model: undefined,
+          usage: undefined,
+          timestamp: undefined,
+        };
       }
 
       const blocks = record.message.content as readonly ClaudeContentBlock[];
@@ -136,7 +156,10 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
       }
     }
 
-    if ('gitBranch' in record && typeof (record as Record<string, unknown>)['gitBranch'] === 'string') {
+    if (
+      'gitBranch' in record &&
+      typeof (record as Record<string, unknown>)['gitBranch'] === 'string'
+    ) {
       branch = String((record as Record<string, unknown>)['gitBranch']);
     }
   }
@@ -147,9 +170,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
     throw new Error('No conversation messages found in Claude Code session');
   }
 
-  const userContents = messages
-    .filter((m) => m.role === 'user')
-    .map((m) => m.content);
+  const userContents = messages.filter((m) => m.role === 'user').map((m) => m.content);
   const title = findFirstMeaningfulTitle(userContents);
 
   return {
@@ -192,11 +213,12 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
   const flushPendingTurn = () => {
     if (!pendingTurn) return;
 
-    const content = pendingTurn.textParts.length > 0
-      ? pendingTurn.textParts.join('\n\n')
-      : pendingTurn.toolNames.length > 0
-        ? `[Tool use: ${pendingTurn.toolNames.join(', ')}]`
-        : null;
+    const content =
+      pendingTurn.textParts.length > 0
+        ? pendingTurn.textParts.join('\n\n')
+        : pendingTurn.toolNames.length > 0
+          ? `[Tool use: ${pendingTurn.toolNames.join(', ')}]`
+          : null;
 
     if (content) {
       const turnModel = pendingTurn.model ?? model;
@@ -249,9 +271,21 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
       if (reqId && reqId !== currentRequestId) {
         flushPendingTurn();
         currentRequestId = reqId;
-        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: lastTimestamp };
+        pendingTurn = {
+          textParts: [],
+          toolNames: [],
+          model: undefined,
+          usage: undefined,
+          timestamp: lastTimestamp,
+        };
       } else if (!pendingTurn) {
-        pendingTurn = { textParts: [], toolNames: [], model: undefined, usage: undefined, timestamp: lastTimestamp };
+        pendingTurn = {
+          textParts: [],
+          toolNames: [],
+          model: undefined,
+          usage: undefined,
+          timestamp: lastTimestamp,
+        };
       }
 
       const blocks = record.message.content as readonly ClaudeContentBlock[];
@@ -270,16 +304,17 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
       }
     }
 
-    if ('gitBranch' in record && typeof (record as Record<string, unknown>)['gitBranch'] === 'string') {
+    if (
+      'gitBranch' in record &&
+      typeof (record as Record<string, unknown>)['gitBranch'] === 'string'
+    ) {
       branch = String((record as Record<string, unknown>)['gitBranch']);
     }
   }
 
   flushPendingTurn();
 
-  const userContents = messages
-    .filter((m) => m.role === 'user')
-    .map((m) => m.content);
+  const userContents = messages.filter((m) => m.role === 'user').map((m) => m.content);
   const title = findFirstMeaningfulTitle(userContents);
 
   return {
@@ -290,7 +325,60 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
   };
 }
 
-export function previewClaudeCodeSession(raw: string, maxLines = 200): {
+/** Non-conversation record types that should be skipped when looking for the last meaningful turn */
+const SKIP_RECORD_TYPES = new Set([
+  'progress',
+  'file-history-snapshot',
+  'lock',
+  'unlock',
+  'summary',
+  'system',
+  'result',
+]);
+
+/**
+ * Detect whether the session is waiting for tool approval.
+ * True when the last meaningful record is an `assistant` turn containing `tool_use`
+ * blocks with no subsequent `user` `tool_result`.
+ */
+export function detectPendingApproval(raw: string): boolean {
+  const lines = raw.trimEnd().split('\n');
+
+  // Scan backwards to find the last meaningful record
+  for (let i = lines.length - 1; i >= 0; i--) {
+    const line = lines[i];
+    if (!line) continue;
+
+    let record: ClaudeCodeRecord;
+    try {
+      record = JSON.parse(line) as ClaudeCodeRecord;
+    } catch {
+      continue;
+    }
+
+    const recordType = record.type;
+    if (!recordType || SKIP_RECORD_TYPES.has(recordType)) continue;
+
+    // If the last meaningful record is a user turn, no pending approval
+    if (recordType === 'user') return false;
+
+    // If the last meaningful record is an assistant turn with tool_use blocks → pending
+    if (recordType === 'assistant' && Array.isArray(record.message?.content)) {
+      const blocks = record.message.content as readonly ClaudeContentBlock[];
+      return blocks.some((block) => block.type === 'tool_use');
+    }
+
+    // Any other record type — not pending
+    return false;
+  }
+
+  return false;
+}
+
+export function previewClaudeCodeSession(
+  raw: string,
+  maxLines = 200,
+): {
   readonly firstMessage: string;
   readonly messageCount: number;
   readonly startedAt: string | undefined;
@@ -325,8 +413,9 @@ export function previewClaudeCodeSession(raw: string, maxLines = 200): {
     }
 
     if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
-      const hasText = (record.message.content as readonly ClaudeContentBlock[])
-        .some((block) => block.type === 'text' && block.text);
+      const hasText = (record.message.content as readonly ClaudeContentBlock[]).some(
+        (block) => block.type === 'text' && block.text,
+      );
       if (hasText) {
         messageCount++;
       }
@@ -351,8 +440,9 @@ export function previewClaudeCodeSession(raw: string, maxLines = 200): {
       }
 
       if (record.type === 'assistant' && Array.isArray(record.message?.content)) {
-        const hasText = (record.message.content as readonly ClaudeContentBlock[])
-          .some((block) => block.type === 'text' && block.text);
+        const hasText = (record.message.content as readonly ClaudeContentBlock[]).some(
+          (block) => block.type === 'text' && block.text,
+        );
         if (hasText) {
           messageCount++;
         }
