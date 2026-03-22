@@ -15,4 +15,8 @@ export const authApi = {
   refresh: () => api.post<{ token: string }>('/auth/refresh'),
 
   updatePlan: (claudePlan: ClaudePlan) => api.put<User>('/auth/me/plan', { claudePlan }),
+
+  updateApiKey: (apiKey: string) => api.put<User>('/auth/me/api-key', { apiKey }),
+
+  deleteApiKey: () => api.delete<User>('/auth/me/api-key'),
 };

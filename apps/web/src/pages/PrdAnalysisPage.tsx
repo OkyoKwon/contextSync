@@ -14,6 +14,7 @@ import { PrdDashboard } from '../components/prd-analysis/PrdDashboard';
 import { PrdRequirementList } from '../components/prd-analysis/PrdRequirementList';
 import { PrdAnalysisHistory } from '../components/prd-analysis/PrdAnalysisHistory';
 import { AnalyzingOverlay } from '../components/prd-analysis/AnalyzingOverlay';
+import { ApiKeyMissingBanner } from '../components/shared/ApiKeyMissingBanner';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { Card } from '../components/ui/Card';
 import { Spinner } from '../components/ui/Spinner';
@@ -95,6 +96,8 @@ export function PrdAnalysisPage() {
             Upload a PRD document and track your codebase achievement rate
           </p>
         </div>
+
+        <ApiKeyMissingBanner />
 
         {!hasDocument && (
           <Card>

@@ -37,6 +37,12 @@ export function MigrationExecuteStep({ projectId, onComplete }: MigrationExecute
     <div className="space-y-4">
       {isRunning && (
         <>
+          <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-3">
+            <p className="text-sm text-yellow-400">
+              Migration is in progress. Please do not close your browser until it completes.
+            </p>
+          </div>
+
           <div className="flex items-center gap-3">
             <Spinner />
             <p className="text-sm text-text-secondary">Migrating data to remote database...</p>

@@ -22,6 +22,15 @@ export function MigrationPreviewStep({ projectId, onNext, onBack }: MigrationPre
 
   return (
     <div className="space-y-4">
+      <div className="space-y-1 rounded-lg border border-border-default bg-bg-secondary p-3">
+        <p className="text-sm text-text-secondary">
+          Your local data will be copied to the remote database.
+        </p>
+        <p className="text-xs text-text-tertiary">
+          Local data remains intact — no data will be lost during migration.
+        </p>
+      </div>
+
       <p className="text-sm text-text-secondary">
         The following data will be migrated to the remote database:
       </p>

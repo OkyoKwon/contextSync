@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ClaudePlan } from '@context-sync/shared';
-import { CLAUDE_PLANS, CLAUDE_PLAN_LABELS } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { useRequireProject } from '../hooks/use-require-project';
@@ -39,7 +37,6 @@ export function SettingsPage() {
           <PageBreadcrumb pageName="Settings" />
         </div>
         <div className="space-y-6">
-          <UserPlanSection />
           <NoProjectState pageName="Settings" />
         </div>
       </div>
@@ -58,10 +55,10 @@ function SettingsContent({ projectId }: { readonly projectId: string }) {
         <PageBreadcrumb pageName="Settings" />
       </div>
       <div className="space-y-6">
-        <UserPlanSection />
         <ProjectInfoSection projectId={projectId} />
         <RemoteDbSection projectId={projectId} onConnectClick={wizard.open} />
         <CollaboratorSection projectId={projectId} />
+        <ApiKeySection />
         <DangerZoneSection projectId={projectId} />
       </div>
 
@@ -77,49 +74,6 @@ function SettingsContent({ projectId }: { readonly projectId: string }) {
         onConnectionInfoChange={wizard.setConnectionInfo}
       />
     </div>
-  );
-}
-
-function UserPlanSection() {
-  const user = useAuthStore((s) => s.user);
-  const setAuth = useAuthStore((s) => s.setAuth);
-  const token = useAuthStore((s) => s.token);
-
-  const planMutation = useMutation({
-    mutationFn: (plan: ClaudePlan) => authApi.updatePlan(plan),
-    onSuccess: (response) => {
-      if (response.data && token) {
-        setAuth(token, response.data);
-      }
-    },
-  });
-
-  const currentPlan = user?.claudePlan ?? 'free';
-
-  return (
-    <Card>
-      <h3 className="text-lg font-semibold">Claude Plan</h3>
-      <p className="mt-1 text-sm text-text-tertiary">
-        Select your current Claude subscription plan.
-      </p>
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {CLAUDE_PLANS.map((plan) => (
-          <button
-            key={plan}
-            type="button"
-            disabled={planMutation.isPending}
-            onClick={() => planMutation.mutate(plan)}
-            className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-              currentPlan === plan
-                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
-                : 'border-border-primary bg-bg-secondary text-text-secondary hover:border-border-hover hover:text-text-primary'
-            }`}
-          >
-            {CLAUDE_PLAN_LABELS[plan]}
-          </button>
-        ))}
-      </div>
-    </Card>
   );
 }
 
@@ -210,6 +164,104 @@ function InfoRow({ label, value }: { readonly label: string; readonly value: str
       <p className="text-xs font-medium text-text-tertiary">{label}</p>
       <p className="text-sm text-text-primary">{value}</p>
     </div>
+  );
+}
+
+function ApiKeySection() {
+  const user = useAuthStore((s) => s.user);
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const token = useAuthStore((s) => s.token);
+
+  const [apiKey, setApiKey] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+
+  const hasKey = user?.hasAnthropicApiKey ?? false;
+
+  const saveMutation = useMutation({
+    mutationFn: () => authApi.updateApiKey(apiKey),
+    onSuccess: (response) => {
+      if (response.data && token) {
+        setAuth(token, response.data);
+      }
+      setApiKey('');
+      setIsEditing(false);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => authApi.deleteApiKey(),
+    onSuccess: (response) => {
+      if (response.data && token) {
+        setAuth(token, response.data);
+      }
+    },
+  });
+
+  return (
+    <Card>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Anthropic API Key</h3>
+        <span
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            hasKey ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'
+          }`}
+        >
+          {hasKey ? 'Configured' : 'Not Set'}
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-text-tertiary">
+        Set your Anthropic API Key for PRD Tracker and AI Evaluation. Sonnet or above is recommended
+        (claude-sonnet-4-20250514).
+      </p>
+
+      {isEditing ? (
+        <div className="mt-4 space-y-3">
+          <Input
+            label="API Key"
+            type="password"
+            placeholder="sk-ant-..."
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+          />
+          <div className="flex gap-2">
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || !apiKey.trim()}
+            >
+              {saveMutation.isPending ? 'Saving...' : 'Save'}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsEditing(false);
+                setApiKey('');
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+          {saveMutation.isError && (
+            <p className="text-sm text-red-400">{saveMutation.error.message}</p>
+          )}
+        </div>
+      ) : (
+        <div className="mt-4 flex gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setIsEditing(true)}>
+            {hasKey ? 'Change Key' : 'Set Key'}
+          </Button>
+          {hasKey && (
+            <Button
+              size="sm"
+              variant="danger"
+              onClick={() => deleteMutation.mutate()}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Removing...' : 'Remove Key'}
+            </Button>
+          )}
+        </div>
+      )}
+    </Card>
   );
 }
 

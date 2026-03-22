@@ -20,3 +20,9 @@ export const updatePlanSchema = z.object({
 });
 
 export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;
+
+export const updateApiKeySchema = z.object({
+  apiKey: z.string().min(1, 'API key is required'),
+});
+
+export type UpdateApiKeyInput = z.infer<typeof updateApiKeySchema>;

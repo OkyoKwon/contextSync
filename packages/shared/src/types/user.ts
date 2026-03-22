@@ -9,6 +9,7 @@ export interface User {
   readonly role: UserRole;
   readonly isAuto: boolean;
   readonly claudePlan: ClaudePlan;
+  readonly hasAnthropicApiKey: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

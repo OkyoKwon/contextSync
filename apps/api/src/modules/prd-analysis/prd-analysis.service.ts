@@ -1,5 +1,4 @@
 import type { Db } from '../../database/client.js';
-import type { Env } from '../../config/env.js';
 import type {
   PrdDocument,
   PrdAnalysisWithRequirements,
@@ -24,8 +23,10 @@ export async function uploadPrdDocument(
   await assertProjectAccess(db, projectId, userId);
 
   const ext = extname(fileName).toLowerCase();
-  if (!SUPPORTED_PRD_EXTENSIONS.includes(ext as typeof SUPPORTED_PRD_EXTENSIONS[number])) {
-    throw new ForbiddenError(`Unsupported file extension: ${ext}. Supported: ${SUPPORTED_PRD_EXTENSIONS.join(', ')}`);
+  if (!SUPPORTED_PRD_EXTENSIONS.includes(ext as (typeof SUPPORTED_PRD_EXTENSIONS)[number])) {
+    throw new ForbiddenError(
+      `Unsupported file extension: ${ext}. Supported: ${SUPPORTED_PRD_EXTENSIONS.join(', ')}`,
+    );
   }
 
   if (Buffer.byteLength(content, 'utf-8') > MAX_PRD_FILE_SIZE) {
@@ -50,11 +51,7 @@ export async function listPrdDocuments(
   return prdRepo.findPrdDocumentsByProjectId(db, projectId);
 }
 
-export async function deletePrdDocument(
-  db: Db,
-  documentId: string,
-  userId: string,
-): Promise<void> {
+export async function deletePrdDocument(db: Db, documentId: string, userId: string): Promise<void> {
   const doc = await prdRepo.findPrdDocumentById(db, documentId);
   if (!doc) throw new NotFoundError('PRD Document');
   await assertProjectAccess(db, doc.projectId, userId);
@@ -63,7 +60,8 @@ export async function deletePrdDocument(
 
 export async function startAnalysis(
   db: Db,
-  env: Env,
+  apiKey: string,
+  model: string,
   projectId: string,
   userId: string,
   prdDocumentId: string,
@@ -71,21 +69,20 @@ export async function startAnalysis(
   const project = await assertProjectAccess(db, projectId, userId);
 
   if (!project.localDirectory) {
-    throw new ForbiddenError('Project has no local_directory configured. Set it in project settings to enable codebase scanning.');
-  }
-
-  if (!env.ANTHROPIC_API_KEY) {
-    throw new ForbiddenError('ANTHROPIC_API_KEY is not configured. Set it in the server environment.');
+    throw new ForbiddenError(
+      'Project has no local_directory configured. Set it in project settings to enable codebase scanning.',
+    );
   }
 
   const document = await prdRepo.findPrdDocumentById(db, prdDocumentId);
   if (!document) throw new NotFoundError('PRD Document');
-  if (document.projectId !== projectId) throw new ForbiddenError('Document does not belong to this project');
+  if (document.projectId !== projectId)
+    throw new ForbiddenError('Document does not belong to this project');
 
   const analysis = await prdRepo.createPrdAnalysis(db, {
     prdDocumentId,
     projectId,
-    modelUsed: env.ANTHROPIC_MODEL,
+    modelUsed: model,
   });
 
   try {
@@ -93,12 +90,7 @@ export async function startAnalysis(
 
     const codebaseSummary = await scanCodebase(project.localDirectory);
 
-    const result = await analyzePrd(
-      env.ANTHROPIC_API_KEY,
-      env.ANTHROPIC_MODEL,
-      document.content,
-      codebaseSummary,
-    );
+    const result = await analyzePrd(apiKey, model, document.content, codebaseSummary);
 
     const requirementInputs = result.requirements.map((req, index) => ({
       requirementText: req.requirementText,

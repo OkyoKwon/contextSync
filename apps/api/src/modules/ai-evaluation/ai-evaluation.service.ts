@@ -1,5 +1,4 @@
 import type { Db } from '../../database/client.js';
-import type { Env } from '../../config/env.js';
 import type {
   AiEvaluation,
   AiEvaluationWithDetails,
@@ -23,7 +22,8 @@ import { analyzeEvaluation } from './claude-client.js';
 
 export async function triggerEvaluation(
   db: Db,
-  env: Env,
+  apiKey: string,
+  model: string,
   projectId: string,
   requestingUserId: string,
   input: TriggerEvaluationInput,
@@ -34,10 +34,6 @@ export async function triggerEvaluation(
   const role = await getUserRoleInProject(db, projectId, requestingUserId);
   if (role !== 'owner' && role !== 'admin') {
     throw new ForbiddenError('Only project owners and admins can trigger evaluations');
-  }
-
-  if (!env.ANTHROPIC_API_KEY) {
-    throw new ForbiddenError('ANTHROPIC_API_KEY is not configured');
   }
 
   // Check concurrent execution
@@ -88,15 +84,15 @@ export async function triggerEvaluation(
     triggeredByUserId: requestingUserId,
     dateRangeStart,
     dateRangeEnd,
-    modelUsed: env.ANTHROPIC_MODEL,
+    modelUsed: model,
   });
 
   try {
     await evalRepo.updateEvaluation(db, evaluation.id, { status: 'analyzing' });
 
     const result = await analyzeEvaluation(
-      env.ANTHROPIC_API_KEY,
-      env.ANTHROPIC_MODEL,
+      apiKey,
+      model,
       messages.map((m) => ({
         id: m.id,
         sessionId: m.sessionId,

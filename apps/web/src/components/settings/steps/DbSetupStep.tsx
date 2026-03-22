@@ -40,6 +40,22 @@ export function DbSetupStep({
 
   return (
     <div className="space-y-4">
+      <div className="space-y-2 rounded-lg border border-border-default bg-bg-secondary p-3">
+        <p className="text-sm text-text-secondary">
+          Connect a remote PostgreSQL database to enable team collaboration.
+        </p>
+        <ol className="list-inside list-decimal space-y-1 text-xs text-text-tertiary">
+          <li>Select a provider (Supabase or Self-Hosted)</li>
+          <li>Enter your database connection URL</li>
+          <li>Verify the connection with Test Connection, then proceed to the next step</li>
+        </ol>
+        <p className="text-xs text-text-tertiary">
+          {provider === 'supabase'
+            ? 'Supabase: Find the URI under Project Settings → Database → Connection string'
+            : 'Self-Hosted: Use the format postgresql://user:password@host:5432/dbname'}
+        </p>
+      </div>
+
       <div>
         <label className="mb-1.5 block text-sm font-medium text-text-secondary">Provider</label>
         <div className="flex gap-2">

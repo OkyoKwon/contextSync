@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import { ok, fail, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import { resolveProjectDb } from '../../lib/resolve-project-db.js';
+import { getUserApiKey } from '../auth/auth.service.js';
 import * as prdService from './prd-analysis.service.js';
 import {
   uploadPrdSchema,
@@ -88,11 +89,22 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { projectId: string }; Body: unknown }>(
     '/projects/:projectId/prd/analyze',
     async (request, reply) => {
+      const userApiKey = await getUserApiKey(app.db, request.user.userId);
+      const apiKey = userApiKey ?? app.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        return reply
+          .status(400)
+          .send(
+            fail('Anthropic API Key가 설정되지 않았습니다. Settings에서 API Key를 설정해주세요.'),
+          );
+      }
+
       const db = await resolveProjectDb(app, request.params.projectId);
       const input = startAnalysisSchema.parse(request.body);
       const result = await prdService.startAnalysis(
         db,
-        app.env,
+        apiKey,
+        app.env.ANTHROPIC_MODEL,
         request.params.projectId,
         request.user.userId,
         input.prdDocumentId,

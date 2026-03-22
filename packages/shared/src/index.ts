@@ -128,6 +128,12 @@ export {
 } from './constants/prd-analysis.js';
 export { INVITATION_STATUSES, INVITATION_EXPIRY_DAYS } from './constants/invitation-status.js';
 export {
+  ANTHROPIC_MODELS,
+  RECOMMENDED_MODEL,
+  ANTHROPIC_MODEL_LABELS,
+} from './constants/anthropic-models.js';
+export type { AnthropicModel } from './constants/anthropic-models.js';
+export {
   AI_EVALUATION_STATUSES,
   PROFICIENCY_TIERS,
   EVALUATION_DIMENSIONS,

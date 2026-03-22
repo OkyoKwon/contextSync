@@ -12,6 +12,7 @@ import { TeamEvaluationSummary } from '../components/ai-evaluation/TeamEvaluatio
 import { EvaluationDashboard } from '../components/ai-evaluation/EvaluationDashboard';
 import { EvaluationHistory } from '../components/ai-evaluation/EvaluationHistory';
 import { TriggerEvaluationDialog } from '../components/ai-evaluation/TriggerEvaluationDialog';
+import { ApiKeyMissingBanner } from '../components/shared/ApiKeyMissingBanner';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -90,6 +91,8 @@ export function AiEvaluationPage() {
         </div>
         <Button onClick={() => setShowTriggerDialog(true)}>Run Evaluation</Button>
       </div>
+
+      <ApiKeyMissingBanner />
 
       {/* Team Summary */}
       {isSummaryLoading ? (

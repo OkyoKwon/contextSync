@@ -246,6 +246,46 @@ export async function updateUserPlan(
   return toUser(updated);
 }
 
+export async function updateApiKey(db: Db, userId: string, apiKey: string): Promise<User> {
+  const updated = await db
+    .updateTable('users')
+    .set({ anthropic_api_key: apiKey, updated_at: new Date() })
+    .where('id', '=', userId)
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!updated) {
+    throw new AppError('User not found', 404);
+  }
+
+  return toUser(updated);
+}
+
+export async function deleteApiKey(db: Db, userId: string): Promise<User> {
+  const updated = await db
+    .updateTable('users')
+    .set({ anthropic_api_key: null, updated_at: new Date() })
+    .where('id', '=', userId)
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!updated) {
+    throw new AppError('User not found', 404);
+  }
+
+  return toUser(updated);
+}
+
+export async function getUserApiKey(db: Db, userId: string): Promise<string | null> {
+  const row = await db
+    .selectFrom('users')
+    .select('anthropic_api_key')
+    .where('id', '=', userId)
+    .executeTakeFirst();
+
+  return row?.anthropic_api_key ?? null;
+}
+
 function toUser(row: {
   id: string;
   github_id: number | null;
@@ -255,6 +295,7 @@ function toUser(row: {
   role: string;
   is_auto: boolean;
   claude_plan: string;
+  anthropic_api_key: string | null;
   created_at: Date;
   updated_at: Date;
 }): User {
@@ -267,6 +308,7 @@ function toUser(row: {
     role: row.role as User['role'],
     isAuto: row.is_auto,
     claudePlan: row.claude_plan as ClaudePlan,
+    hasAnthropicApiKey: row.anthropic_api_key !== null && row.anthropic_api_key !== '',
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };

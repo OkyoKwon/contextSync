@@ -14,6 +14,7 @@
     "test:watch": "vitest",
     "migrate": "tsx --env-file=.env src/database/migrate.ts",
     "seed": "tsx --env-file=.env src/database/seed.ts",
+    "seed:marketing": "tsx --env-file=.env src/database/seed-marketing.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {

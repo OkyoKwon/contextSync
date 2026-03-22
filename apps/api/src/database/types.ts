@@ -45,6 +45,7 @@ export interface UsersTable {
   role: Generated<string>;
   is_auto: Generated<boolean>;
   claude_plan: Generated<string>;
+  anthropic_api_key: string | null;
   notification_settings: Generated<string>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
