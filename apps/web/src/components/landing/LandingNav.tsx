@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { useT } from '../../i18n/use-translation';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { assetUrl } from '@/lib/asset-url';
+import { EXTERNAL_URLS } from '@/lib/external-urls';
 
 function GitHubIcon() {
   return (
@@ -28,9 +30,9 @@ export function LandingNav() {
       }`}
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <a href="/">
+        <Link to="/">
           <img src={assetUrl('/logo.png')} alt="ContextSync" className="h-8" />
-        </a>
+        </Link>
         <div className="flex items-center gap-3">
           <a
             href="https://github.com/OkyoKwon/contextSync"
@@ -42,7 +44,9 @@ export function LandingNav() {
             <GitHubIcon />
           </a>
           <a
-            href="/docs"
+            href={EXTERNAL_URLS.docs}
+            target="_blank"
+            rel="noopener noreferrer"
             className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
           >
             {t('nav.docs')}

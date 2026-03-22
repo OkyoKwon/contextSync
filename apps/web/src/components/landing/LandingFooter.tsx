@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../../i18n/use-translation';
+import { EXTERNAL_URLS } from '@/lib/external-urls';
 
 function MailIcon() {
   return (
@@ -107,7 +108,12 @@ export function LandingFooter() {
         <div className="mx-auto flex max-w-5xl items-center justify-between font-mono text-xs text-text-tertiary/60">
           <span>&copy; {new Date().getFullYear()} ContextSync</span>
           <div className="flex gap-6">
-            <a href="/docs" className="transition-colors hover:text-text-secondary">
+            <a
+              href={EXTERNAL_URLS.docs}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-text-secondary"
+            >
               {t('footer.link.docs')}
             </a>
             <a

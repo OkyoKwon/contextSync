@@ -32,7 +32,6 @@ const AiEvaluationPage = lazy(() =>
   import('./pages/AiEvaluationPage').then((m) => ({ default: m.AiEvaluationPage })),
 );
 const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })));
-const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsPage })));
 
 function PageFallback() {
   return (
@@ -63,7 +62,6 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<AppEntryRedirect />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/docs" element={<DocsPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route
           element={

@@ -4,8 +4,6 @@ import { Routes, Route, Navigate } from 'react-router';
 const LandingPage = lazy(() =>
   import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })),
 );
-const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsPage })));
-
 function PageFallback() {
   return (
     <div className="flex h-64 items-center justify-center">
@@ -19,7 +17,6 @@ export function LandingRoutes() {
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/docs" element={<DocsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

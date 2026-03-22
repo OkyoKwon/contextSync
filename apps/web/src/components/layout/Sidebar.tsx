@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router';
+import { EXTERNAL_URLS } from '@/lib/external-urls';
 import { ProjectSelector } from './ProjectSelector';
 import { CreateProjectModal } from '../projects/CreateProjectModal';
 import { JoinProjectDialog } from '../projects/JoinProjectDialog';
@@ -229,7 +230,7 @@ export function Sidebar() {
             </Tooltip>
             <Tooltip content="Docs" position="bottom" align="left" width="w-auto">
               <a
-                href="/docs"
+                href={EXTERNAL_URLS.docs}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center rounded-lg p-2 text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
@@ -241,7 +242,7 @@ export function Sidebar() {
         ) : (
           <>
             <a
-              href="https://okyokwon.github.io/contextSync/"
+              href={EXTERNAL_URLS.landing}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
@@ -258,7 +259,7 @@ export function Sidebar() {
               </svg>
             </a>
             <a
-              href="/docs"
+              href={EXTERNAL_URLS.docs}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
