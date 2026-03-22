@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { ClaudePlan } from '@context-sync/shared';
+import { CLAUDE_PLANS, CLAUDE_PLAN_LABELS } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { useRequireProject } from '../hooks/use-require-project';
 import { usePermissions } from '../hooks/use-permissions';
 import { projectsApi } from '../api/projects.api';
+import { authApi } from '../api/auth.api';
 import { CollaboratorList } from '../components/projects/CollaboratorList';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
@@ -32,7 +35,10 @@ export function SettingsPage() {
         <div className="mb-6">
           <PageBreadcrumb pageName="Settings" />
         </div>
-        <NoProjectState pageName="Settings" />
+        <div className="space-y-6">
+          <UserPlanSection />
+          <NoProjectState pageName="Settings" />
+        </div>
       </div>
     );
   }
@@ -43,11 +49,55 @@ export function SettingsPage() {
         <PageBreadcrumb pageName="Settings" />
       </div>
       <div className="space-y-6">
+        <UserPlanSection />
         <ProjectInfoSection projectId={currentProjectId} />
         <CollaboratorSection projectId={currentProjectId} />
         <DangerZoneSection projectId={currentProjectId} />
       </div>
     </div>
+  );
+}
+
+function UserPlanSection() {
+  const user = useAuthStore((s) => s.user);
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const token = useAuthStore((s) => s.token);
+
+  const planMutation = useMutation({
+    mutationFn: (plan: ClaudePlan) => authApi.updatePlan(plan),
+    onSuccess: (response) => {
+      if (response.data && token) {
+        setAuth(token, response.data);
+      }
+    },
+  });
+
+  const currentPlan = user?.claudePlan ?? 'free';
+
+  return (
+    <Card>
+      <h3 className="text-lg font-semibold">Claude Plan</h3>
+      <p className="mt-1 text-sm text-text-tertiary">
+        Select your current Claude subscription plan.
+      </p>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {CLAUDE_PLANS.map((plan) => (
+          <button
+            key={plan}
+            type="button"
+            disabled={planMutation.isPending}
+            onClick={() => planMutation.mutate(plan)}
+            className={`rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+              currentPlan === plan
+                ? 'border-accent-primary bg-accent-primary/10 text-accent-primary'
+                : 'border-border-primary bg-bg-secondary text-text-secondary hover:border-border-hover hover:text-text-primary'
+            }`}
+          >
+            {CLAUDE_PLAN_LABELS[plan]}
+          </button>
+        ))}
+      </div>
+    </Card>
   );
 }
 
@@ -101,8 +151,16 @@ function ProjectInfoSection({ projectId }: { readonly projectId: string }) {
         {isEditing ? (
           <div className="mt-4 space-y-3">
             <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} />
-            <Input label="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-            <Input label="Repository URL" value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} />
+            <Input
+              label="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <Input
+              label="Repository URL"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+            />
             <div className="flex gap-2">
               <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending}>
                 {updateMutation.isPending ? 'Saving...' : 'Save'}
@@ -163,13 +221,10 @@ function DangerZoneSection({ projectId }: { readonly projectId: string }) {
       <Card className="border-red-500/30">
         <h3 className="text-lg font-semibold text-red-400">Delete Project</h3>
         <p className="mt-2 text-sm text-text-tertiary">
-          Deleting this project will permanently remove all sessions, messages, and conflict records.
+          Deleting this project will permanently remove all sessions, messages, and conflict
+          records.
         </p>
-        <Button
-          variant="danger"
-          className="mt-4"
-          onClick={() => setShowDeleteModal(true)}
-        >
+        <Button variant="danger" className="mt-4" onClick={() => setShowDeleteModal(true)}>
           Delete {project?.name} Project
         </Button>
       </Card>
@@ -180,10 +235,12 @@ function DangerZoneSection({ projectId }: { readonly projectId: string }) {
         title="Delete Project"
       >
         <p className="mb-2 text-sm text-text-secondary">
-          Are you sure you want to delete <strong className="text-text-primary">{project?.name}</strong>?
+          Are you sure you want to delete{' '}
+          <strong className="text-text-primary">{project?.name}</strong>?
         </p>
         <p className="mb-6 text-sm text-red-400">
-          All linked sessions, messages, conflict records, and sync history will be permanently deleted.
+          All linked sessions, messages, conflict records, and sync history will be permanently
+          deleted.
         </p>
         <div className="flex justify-end gap-3">
           <Button

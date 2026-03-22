@@ -1,3 +1,5 @@
+import type { ClaudePlan } from '../constants/claude-plan.js';
+
 export interface User {
   readonly id: string;
   readonly githubId: number | null;
@@ -6,6 +8,7 @@ export interface User {
   readonly avatarUrl: string | null;
   readonly role: UserRole;
   readonly isAuto: boolean;
+  readonly claudePlan: ClaudePlan;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

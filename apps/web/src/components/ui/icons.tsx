@@ -125,6 +125,15 @@ export function InfoIcon(props: IconProps) {
   );
 }
 
+export function CrownIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M2 20h20l-2-12-5 5-3-7-3 7-5-5z" />
+      <rect x="2" y="20" width="20" height="2" rx="1" />
+    </Icon>
+  );
+}
+
 export function FileIcon(props: IconProps) {
   return (
     <Icon {...props}>

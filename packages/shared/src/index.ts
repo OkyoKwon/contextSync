@@ -106,6 +106,8 @@ export {
 } from './constants/conflict-severity.js';
 
 export { MODEL_PRICING, DEFAULT_PRICE_PER_MILLION } from './constants/model-pricing.js';
+export { CLAUDE_PLANS, CLAUDE_PLAN_LABELS } from './constants/claude-plan.js';
+export type { ClaudePlan } from './constants/claude-plan.js';
 export {
   PRD_REQUIREMENT_STATUSES,
   PRD_ANALYSIS_STATUSES,

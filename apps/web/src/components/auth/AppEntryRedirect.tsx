@@ -14,9 +14,25 @@ export function AppEntryRedirect() {
   const t = useT();
 
   useEffect(() => {
-    if (token) return;
-
     let cancelled = false;
+
+    if (token) {
+      async function refreshUser() {
+        try {
+          const response = await authApi.getMe();
+          if (cancelled) return;
+          if (response.data) {
+            setAuth(token, response.data);
+          }
+        } catch {
+          // silently ignore — cached user is still usable
+        }
+      }
+      refreshUser();
+      return () => {
+        cancelled = true;
+      };
+    }
 
     async function attemptAutoLogin() {
       setState('logging-in');

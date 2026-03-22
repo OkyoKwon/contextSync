@@ -1,16 +1,20 @@
 import type { ReactNode } from 'react';
 import type { TokenUsageStats } from '@context-sync/shared';
+import { CLAUDE_PLAN_LABELS } from '@context-sync/shared';
+import { useAuthStore } from '../../stores/auth.store';
 import { Card } from '../ui/Card';
 import { Tooltip } from '../ui/Tooltip';
-import { ZapIcon, DollarIcon, CpuIcon } from '../ui/icons';
-import { formatTokenCount, formatUSD } from '../../lib/format';
+import { ZapIcon, CrownIcon, CpuIcon } from '../ui/icons';
+import { formatTokenCount } from '../../lib/format';
 
 interface TokenUsageSummaryProps {
   readonly stats: TokenUsageStats;
 }
 
 export function TokenUsageSummary({ stats }: TokenUsageSummaryProps) {
+  const user = useAuthStore((s) => s.user);
   const topModel = stats.modelBreakdown[0]?.model ?? 'N/A';
+  const planLabel = CLAUDE_PLAN_LABELS[user?.claudePlan ?? 'free'];
 
   const items: readonly {
     readonly key: string;
@@ -31,14 +35,13 @@ export function TokenUsageSummary({ stats }: TokenUsageSummaryProps) {
       tooltip: 'Total input and output tokens across all sessions in the selected period.',
     },
     {
-      key: 'cost',
-      label: 'Estimated Cost',
-      value: formatUSD(stats.totalCost),
+      key: 'plan',
+      label: 'Claude Plan',
+      value: planLabel,
       color: 'text-emerald-400',
       bgTint: 'bg-emerald-500/5',
-      icon: DollarIcon,
-      tooltip:
-        "Estimated using average blended input/output rates per model. If you're on a Pro or Max plan, this does not reflect your actual spending.",
+      icon: CrownIcon,
+      tooltip: 'Your current Claude subscription plan. Change it in Settings.',
     },
     {
       key: 'model',

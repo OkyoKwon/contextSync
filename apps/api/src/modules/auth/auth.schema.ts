@@ -14,3 +14,9 @@ export const upgradeSchema = z.object({
 });
 
 export type UpgradeInput = z.infer<typeof upgradeSchema>;
+
+export const updatePlanSchema = z.object({
+  claudePlan: z.enum(['free', 'pro', 'max_5x', 'max_20x', 'team', 'enterprise']),
+});
+
+export type UpdatePlanInput = z.infer<typeof updatePlanSchema>;

@@ -1,7 +1,8 @@
 import crypto from 'node:crypto';
 import type { Db } from '../../database/client.js';
 import type { LoginInput, UpgradeInput } from './auth.schema.js';
-import type { User } from '@context-sync/shared';
+import type { User, ClaudePlan } from '@context-sync/shared';
+import { CLAUDE_PLANS } from '@context-sync/shared';
 import { AppError } from '../../plugins/error-handler.plugin.js';
 
 export async function findOrCreateByEmail(db: Db, input: LoginInput): Promise<User> {
@@ -175,6 +176,29 @@ export async function findUserById(db: Db, id: string): Promise<User | null> {
   return row ? toUser(row) : null;
 }
 
+export async function updateUserPlan(
+  db: Db,
+  userId: string,
+  claudePlan: ClaudePlan,
+): Promise<User> {
+  if (!CLAUDE_PLANS.includes(claudePlan)) {
+    throw new AppError('Invalid Claude plan', 400);
+  }
+
+  const updated = await db
+    .updateTable('users')
+    .set({ claude_plan: claudePlan, updated_at: new Date() })
+    .where('id', '=', userId)
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!updated) {
+    throw new AppError('User not found', 404);
+  }
+
+  return toUser(updated);
+}
+
 function toUser(row: {
   id: string;
   github_id: number | null;
@@ -183,6 +207,7 @@ function toUser(row: {
   avatar_url: string | null;
   role: string;
   is_auto: boolean;
+  claude_plan: string;
   created_at: Date;
   updated_at: Date;
 }): User {
@@ -194,6 +219,7 @@ function toUser(row: {
     avatarUrl: row.avatar_url,
     role: row.role as User['role'],
     isAuto: row.is_auto,
+    claudePlan: row.claude_plan as ClaudePlan,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };

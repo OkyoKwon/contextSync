@@ -1,4 +1,4 @@
-import type { User } from '@context-sync/shared';
+import type { User, ClaudePlan } from '@context-sync/shared';
 import { api } from './client';
 
 export const authApi = {
@@ -13,4 +13,6 @@ export const authApi = {
     api.post<{ token: string; user: User }>('/auth/upgrade', { name, email, autoUserId }),
 
   refresh: () => api.post<{ token: string }>('/auth/refresh'),
+
+  updatePlan: (claudePlan: ClaudePlan) => api.put<User>('/auth/me/plan', { claudePlan }),
 };

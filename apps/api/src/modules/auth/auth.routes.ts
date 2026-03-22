@@ -1,10 +1,11 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { loginSchema, upgradeSchema } from './auth.schema.js';
+import { loginSchema, upgradeSchema, updatePlanSchema } from './auth.schema.js';
 import {
   findOrCreateByEmail,
   findUserById,
   createAutoUser,
   upgradeAutoUser,
+  updateUserPlan,
 } from './auth.service.js';
 import { ok, fail } from '../../lib/api-response.js';
 
@@ -51,6 +52,17 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       { expiresIn: app.env.JWT_EXPIRES_IN },
     );
     return reply.send(ok({ token }));
+  });
+
+  app.put('/me/plan', { preHandler: [app.authenticate] }, async (request, reply) => {
+    const parsed = updatePlanSchema.safeParse(request.body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join(', ');
+      return reply.status(400).send(fail(message));
+    }
+
+    const user = await updateUserPlan(app.db, request.user.userId, parsed.data.claudePlan);
+    return reply.send(ok(user));
   });
 
   app.post('/upgrade', { preHandler: [app.authenticate] }, async (request, reply) => {
