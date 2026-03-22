@@ -66,6 +66,12 @@ export const en: TranslationKeys = {
   'features.sub.3.title': 'Local Session Sync',
   'features.sub.3.description':
     'Share local Claude Code sessions with your team in one click. Auto project matching',
+  'features.sub.4.title': 'Plans',
+  'features.sub.4.description':
+    'Create structured markdown plans and link them to projects for organized development workflows',
+  'features.sub.5.title': 'AI Evaluation',
+  'features.sub.5.description':
+    "Score and evaluate team members' AI utilization across sessions with multi-dimensional analysis",
 
   // How It Works
   'howItWorks.sectionLabel': '// How It Works',
@@ -80,11 +86,11 @@ export const en: TranslationKeys = {
     "Start solo, then invite your team when you're ready. Role-based access and conflict detection built in.",
 
   // Social Proof
-  'social.sectionLabel': '// By the Numbers',
-  'social.stat.0.label': 'Teams',
-  'social.stat.1.label': 'Sessions Archived',
-  'social.stat.2.label': 'Conflicts Prevented',
-  'social.stat.3.label': 'Avg. Fulfillment Rate',
+  'social.sectionLabel': '// Platform Overview',
+  'social.stat.0.label': 'API Modules',
+  'social.stat.1.label': 'Deployment Modes',
+  'social.stat.2.label': 'Severity Levels',
+  'social.stat.3.label': 'Key Features',
   'social.testimonial.0.quote':
     '"Losing Claude Code sessions was our biggest fear — now our entire team history is searchable."',
   'social.testimonial.0.author': '— Frontend Lead, Startup A',
@@ -166,6 +172,11 @@ export const en: TranslationKeys = {
     'Role-based access control with Owner, Admin, and Member roles. Invite collaborators and manage permissions.',
   'docs.features.6.detail':
     'Projects support three roles: Owner (full control including deletion), Admin (manage members and sessions), and Member (view and sync sessions). Invite teammates by GitHub username and manage roles from the Settings page. Activity feeds keep everyone informed about session syncs, conflicts, and resolution updates.',
+  'docs.features.7.title': 'AI Evaluation',
+  'docs.features.7.summary':
+    "Score team members' AI utilization across sessions with multi-dimensional analysis and evidence tracking.",
+  'docs.features.7.detail':
+    "AI Evaluation analyzes each team member's Claude Code sessions and produces a utilization score based on multiple dimensions: code quality, conversation depth, tool usage patterns, and task completion rates. Each score includes detailed evidence and reasoning, helping teams understand how effectively they leverage AI assistance and identify areas for improvement.",
   'docs.faq.title': 'Frequently Asked Questions',
   'docs.faq.0.q': 'What data does session sync collect?',
   'docs.faq.0.a':
@@ -245,6 +256,17 @@ export const en: TranslationKeys = {
   'contributing.subtitle': 'Star, fork, or open an issue \u2014 all contributions welcome.',
   'contributing.guide': 'Read the Contributing Guide',
   'contributing.issues': 'Report an Issue',
+
+  // Screenshot Alt
+  'screenshot.alt.dashboard': 'ContextSync dashboard overview',
+  'screenshot.alt.sessionConversation': 'Session conversation view',
+  'screenshot.alt.conflictsList': 'Conflict detection list',
+  'screenshot.alt.prdAnalysis': 'PRD analysis results',
+  'screenshot.alt.searchOverlay': 'Full-text search overlay',
+  'screenshot.alt.settingsTeam': 'Team settings and member management',
+  'screenshot.alt.tokenUsageChart': 'Token usage analytics chart',
+  'screenshot.alt.sessionDetail': 'Session detail view',
+  'screenshot.alt.aiEvaluation': 'AI evaluation scores',
 
   // Footer
   'footer.cta.title': 'Sync your AI workflow',

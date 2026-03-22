@@ -64,6 +64,10 @@ export interface TranslationKeys {
   readonly 'features.sub.2.description': string;
   readonly 'features.sub.3.title': string;
   readonly 'features.sub.3.description': string;
+  readonly 'features.sub.4.title': string;
+  readonly 'features.sub.4.description': string;
+  readonly 'features.sub.5.title': string;
+  readonly 'features.sub.5.description': string;
 
   // How It Works
   readonly 'howItWorks.sectionLabel': string;
@@ -140,6 +144,9 @@ export interface TranslationKeys {
   readonly 'docs.features.6.title': string;
   readonly 'docs.features.6.summary': string;
   readonly 'docs.features.6.detail': string;
+  readonly 'docs.features.7.title': string;
+  readonly 'docs.features.7.summary': string;
+  readonly 'docs.features.7.detail': string;
   readonly 'docs.faq.title': string;
   readonly 'docs.faq.0.q': string;
   readonly 'docs.faq.0.a': string;
@@ -213,6 +220,17 @@ export interface TranslationKeys {
   readonly 'contributing.subtitle': string;
   readonly 'contributing.guide': string;
   readonly 'contributing.issues': string;
+
+  // Screenshot Alt
+  readonly 'screenshot.alt.dashboard': string;
+  readonly 'screenshot.alt.sessionConversation': string;
+  readonly 'screenshot.alt.conflictsList': string;
+  readonly 'screenshot.alt.prdAnalysis': string;
+  readonly 'screenshot.alt.searchOverlay': string;
+  readonly 'screenshot.alt.settingsTeam': string;
+  readonly 'screenshot.alt.tokenUsageChart': string;
+  readonly 'screenshot.alt.sessionDetail': string;
+  readonly 'screenshot.alt.aiEvaluation': string;
 
   // Footer
   readonly 'footer.cta.title': string;

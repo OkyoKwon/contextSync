@@ -47,13 +47,19 @@ export function MigrationWizardModal({
   const queryClient = useQueryClient();
 
   const handleSetupNext = () => {
-    // Save config and proceed to preview
+    // Save config and proceed to preview (manual flow)
     saveConfigMutation.mutate(
       { connectionUrl, provider, sslEnabled },
       {
         onSuccess: () => onStepChange('preview'),
       },
     );
+  };
+
+  const handleAutoSetupComplete = () => {
+    // Auto setup already saved config via the backend endpoint
+    queryClient.invalidateQueries({ queryKey: ['db-config', projectId] });
+    onStepChange('preview');
   };
 
   const handleComplete = () => {
@@ -88,6 +94,7 @@ export function MigrationWizardModal({
           sslEnabled={sslEnabled}
           onConnectionInfoChange={onConnectionInfoChange}
           onNext={handleSetupNext}
+          onAutoSetupComplete={handleAutoSetupComplete}
         />
       )}
 

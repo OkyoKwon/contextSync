@@ -7,6 +7,7 @@ import type { LoginInput, UpgradeInput } from './auth.schema.js';
 import type { User, ClaudePlan } from '@context-sync/shared';
 import { CLAUDE_PLANS } from '@context-sync/shared';
 import { AppError } from '../../plugins/error-handler.plugin.js';
+import { encrypt, decrypt } from '../../lib/encryption.js';
 
 export async function findOrCreateByEmail(db: Db, input: LoginInput): Promise<User> {
   const existing = await db
@@ -286,6 +287,59 @@ export async function getUserApiKey(db: Db, userId: string): Promise<string | nu
   return row?.anthropic_api_key ?? null;
 }
 
+export async function saveSupabaseToken(
+  db: Db,
+  userId: string,
+  token: string,
+  jwtSecret: string,
+): Promise<User> {
+  const encryptedToken = encrypt(token, jwtSecret);
+
+  const updated = await db
+    .updateTable('users')
+    .set({ supabase_access_token: encryptedToken, updated_at: new Date() })
+    .where('id', '=', userId)
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!updated) {
+    throw new AppError('User not found', 404);
+  }
+
+  return toUser(updated);
+}
+
+export async function deleteSupabaseToken(db: Db, userId: string): Promise<User> {
+  const updated = await db
+    .updateTable('users')
+    .set({ supabase_access_token: null, updated_at: new Date() })
+    .where('id', '=', userId)
+    .returningAll()
+    .executeTakeFirst();
+
+  if (!updated) {
+    throw new AppError('User not found', 404);
+  }
+
+  return toUser(updated);
+}
+
+export async function getSupabaseToken(
+  db: Db,
+  userId: string,
+  jwtSecret: string,
+): Promise<string | null> {
+  const row = await db
+    .selectFrom('users')
+    .select('supabase_access_token')
+    .where('id', '=', userId)
+    .executeTakeFirst();
+
+  if (!row?.supabase_access_token) return null;
+
+  return decrypt(row.supabase_access_token, jwtSecret);
+}
+
 function toUser(row: {
   id: string;
   github_id: number | null;
@@ -296,6 +350,7 @@ function toUser(row: {
   is_auto: boolean;
   claude_plan: string;
   anthropic_api_key: string | null;
+  supabase_access_token: string | null;
   created_at: Date;
   updated_at: Date;
 }): User {
@@ -309,6 +364,7 @@ function toUser(row: {
     isAuto: row.is_auto,
     claudePlan: row.claude_plan as ClaudePlan,
     hasAnthropicApiKey: row.anthropic_api_key !== null && row.anthropic_api_key !== '',
+    hasSupabaseToken: row.supabase_access_token !== null && row.supabase_access_token !== '',
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };

@@ -20,6 +20,7 @@ const CATEGORIES: readonly TechCategory[] = [
       { name: 'Tailwind CSS', version: '4' },
       { name: 'Zustand', version: '5' },
       { name: 'React Query', version: '5' },
+      { name: 'React Router', version: '7' },
     ],
   },
   {

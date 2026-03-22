@@ -26,3 +26,9 @@ export const updateApiKeySchema = z.object({
 });
 
 export type UpdateApiKeyInput = z.infer<typeof updateApiKeySchema>;
+
+export const updateSupabaseTokenSchema = z.object({
+  token: z.string().min(1, 'Supabase access token is required'),
+});
+
+export type UpdateSupabaseTokenInput = z.infer<typeof updateSupabaseTokenSchema>;

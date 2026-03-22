@@ -65,6 +65,12 @@ export const ja: TranslationKeys = {
   'features.sub.3.title': 'Local Session Sync',
   'features.sub.3.description':
     'ローカルClaude Codeセッションをワンクリックでチームに共有。自動プロジェクトマッチング',
+  'features.sub.4.title': 'Plans',
+  'features.sub.4.description':
+    '構造化されたMarkdownプランを作成し、プロジェクトに紐づけて体系的な開発ワークフローを管理',
+  'features.sub.5.title': 'AI Evaluation',
+  'features.sub.5.description':
+    'チームメンバーのAI活用度をセッション単位で評価し、多次元分析でスコア化',
 
   // How It Works
   'howItWorks.sectionLabel': '// How It Works',
@@ -79,11 +85,11 @@ export const ja: TranslationKeys = {
     'ソロで始めて、準備ができたらチームを招待。ロールベースアクセス制御とコンフリクト検知を内蔵。',
 
   // Social Proof
-  'social.sectionLabel': '// By the Numbers',
-  'social.stat.0.label': 'チーム',
-  'social.stat.1.label': 'セッションアーカイブ',
-  'social.stat.2.label': 'コンフリクト事前防止',
-  'social.stat.3.label': '平均達成率',
+  'social.sectionLabel': '// Platform Overview',
+  'social.stat.0.label': 'APIモジュール',
+  'social.stat.1.label': 'デプロイモード',
+  'social.stat.2.label': '重大度レベル',
+  'social.stat.3.label': '主要機能',
   'social.testimonial.0.quote':
     '「Claude Codeセッションが消えるのが一番怖かったのですが、今はチーム全体の履歴が検索可能になりました。」',
   'social.testimonial.0.author': '— フロントエンドリード、スタートアップA',
@@ -163,6 +169,11 @@ export const ja: TranslationKeys = {
     'Owner、Admin、Memberのロールベースアクセス制御。コラボレーターを招待し権限を管理。',
   'docs.features.6.detail':
     'プロジェクトは3つのロールに対応：Owner（削除含む全権限）、Admin（メンバーとセッション管理）、Member（セッション閲覧と同期）。GitHubユーザー名でメンバーを招待し設定でロールを管理できます。',
+  'docs.features.7.title': 'AI Evaluation',
+  'docs.features.7.summary':
+    'チームメンバーのAI活用度をセッション単位で分析し、多次元評価でスコア化。',
+  'docs.features.7.detail':
+    'AI評価は各メンバーのClaude Codeセッションを分析し、コード品質、会話の深さ、ツール使用パターン、タスク完了率など複数の次元で活用度スコアを算出します。各スコアには詳細な根拠と推論が含まれ、チームがAI支援をどれだけ効果的に活用しているか把握し改善領域を特定するのに役立ちます。',
   'docs.faq.title': 'よくある質問',
   'docs.faq.0.q': 'セッション同期はどのデータを収集しますか？',
   'docs.faq.0.a':
@@ -242,6 +253,17 @@ export const ja: TranslationKeys = {
   'contributing.subtitle': 'Star、fork、またはissueを開いてください — すべての貢献を歓迎します。',
   'contributing.guide': 'コントリビューションガイドを読む',
   'contributing.issues': 'Issueを報告',
+
+  // Screenshot Alt
+  'screenshot.alt.dashboard': 'ContextSyncダッシュボード概要',
+  'screenshot.alt.sessionConversation': 'セッション会話ビュー',
+  'screenshot.alt.conflictsList': 'コンフリクト検知リスト',
+  'screenshot.alt.prdAnalysis': 'PRD分析結果',
+  'screenshot.alt.searchOverlay': '全文検索オーバーレイ',
+  'screenshot.alt.settingsTeam': 'チーム設定・メンバー管理',
+  'screenshot.alt.tokenUsageChart': 'トークン使用量分析チャート',
+  'screenshot.alt.sessionDetail': 'セッション詳細ビュー',
+  'screenshot.alt.aiEvaluation': 'AI評価スコア',
 
   // Footer
   'footer.cta.title': 'AIワークフローを同期しよう',

@@ -74,6 +74,13 @@ export type {
   SaveDbConfigInput,
   TestConnectionInput,
 } from './types/db-config.js';
+export type {
+  SupabaseProject,
+  SupabaseOrganization,
+  CreateSupabaseProjectInput,
+  AutoSetupExistingInput,
+  AutoSetupNewInput,
+} from './types/supabase-onboarding.js';
 export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
 export type { Invitation, InvitationStatus, CreateInvitationInput } from './types/invitation.js';
 export type {

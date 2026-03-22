@@ -64,6 +64,11 @@ export const ko: TranslationKeys = {
     '역할 기반 접근 제어 (Owner / Admin / Member). 팀원 초대 및 프로젝트 공유',
   'features.sub.3.title': 'Local Session Sync',
   'features.sub.3.description': '로컬 Claude Code 세션을 원클릭으로 팀에 공유. 자동 프로젝트 매칭',
+  'features.sub.4.title': 'Plans',
+  'features.sub.4.description':
+    '구조화된 마크다운 플랜을 작성하고 프로젝트에 연결하여 체계적인 개발 워크플로우 관리',
+  'features.sub.5.title': 'AI Evaluation',
+  'features.sub.5.description': '팀원의 AI 활용도를 세션 단위로 평가하고 다차원 분석으로 점수화',
 
   // How It Works
   'howItWorks.sectionLabel': '// How It Works',
@@ -78,11 +83,11 @@ export const ko: TranslationKeys = {
     '혼자 시작하고, 준비되면 팀을 초대하세요. 역할 기반 접근 제어와 충돌 감지가 내장되어 있습니다.',
 
   // Social Proof
-  'social.sectionLabel': '// By the Numbers',
-  'social.stat.0.label': '팀',
-  'social.stat.1.label': '세션 아카이브',
-  'social.stat.2.label': '충돌 사전 방지',
-  'social.stat.3.label': '평균 달성률',
+  'social.sectionLabel': '// Platform Overview',
+  'social.stat.0.label': 'API 모듈',
+  'social.stat.1.label': '배포 모드',
+  'social.stat.2.label': '심각도 레벨',
+  'social.stat.3.label': '핵심 기능',
   'social.testimonial.0.quote':
     '"Claude Code 세션이 날아가는 게 제일 무서웠는데, 이제 팀 전체 히스토리가 검색 가능해졌어요."',
   'social.testimonial.0.author': '— 프론트엔드 리드, 스타트업 A',
@@ -162,6 +167,10 @@ export const ko: TranslationKeys = {
     'Owner, Admin, Member 역할 기반 접근 제어. 협업자를 초대하고 권한을 관리하세요.',
   'docs.features.6.detail':
     '프로젝트는 세 가지 역할을 지원합니다: Owner(삭제 포함 전체 권한), Admin(멤버와 세션 관리), Member(세션 조회와 동기화). GitHub 사용자명으로 팀원을 초대하고 설정에서 역할을 관리하세요.',
+  'docs.features.7.title': 'AI Evaluation',
+  'docs.features.7.summary': '팀원의 AI 활용도를 세션 단위로 분석하고 다차원 평가로 점수화합니다.',
+  'docs.features.7.detail':
+    'AI 평가는 각 팀원의 Claude Code 세션을 분석하여 코드 품질, 대화 깊이, 도구 사용 패턴, 작업 완료율 등 여러 차원에서 활용도 점수를 산출합니다. 각 점수에는 상세한 근거와 추론이 포함되어 팀이 AI 지원을 얼마나 효과적으로 활용하는지 파악하고 개선 영역을 식별하는 데 도움을 줍니다.',
   'docs.faq.title': '자주 묻는 질문',
   'docs.faq.0.q': '세션 동기화는 어떤 데이터를 수집하나요?',
   'docs.faq.0.a':
@@ -241,6 +250,17 @@ export const ko: TranslationKeys = {
   'contributing.subtitle': 'Star, fork, 또는 이슈를 열어주세요 — 모든 기여를 환영합니다.',
   'contributing.guide': '기여 가이드 읽기',
   'contributing.issues': '이슈 제출',
+
+  // Screenshot Alt
+  'screenshot.alt.dashboard': 'ContextSync 대시보드 개요',
+  'screenshot.alt.sessionConversation': '세션 대화 뷰',
+  'screenshot.alt.conflictsList': '충돌 감지 목록',
+  'screenshot.alt.prdAnalysis': 'PRD 분석 결과',
+  'screenshot.alt.searchOverlay': '전문 검색 오버레이',
+  'screenshot.alt.settingsTeam': '팀 설정 및 멤버 관리',
+  'screenshot.alt.tokenUsageChart': '토큰 사용량 분석 차트',
+  'screenshot.alt.sessionDetail': '세션 상세 뷰',
+  'screenshot.alt.aiEvaluation': 'AI 평가 점수',
 
   // Footer
   'footer.cta.title': 'AI 워크플로우를 동기화하세요',

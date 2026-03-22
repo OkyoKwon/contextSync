@@ -5,6 +5,8 @@ import { useT } from '../../i18n/use-translation';
 import { authApi } from '../../api/auth.api';
 import { useAuthStore } from '../../stores/auth.store';
 import { isExternalApp } from '../../lib/app-url';
+import { BrowserFrame } from '../ui/BrowserFrame';
+import { ScreenshotImage } from '../ui/ScreenshotImage';
 
 function ChevronDownIcon() {
   return (
@@ -116,6 +118,16 @@ export function LandingHero() {
           )}
           {error && <p className="text-xs text-red-400">{error}</p>}
         </div>
+      </div>
+
+      <div className="group mt-12 w-full max-w-4xl [perspective:1200px]">
+        <BrowserFrame className="transition-transform duration-500 [transform:rotateX(2deg)] group-hover:[transform:rotateX(0deg)]">
+          <ScreenshotImage
+            src="/screenshots/dashboard-full.png"
+            alt={t('screenshot.alt.dashboard')}
+            className="w-full"
+          />
+        </BrowserFrame>
       </div>
 
       <button

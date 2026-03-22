@@ -10,6 +10,7 @@ export interface User {
   readonly isAuto: boolean;
   readonly claudePlan: ClaudePlan;
   readonly hasAnthropicApiKey: boolean;
+  readonly hasSupabaseToken: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

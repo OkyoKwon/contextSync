@@ -19,4 +19,8 @@ export const authApi = {
   updateApiKey: (apiKey: string) => api.put<User>('/auth/me/api-key', { apiKey }),
 
   deleteApiKey: () => api.delete<User>('/auth/me/api-key'),
+
+  saveSupabaseToken: (token: string) => api.put<User>('/auth/me/supabase-token', { token }),
+
+  deleteSupabaseToken: () => api.delete<User>('/auth/me/supabase-token'),
 };

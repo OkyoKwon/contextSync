@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useT } from '../../i18n/use-translation';
 import { StepIndicator } from './StepIndicator';
 import {
@@ -7,13 +8,33 @@ import {
   DashboardIllustration,
   InviteTeamIllustration,
 } from './DocsIllustrations';
+import { ScreenshotImage } from '../ui/ScreenshotImage';
+import type { TranslationKey } from '../../i18n/types';
 
-const illustrations = [
-  CreateProjectIllustration,
-  SyncSessionIllustration,
-  DashboardIllustration,
-  InviteTeamIllustration,
-] as const;
+interface StepConfig {
+  readonly illustration: () => ReactNode;
+  readonly screenshot: string | null;
+  readonly screenshotAltKey: TranslationKey | null;
+}
+
+const STEP_CONFIGS: readonly StepConfig[] = [
+  { illustration: CreateProjectIllustration, screenshot: null, screenshotAltKey: null },
+  {
+    illustration: SyncSessionIllustration,
+    screenshot: '/screenshots/session-conversation.png',
+    screenshotAltKey: 'screenshot.alt.sessionConversation',
+  },
+  {
+    illustration: DashboardIllustration,
+    screenshot: '/screenshots/dashboard-full.png',
+    screenshotAltKey: 'screenshot.alt.dashboard',
+  },
+  {
+    illustration: InviteTeamIllustration,
+    screenshot: '/screenshots/settings-team.png',
+    screenshotAltKey: 'screenshot.alt.settingsTeam',
+  },
+];
 
 const STEP_COUNT = 4;
 
@@ -34,7 +55,8 @@ export function GettingStartedSection() {
         {/* Step content */}
         <div className="flex-1 space-y-6">
           {([0, 1, 2, 3] as const).map((i) => {
-            const Illustration = illustrations[i];
+            const config = STEP_CONFIGS[i]!;
+            const hasScreenshot = config.screenshot !== null && config.screenshotAltKey !== null;
             return (
               <button
                 key={i}
@@ -59,8 +81,16 @@ export function GettingStartedSection() {
                     {t(`docs.gettingStarted.step.${i}.desc`)}
                   </p>
                 </div>
-                <div className="h-28 w-full shrink-0 sm:h-24 sm:w-40">
-                  <Illustration />
+                <div className="h-28 w-full shrink-0 overflow-hidden rounded-lg sm:h-24 sm:w-40">
+                  {hasScreenshot ? (
+                    <ScreenshotImage
+                      src={config.screenshot!}
+                      alt={t(config.screenshotAltKey!)}
+                      className="h-full w-full"
+                    />
+                  ) : (
+                    <config.illustration />
+                  )}
                 </div>
               </button>
             );

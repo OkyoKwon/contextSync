@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useT } from '../../i18n/use-translation';
 import { Card } from '../ui/Card';
+import { ScreenshotImage } from '../ui/ScreenshotImage';
+import type { TranslationKey } from '../../i18n/types';
 
 const featureIcons = [
   SyncFeatureIcon,
@@ -10,9 +12,32 @@ const featureIcons = [
   PlansFeatureIcon,
   SearchFeatureIcon,
   TeamFeatureIcon,
+  AiEvaluationFeatureIcon,
 ] as const;
 
-const FEATURE_COUNT = 7;
+const FEATURE_SCREENSHOTS: readonly (string | null)[] = [
+  '/screenshots/session-conversation.png',
+  '/screenshots/conflicts-list.png',
+  '/screenshots/dashboard-full.png',
+  '/screenshots/prd-analysis.png',
+  null,
+  '/screenshots/search-overlay.png',
+  '/screenshots/settings-team.png',
+  '/screenshots/ai-evaluation.png',
+];
+
+const FEATURE_SCREENSHOT_ALT_KEYS: readonly (TranslationKey | null)[] = [
+  'screenshot.alt.sessionConversation',
+  'screenshot.alt.conflictsList',
+  'screenshot.alt.dashboard',
+  'screenshot.alt.prdAnalysis',
+  null,
+  'screenshot.alt.searchOverlay',
+  'screenshot.alt.settingsTeam',
+  'screenshot.alt.aiEvaluation',
+];
+
+const FEATURE_COUNT = 8;
 
 export function FeatureSection() {
   const t = useT();
@@ -30,7 +55,9 @@ export function FeatureSection() {
         {Array.from({ length: FEATURE_COUNT }, (_, i) => {
           const Icon = featureIcons[i]!;
           const isExpanded = expandedIndex === i;
-          const idx = i as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+          const idx = i as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+          const screenshot = FEATURE_SCREENSHOTS[i];
+          const altKey = FEATURE_SCREENSHOT_ALT_KEYS[i];
 
           return (
             <Card key={i} padding="none" className="overflow-hidden">
@@ -74,6 +101,11 @@ export function FeatureSection() {
                     <p className="text-sm leading-relaxed text-text-secondary">
                       {t(`docs.features.${idx}.detail`)}
                     </p>
+                    {screenshot && altKey && (
+                      <div className="mt-4 overflow-hidden rounded-lg border border-border-default">
+                        <ScreenshotImage src={screenshot} alt={t(altKey)} className="w-full" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -172,6 +204,19 @@ function TeamFeatureIcon() {
         strokeLinejoin="round"
         strokeWidth={1.5}
         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+      />
+    </svg>
+  );
+}
+
+function AiEvaluationFeatureIcon() {
+  return (
+    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
       />
     </svg>
   );

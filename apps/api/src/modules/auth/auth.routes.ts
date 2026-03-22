@@ -1,5 +1,11 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { loginSchema, upgradeSchema, updatePlanSchema, updateApiKeySchema } from './auth.schema.js';
+import {
+  loginSchema,
+  upgradeSchema,
+  updatePlanSchema,
+  updateApiKeySchema,
+  updateSupabaseTokenSchema,
+} from './auth.schema.js';
 import {
   findOrCreateByEmail,
   findUserById,
@@ -8,6 +14,8 @@ import {
   updateUserPlan,
   updateApiKey,
   deleteApiKey,
+  saveSupabaseToken,
+  deleteSupabaseToken,
 } from './auth.service.js';
 import { ok, fail } from '../../lib/api-response.js';
 
@@ -80,6 +88,27 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
 
   app.delete('/me/api-key', { preHandler: [app.authenticate] }, async (request, reply) => {
     const user = await deleteApiKey(app.db, request.user.userId);
+    return reply.send(ok(user));
+  });
+
+  app.put('/me/supabase-token', { preHandler: [app.authenticate] }, async (request, reply) => {
+    const parsed = updateSupabaseTokenSchema.safeParse(request.body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join(', ');
+      return reply.status(400).send(fail(message));
+    }
+
+    const user = await saveSupabaseToken(
+      app.db,
+      request.user.userId,
+      parsed.data.token,
+      app.env.JWT_SECRET,
+    );
+    return reply.send(ok(user));
+  });
+
+  app.delete('/me/supabase-token', { preHandler: [app.authenticate] }, async (request, reply) => {
+    const user = await deleteSupabaseToken(app.db, request.user.userId);
     return reply.send(ok(user));
   });
 

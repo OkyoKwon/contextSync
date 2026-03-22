@@ -19,6 +19,7 @@ import { invitationRoutes } from './modules/invitations/invitation.routes.js';
 import { aiEvaluationRoutes } from './modules/ai-evaluation/ai-evaluation.routes.js';
 import { adminRoutes } from './modules/admin/admin.routes.js';
 import { dbConfigRoutes } from './modules/db-config/db-config.routes.js';
+import { supabaseOnboardingRoutes } from './modules/supabase-onboarding/supabase-onboarding.routes.js';
 import { runMigrations } from './modules/admin/admin.service.js';
 
 export async function buildApp(env: Env) {
@@ -59,6 +60,7 @@ export async function buildApp(env: Env) {
   await app.register(aiEvaluationRoutes, { prefix: '/api' });
   await app.register(adminRoutes, { prefix: '/api' });
   await app.register(dbConfigRoutes, { prefix: '/api' });
+  await app.register(supabaseOnboardingRoutes, { prefix: '/api' });
 
   app.get('/api/health', async () => ({ status: 'ok' }));
 
