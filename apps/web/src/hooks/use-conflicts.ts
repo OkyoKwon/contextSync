@@ -3,13 +3,20 @@ import type { ConflictFilterQuery, UpdateConflictInput } from '@context-sync/sha
 import { conflictsApi } from '../api/conflicts.api';
 import { useAuthStore } from '../stores/auth.store';
 
-export function useConflicts(filter?: ConflictFilterQuery) {
+interface UseConflictsOptions {
+  readonly enabled?: boolean;
+}
+
+export function useConflicts(filter?: ConflictFilterQuery, options?: UseConflictsOptions) {
   const projectId = useAuthStore((s) => s.currentProjectId);
+  const enabledByDefault = !!projectId && projectId !== 'skipped';
+  const enabled =
+    options?.enabled !== undefined ? enabledByDefault && options.enabled : enabledByDefault;
 
   return useQuery({
     queryKey: ['conflicts', projectId, filter],
     queryFn: () => conflictsApi.list(projectId!, filter),
-    enabled: !!projectId && projectId !== 'skipped',
+    enabled,
   });
 }
 

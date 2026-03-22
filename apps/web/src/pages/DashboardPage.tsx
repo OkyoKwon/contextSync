@@ -9,7 +9,6 @@ import { HotFiles } from '../components/dashboard/HotFiles';
 import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
 import { TeamActivityPanel } from '../components/dashboard/TeamActivityPanel';
 import { ActivityFeed } from '../components/dashboard/ActivityFeed';
-import { QuickActions } from '../components/dashboard/QuickActions';
 import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { Spinner } from '../components/ui/Spinner';
@@ -17,7 +16,6 @@ import { DashboardSkeleton } from '../components/dashboard/DashboardSkeleton';
 import { getGreeting } from '../lib/date';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { PendingInvitations } from '../components/dashboard/PendingInvitations';
-import { SetupCompletionBanner } from '../components/dashboard/SetupCompletionBanner';
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
@@ -83,25 +81,28 @@ export function DashboardPage() {
           {stats && (
             <span className="text-text-tertiary">
               {' · '}
-              {stats.todaySessions} session{stats.todaySessions !== 1 ? 's' : ''} today,{' '}
-              {stats.activeConflicts} active conflict{stats.activeConflicts !== 1 ? 's' : ''}
+              {stats.todaySessions} session{stats.todaySessions !== 1 ? 's' : ''} today
+              {isTeam && (
+                <>
+                  , {stats.activeConflicts} active conflict
+                  {stats.activeConflicts !== 1 ? 's' : ''}
+                </>
+              )}
             </span>
           )}
         </p>
       </div>
 
-      <SetupCompletionBanner />
       <PendingInvitations />
 
-      {statsLoading ? <DashboardSkeleton /> : stats ? <DashboardStatsView stats={stats} /> : null}
+      {statsLoading ? (
+        <DashboardSkeleton />
+      ) : stats ? (
+        <DashboardStatsView stats={stats} isTeam={isTeam} />
+      ) : null}
 
-      <div className="mt-4">
-        <QuickActions />
-      </div>
-
-      {/* ActiveConflicts full width when conflicts present */}
       <div className="mt-6">
-        <ActiveConflictsSidebar />
+        <TokenUsagePanel />
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-6">
@@ -112,8 +113,8 @@ export function DashboardPage() {
           <Timeline entries={entries} isLoading={timelineLoading} />
         </div>
         <div className="space-y-4">
-          <TokenUsagePanel />
           {isTeam && <TeamActivityPanel />}
+          {isTeam && <ActiveConflictsSidebar />}
           {stats && <HotFiles hotFilePaths={stats.hotFilePaths} />}
           {isTeam && <ActivityFeed />}
         </div>

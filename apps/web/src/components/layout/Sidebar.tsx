@@ -4,6 +4,7 @@ import { ProjectSelector } from './ProjectSelector';
 import { CreateProjectModal } from '../projects/CreateProjectModal';
 import { useConflicts } from '../../hooks/use-conflicts';
 import { useMyInvitations } from '../../hooks/use-invitations';
+import { useCurrentProject } from '../../hooks/use-current-project';
 import { useAdminConfig } from '../../hooks/use-admin';
 import { useUiStore } from '../../stores/ui.store';
 import { Tooltip } from '../ui/Tooltip';
@@ -33,7 +34,9 @@ interface NavSection {
 
 export function Sidebar() {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { data: conflictsData } = useConflicts({ status: 'detected' });
+  const { data: projectData } = useCurrentProject();
+  const isTeam = projectData?.data?.isTeam ?? false;
+  const { data: conflictsData } = useConflicts({ status: 'detected' }, { enabled: isTeam });
   const activeConflictCount = conflictsData?.data?.length ?? 0;
   const { data: invitationsData } = useMyInvitations();
   const pendingInvitationCount = invitationsData?.data?.length ?? 0;
@@ -54,7 +57,16 @@ export function Sidebar() {
           badge: pendingInvitationCount,
         },
         { to: '/project', label: 'Conversations', icon: ConversationsIcon },
-        { to: '/conflicts', label: 'Conflicts', icon: ConflictsIcon, badge: activeConflictCount },
+        ...(isTeam
+          ? [
+              {
+                to: '/conflicts',
+                label: 'Conflicts',
+                icon: ConflictsIcon,
+                badge: activeConflictCount,
+              } as const,
+            ]
+          : []),
       ],
     },
     {
