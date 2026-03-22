@@ -4,6 +4,12 @@ AI development context hub — manage sessions, PRD analysis, and plans for indi
 
 ## Quick Start
 
+### Prerequisites
+
+- **Node.js 22+** — `node -v`
+- **pnpm** — `corepack enable` (ships with Node.js)
+- **Docker** — for local PostgreSQL (`docker compose up -d`)
+
 ```bash
 git clone <repo> && cd contextSync
 pnpm setup                                  # One command: install + DB + migrate + seed
@@ -106,7 +112,7 @@ Helpers: `ok(data)`, `fail(error)`, `paginated(data, meta)` — `apps/api/src/li
 ### Database
 
 - **Kysely** query builder (not a full ORM), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–024)
+- **Migrations:** `apps/api/src/database/migrations/` (001–025)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **Schema types:** `apps/api/src/database/types.ts`
 
@@ -144,9 +150,9 @@ Managed in `apps/api/.env`. `config/env.ts` validates at startup using Zod.
 
 Required: `DATABASE_URL`
 
-With defaults: `JWT_SECRET` (built-in dev default, must override in production), `FRONTEND_URL`, `JWT_EXPIRES_IN` (`'7d'`), `ANTHROPIC_MODEL` (`'claude-sonnet-4-20250514'`), `EMAIL_FROM` (`'noreply@contextsync.dev'`), `DEPLOYMENT_MODE` (`'personal'`), `DATABASE_SSL` (`'false'`), `RUN_MIGRATIONS` (`'true'`), `DATABASE_PROVIDER` (`'self-hosted'`)
+With defaults: `JWT_SECRET` (built-in dev default, must override in production), `FRONTEND_URL`, `JWT_EXPIRES_IN` (`'7d'`), `ANTHROPIC_MODEL` (`'claude-sonnet-4-20250514'`), `DATABASE_SSL` (`'false'`), `RUN_MIGRATIONS` (`'true'`)
 
-Optional: `ANTHROPIC_API_KEY` (PRD analysis / AI evaluation), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`, `DATABASE_SSL_CA`
+Optional: `ANTHROPIC_API_KEY` (PRD analysis / AI evaluation), `SLACK_WEBHOOK_URL`, `DATABASE_SSL_CA`
 
 ### Frontend State
 

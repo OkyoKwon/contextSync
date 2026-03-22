@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **115 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **126 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -384,6 +384,24 @@
 | 117 | LSES-001 | List local sessions endpoint responds    | GET /sessions/local returns response             | status === 200, data is array |
 | 118 | LSES-002 | Browse local directory endpoint responds | GET /sessions/local/browse returns response      | status === 200                |
 | 119 | LSES-003 | Local directories endpoint responds      | GET /sessions/local/directories returns response | status === 200, data is array |
+
+---
+
+## 20. Setup Verification
+
+**File:** `e2e/tests/setup-verification.spec.ts` (7 TC)
+
+> QuickStart 가이드 완료 후 환경이 정상적으로 구성되었는지 검증하는 테스트.
+
+| #   | TC ID     | Test Name                                            | Description                                                   | Assertions                                               |
+| --- | --------- | ---------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
+| 120 | SETUP-001 | All migrations are applied                           | kysely_migration 테이블의 마이그레이션 수 및 마지막 이름 확인 | count === 25, last === '025_simplify_collaboration'      |
+| 121 | SETUP-002 | Database has all expected application tables         | Database interface의 15개 테이블 전부 존재 확인               | information_schema에서 모든 테이블 확인                  |
+| 122 | SETUP-003 | .env.example covers all env.ts schema variables      | .env.example이 env.ts의 모든 변수를 커버하는지 확인           | env.ts의 모든 키가 .env.example에 존재                   |
+| 123 | SETUP-004 | Web frontend responds with HTML                      | 웹 프론트엔드 접근 가능 확인                                  | GET / → response.ok, content-type: text/html             |
+| 124 | SETUP-005 | docker-compose.yml defines postgres with healthcheck | docker-compose.yml에 postgres 서비스 및 healthcheck 정의 확인 | postgres:16-alpine, healthcheck, pg_isready 포함         |
+| 125 | SETUP-006 | Auth system works end-to-end after setup             | 인증 시스템 정상 동작 확인 (login → 프로젝트 생성)            | token 발급, project.id 존재                              |
+| 126 | SETUP-007 | Full-text search vectors are configured              | search_vector 컬럼 존재 확인                                  | sessions.search_vector, messages.search_vector 컬럼 존재 |
 
 ---
 

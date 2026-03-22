@@ -17,7 +17,6 @@ const APP_TABLES = [
   'messages',
   'sessions',
   'prompt_templates',
-  'project_invitations',
   'project_collaborators',
   'projects',
   'users',
