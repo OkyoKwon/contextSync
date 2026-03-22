@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useT } from '../../i18n/use-translation';
-import { isExternalApp } from '../../lib/app-url';
 
 function MailIcon() {
   return (
@@ -93,23 +92,14 @@ export function LandingFooter() {
             {t('footer.cta.title')}
           </h2>
           <p className="mt-3 font-mono text-sm text-text-tertiary">{t('footer.cta.subtitle')}</p>
-          {isExternalApp() ? (
-            <a
-              href="https://github.com/OkyoKwon/contextSync"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              {t('hero.cta.viewOnGithub')}
-            </a>
-          ) : (
-            <a
-              href="/login"
-              className="mt-8 inline-flex items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              {t('footer.cta.button')}
-            </a>
-          )}
+          <a
+            href="https://github.com/OkyoKwon/contextSync"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-flex items-center gap-2 rounded-md bg-btn-primary-bg px-8 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+          >
+            {t('hero.cta.viewOnGithub')}
+          </a>
         </div>
       </div>
 

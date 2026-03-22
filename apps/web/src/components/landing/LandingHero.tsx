@@ -1,10 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router';
 import { CONTEXT_SYNC_ASCII, CONTEXT_SYNC_ASCII_COMPACT } from '../auth/login-ascii';
 import { useT } from '../../i18n/use-translation';
-import { authApi } from '../../api/auth.api';
-import { useAuthStore } from '../../stores/auth.store';
-import { isExternalApp } from '../../lib/app-url';
 import { BrowserFrame } from '../ui/BrowserFrame';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
 import { assetUrl } from '@/lib/asset-url';
@@ -31,30 +26,6 @@ function scrollToSection(id: string) {
 
 export function LandingHero() {
   const t = useT();
-  const navigate = useNavigate();
-  const setAuth = useAuthStore((s) => s.setAuth);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleAutoLogin() {
-    setError('');
-    setIsLoading(true);
-    try {
-      const response = await authApi.autoLogin();
-      if (!response.data) {
-        setError('Failed to start');
-        return;
-      }
-      const { token, user } = response.data;
-      setAuth(token, user);
-      navigate('/onboarding', { replace: true });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to start';
-      setError(message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   return (
     <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-16">
@@ -79,45 +50,15 @@ export function LandingHero() {
 
         <div className="flex flex-col items-center gap-4">
           <div className="flex flex-wrap items-center justify-center gap-4">
-            {isExternalApp() ? (
-              <a
-                href="https://github.com/OkyoKwon/contextSync"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-              >
-                {t('hero.cta.viewOnGithub')}
-              </a>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleAutoLogin}
-                  disabled={isLoading}
-                  className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {isLoading ? '...' : t('hero.cta.start')}
-                </button>
-                <a
-                  href="https://github.com/OkyoKwon/contextSync"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
-                >
-                  {t('hero.cta.viewOnGithub')}
-                </a>
-              </>
-            )}
-          </div>
-          {!isExternalApp() && (
             <a
-              href="/login"
-              className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
+              href="https://github.com/OkyoKwon/contextSync"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
             >
-              {t('hero.cta.loginExisting')}
+              {t('hero.cta.viewOnGithub')}
             </a>
-          )}
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          </div>
         </div>
       </div>
 
