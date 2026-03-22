@@ -3,10 +3,12 @@ import type { Env } from '../../config/env.js';
 import type { Invitation, CreateInvitationInput } from '@context-sync/shared';
 import { ForbiddenError, AppError } from '../../plugins/error-handler.plugin.js';
 import { assertPermission } from '../projects/permission.helper.js';
+import { hasRemoteDb } from '../projects/project.service.js';
 import * as invitationRepo from './invitation.repository.js';
 import * as collabRepo from '../projects/collaborator.repository.js';
 import * as projectRepo from '../projects/project.repository.js';
 import { logActivity } from '../activity/activity.service.js';
+import { syncUserToRemote } from '../db-config/user-sync.service.js';
 import {
   createEmailChannel,
   buildInvitationEmailHtml,
@@ -20,6 +22,14 @@ export async function createInvitation(
   env: Env,
 ): Promise<Invitation> {
   await assertPermission(db, projectId, inviterId, 'collaborator:manage');
+
+  // Require remote DB for invitations
+  const isRemote = await hasRemoteDb(db, projectId);
+  if (!isRemote) {
+    throw new ForbiddenError(
+      'Remote DB must be configured before inviting collaborators. Set up a remote database connection first.',
+    );
+  }
 
   // Check if already a collaborator
   const existingUser = await db
@@ -90,6 +100,7 @@ export async function respondToInvitation(
   userId: string,
   userEmail: string,
   action: 'accept' | 'decline',
+  poolManager?: { getDbForProject: (localDb: Db, projectId: string) => Promise<unknown> },
 ): Promise<Invitation> {
   const invitation = await invitationRepo.findByToken(db, token);
   if (!invitation) {
@@ -114,6 +125,20 @@ export async function respondToInvitation(
   if (action === 'accept') {
     await collabRepo.addCollaborator(db, invitation.projectId, userId, invitation.role);
     await invitationRepo.updateStatus(db, invitation.id, 'accepted', { acceptedAt: now });
+
+    // Sync the new user to the remote DB if one is configured
+    if (poolManager) {
+      const remoteDb = await poolManager.getDbForProject(db, invitation.projectId);
+      if (remoteDb) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        syncUserToRemote(db, remoteDb as any, userId).catch((err: unknown) => {
+          console.warn(
+            '[invitation] Failed to sync user to remote DB:',
+            err instanceof Error ? err.message : err,
+          );
+        });
+      }
+    }
 
     logActivity(db, {
       projectId: invitation.projectId,

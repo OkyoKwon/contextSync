@@ -1,7 +1,13 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import * as conflictService from './conflict.service.js';
-import { conflictFilterSchema, updateConflictSchema, assignReviewerSchema, reviewNotesSchema } from './conflict.schema.js';
+import {
+  conflictFilterSchema,
+  updateConflictSchema,
+  assignReviewerSchema,
+  reviewNotesSchema,
+} from './conflict.schema.js';
 
 export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -9,9 +15,10 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/conflicts',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const filter = conflictFilterSchema.parse(request.query);
       const result = await conflictService.getConflictsByProject(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         filter,
@@ -22,17 +29,14 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.get<{ Params: { conflictId: string } }>(
-    '/conflicts/:conflictId',
-    async (request, reply) => {
-      const conflict = await conflictService.getConflictDetail(
-        app.db,
-        request.params.conflictId,
-        request.user.userId,
-      );
-      return reply.send(ok(conflict));
-    },
-  );
+  app.get<{ Params: { conflictId: string } }>('/conflicts/:conflictId', async (request, reply) => {
+    const conflict = await conflictService.getConflictDetail(
+      app.db,
+      request.params.conflictId,
+      request.user.userId,
+    );
+    return reply.send(ok(conflict));
+  });
 
   app.patch<{ Params: { conflictId: string }; Body: unknown }>(
     '/conflicts/:conflictId',

@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import * as activityService from './activity.service.js';
 import { activityQuerySchema } from './activity.schema.js';
 
@@ -9,9 +10,10 @@ export const activityRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/activity',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const { page, limit } = activityQuerySchema.parse(request.query);
       const result = await activityService.getProjectActivity(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         page,

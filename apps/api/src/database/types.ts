@@ -17,6 +17,23 @@ export interface Database {
   ai_evaluations: AiEvaluationsTable;
   ai_evaluation_dimensions: AiEvaluationDimensionsTable;
   ai_evaluation_evidence: AiEvaluationEvidenceTable;
+  project_db_configs: ProjectDbConfigsTable;
+  data_migration_jobs: DataMigrationJobsTable;
+}
+
+export interface TeamDatabase {
+  users: Pick<UsersTable, 'id' | 'email' | 'name' | 'avatar_url'>;
+  sessions: SessionsTable;
+  messages: MessagesTable;
+  conflicts: ConflictsTable;
+  activity_log: ActivityLogTable;
+  synced_sessions: SyncedSessionsTable;
+  prd_documents: PrdDocumentsTable;
+  prd_analyses: PrdAnalysesTable;
+  prd_requirements: PrdRequirementsTable;
+  ai_evaluations: AiEvaluationsTable;
+  ai_evaluation_dimensions: AiEvaluationDimensionsTable;
+  ai_evaluation_evidence: AiEvaluationEvidenceTable;
 }
 
 export interface UsersTable {
@@ -243,4 +260,32 @@ export interface PromptTemplatesTable {
   version: Generated<number>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
+}
+
+export interface ProjectDbConfigsTable {
+  id: Generated<string>;
+  project_id: string;
+  provider: Generated<string>;
+  connection_url: string;
+  ssl_enabled: Generated<boolean>;
+  status: Generated<string>;
+  schema_version: Generated<number>;
+  migrated_at: Date | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface DataMigrationJobsTable {
+  id: Generated<string>;
+  project_id: string;
+  direction: Generated<string>;
+  status: Generated<string>;
+  total_sessions: Generated<number>;
+  migrated_sessions: Generated<number>;
+  total_messages: Generated<number>;
+  migrated_messages: Generated<number>;
+  error_message: string | null;
+  started_at: Date | null;
+  completed_at: Date | null;
+  created_at: Generated<Date>;
 }

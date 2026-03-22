@@ -1,7 +1,12 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import * as prdService from './prd-analysis.service.js';
-import { uploadPrdSchema, startAnalysisSchema, analysisHistoryQuerySchema } from './prd-analysis.schema.js';
+import {
+  uploadPrdSchema,
+  startAnalysisSchema,
+  analysisHistoryQuerySchema,
+} from './prd-analysis.schema.js';
 import { SUPPORTED_PRD_EXTENSIONS, MAX_PRD_FILE_SIZE } from '@context-sync/shared';
 import { extname } from 'node:path';
 
@@ -18,7 +23,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const ext = extname(data.filename).toLowerCase();
-      if (!SUPPORTED_PRD_EXTENSIONS.includes(ext as typeof SUPPORTED_PRD_EXTENSIONS[number])) {
+      if (!SUPPORTED_PRD_EXTENSIONS.includes(ext as (typeof SUPPORTED_PRD_EXTENSIONS)[number])) {
         return reply.status(400).send({
           success: false,
           data: null,
@@ -42,8 +47,9 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
 
       const parsedInput = uploadPrdSchema.parse({ title });
 
+      const db = await resolveProjectDb(app, request.params.projectId);
       const document = await prdService.uploadPrdDocument(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         data.filename,
@@ -59,8 +65,9 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/prd/documents',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const documents = await prdService.listPrdDocuments(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
       );
@@ -72,11 +79,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { documentId: string } }>(
     '/prd/documents/:documentId',
     async (request, reply) => {
-      await prdService.deletePrdDocument(
-        app.db,
-        request.params.documentId,
-        request.user.userId,
-      );
+      await prdService.deletePrdDocument(app.db, request.params.documentId, request.user.userId);
       return reply.send(ok(null));
     },
   );
@@ -85,9 +88,10 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { projectId: string }; Body: unknown }>(
     '/projects/:projectId/prd/analyze',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const input = startAnalysisSchema.parse(request.body);
       const result = await prdService.startAnalysis(
-        app.db,
+        db,
         app.env,
         request.params.projectId,
         request.user.userId,
@@ -101,8 +105,9 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/prd/analysis/latest',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const analysis = await prdService.getLatestAnalysis(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
       );
@@ -114,9 +119,10 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/prd/analysis/history',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const query = analysisHistoryQuerySchema.parse(request.query);
       const result = await prdService.getAnalysisHistory(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         query.page,

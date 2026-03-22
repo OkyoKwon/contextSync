@@ -5,6 +5,7 @@ import { registerCors } from './plugins/cors.plugin.js';
 import { registerErrorHandler } from './plugins/error-handler.plugin.js';
 import { registerJwt } from './plugins/auth.plugin.js';
 import { createDb } from './database/client.js';
+import { createPoolManager, type DbPoolManager } from './database/pool-manager.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { projectRoutes } from './modules/projects/project.routes.js';
 import { sessionRoutes } from './modules/sessions/session.routes.js';
@@ -17,6 +18,7 @@ import { planRoutes } from './modules/plans/plan.routes.js';
 import { invitationRoutes } from './modules/invitations/invitation.routes.js';
 import { aiEvaluationRoutes } from './modules/ai-evaluation/ai-evaluation.routes.js';
 import { adminRoutes } from './modules/admin/admin.routes.js';
+import { dbConfigRoutes } from './modules/db-config/db-config.routes.js';
 import { runMigrations } from './modules/admin/admin.service.js';
 
 export async function buildApp(env: Env) {
@@ -31,6 +33,13 @@ export async function buildApp(env: Env) {
   });
   app.decorate('db', db);
   app.decorate('env', env);
+
+  const poolManager = createPoolManager(env.JWT_SECRET);
+  app.decorate('poolManager', poolManager);
+
+  app.addHook('onClose', async () => {
+    await poolManager.closeAll();
+  });
 
   await registerCors(app, env.FRONTEND_URL);
   registerErrorHandler(app);
@@ -49,6 +58,7 @@ export async function buildApp(env: Env) {
   await app.register(invitationRoutes, { prefix: '/api' });
   await app.register(aiEvaluationRoutes, { prefix: '/api' });
   await app.register(adminRoutes, { prefix: '/api' });
+  await app.register(dbConfigRoutes, { prefix: '/api' });
 
   app.get('/api/health', async () => ({ status: 'ok' }));
 
@@ -69,5 +79,6 @@ declare module 'fastify' {
   interface FastifyInstance {
     db: ReturnType<typeof createDb>;
     env: Env;
+    poolManager: DbPoolManager;
   }
 }

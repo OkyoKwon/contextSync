@@ -84,6 +84,7 @@ export const invitationRoutes: FastifyPluginAsync = async (app) => {
         request.user.userId,
         request.user.email,
         action,
+        app.poolManager,
       );
       return reply.send(ok(invitation));
     });

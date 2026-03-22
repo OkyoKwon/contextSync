@@ -101,6 +101,7 @@ export async function addCollaborator(
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
   await assertPermission(db, projectId, userId, 'collaborator:manage');
+  await assertRemoteDbConfigured(db, projectId);
   await collabRepo.addCollaborator(db, projectId, targetUserId, role ?? 'member');
   logActivity(db, {
     projectId,
@@ -184,6 +185,25 @@ async function assertAccess(db: Db, project: Project, userId: string): Promise<v
   if (project.ownerId === userId) return;
   const hasAccess = await collabRepo.isCollaborator(db, project.id, userId);
   if (!hasAccess) throw new ForbiddenError('Not a project owner or collaborator');
+}
+
+export async function hasRemoteDb(db: Db, projectId: string): Promise<boolean> {
+  const config = await db
+    .selectFrom('project_db_configs')
+    .select('id')
+    .where('project_id', '=', projectId)
+    .where('status', '=', 'active')
+    .executeTakeFirst();
+  return !!config;
+}
+
+async function assertRemoteDbConfigured(db: Db, projectId: string): Promise<void> {
+  const hasRemote = await hasRemoteDb(db, projectId);
+  if (!hasRemote) {
+    throw new ForbiddenError(
+      'Remote DB must be configured before adding collaborators. Set up a remote database connection first.',
+    );
+  }
 }
 
 function assertOwner(project: Project, userId: string): void {

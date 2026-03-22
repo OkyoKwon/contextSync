@@ -62,6 +62,18 @@ export type {
 } from './types/prd-analysis.js';
 
 export type { ActivityAction, ActivityEntry } from './types/activity.js';
+export type {
+  DbProvider,
+  DbConfigStatus,
+  MigrationJobStatus,
+  MigrationDirection,
+  DbConfig,
+  ConnectionTestResult,
+  MigrationPreview,
+  MigrationProgress,
+  SaveDbConfigInput,
+  TestConnectionInput,
+} from './types/db-config.js';
 export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
 export type { Invitation, InvitationStatus, CreateInvitationInput } from './types/invitation.js';
 export type {

@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/auth.store';
 import { useCollaborators } from '../../hooks/use-collaborators';
 import { useProjectInvitations, useCancelInvitation } from '../../hooks/use-invitations';
+import { useDbConfig } from '../../hooks/use-db-config';
 import { projectsApi } from '../../api/projects.api';
 import { invitationsApi } from '../../api/invitations.api';
 import { useUpgradeModal } from '../../hooks/use-upgrade-modal';
@@ -20,6 +21,8 @@ interface CollaboratorListProps {
 
 export function CollaboratorList({ projectId, canManage }: CollaboratorListProps) {
   const { data, isLoading } = useCollaborators(projectId);
+  const { data: dbConfigData } = useDbConfig(projectId);
+  const isRemoteActive = dbConfigData?.data?.status === 'active';
   const collaborators = data?.data ?? [];
   const { data: invitationsData } = useProjectInvitations(canManage ? projectId : null);
   const pendingInvitations = invitationsData?.data ?? [];
@@ -131,7 +134,15 @@ export function CollaboratorList({ projectId, canManage }: CollaboratorListProps
         </div>
       )}
 
-      {canManage && (
+      {canManage && !isRemoteActive && (
+        <div className="mt-4 rounded-lg border border-border-default bg-bg-secondary p-3">
+          <p className="text-sm text-text-tertiary">
+            Connect a remote database in the section above to invite collaborators.
+          </p>
+        </div>
+      )}
+
+      {canManage && isRemoteActive && (
         <div className="mt-4 flex gap-2">
           <Input
             value={email}

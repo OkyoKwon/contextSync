@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
 
+type ModalSize = 'sm' | 'md' | 'lg';
+
+const SIZE_CLASSES: Record<ModalSize, string> = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+};
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  size?: ModalSize;
   children: React.ReactNode;
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, size = 'md', children }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: KeyboardEvent) => {
@@ -26,7 +35,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="relative z-10 w-full max-w-lg rounded-xl border border-border-default bg-surface p-6 shadow-xl"
+        className={`relative z-10 w-full ${SIZE_CLASSES[size]} rounded-xl border border-border-default bg-surface p-6 shadow-xl`}
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id="modal-title" className="text-lg font-semibold text-text-primary">

@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, fail, paginated, buildPaginationMeta } from '../../lib/api-response.js';
+import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import * as sessionService from './session.service.js';
 import { importSession } from './session-import.service.js';
 import { exportProjectAsMarkdown } from './session-export.service.js';
@@ -25,8 +26,9 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/sessions/export/markdown',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const { markdown, projectName } = await exportProjectAsMarkdown(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
       );
@@ -51,8 +53,9 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
       const buffer = await file.toBuffer();
       const content = buffer.toString('utf-8');
 
+      const db = await resolveProjectDb(app, request.params.projectId);
       const result = await importSession(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         file.filename,
@@ -66,9 +69,10 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/sessions',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const filter = sessionFilterSchema.parse(request.query);
       const result = await sessionService.getSessionsByProject(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         filter,
@@ -110,9 +114,10 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/timeline',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const filter = sessionFilterSchema.parse(request.query);
       const result = await sessionService.getTimeline(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         filter,
@@ -126,8 +131,9 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/stats',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const stats = await sessionService.getDashboardStats(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
       );
@@ -138,8 +144,9 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/team-stats',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const stats = await sessionService.getTeamStats(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
       );
@@ -150,9 +157,10 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/token-usage',
     async (request, reply) => {
+      const db = await resolveProjectDb(app, request.params.projectId);
       const { period } = tokenUsageQuerySchema.parse(request.query);
       const stats = await tokenUsageService.getTokenUsageStats(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         period,
@@ -226,11 +234,8 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { projectId: string } }>(
     '/projects/:projectId/sessions/recalculate-tokens',
     async (request, reply) => {
-      const result = await recalculateTokenUsage(
-        app.db,
-        request.params.projectId,
-        request.user.userId,
-      );
+      const db = await resolveProjectDb(app, request.params.projectId);
+      const result = await recalculateTokenUsage(db, request.params.projectId, request.user.userId);
       return reply.send(ok(result));
     },
   );
@@ -243,8 +248,9 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send(fail('sessionIds must be a non-empty array'));
       }
 
+      const db = await resolveProjectDb(app, request.params.projectId);
       const result = await syncSessions(
-        app.db,
+        db,
         request.params.projectId,
         request.user.userId,
         sessionIds,
