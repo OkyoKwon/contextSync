@@ -6,7 +6,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-22-green.svg)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-9+-orange.svg)](https://pnpm.io/)
 
-**[Live Demo](https://okyokwon.github.io/contextSync/)**
+**[Project Site](https://okyokwon.github.io/contextSync/)**
 
 **AI development context hub** — manage sessions, PRD analysis, and plans in one place with AI-powered evaluation — solo or with your team.
 
