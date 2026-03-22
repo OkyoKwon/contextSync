@@ -20,7 +20,7 @@ test.describe('Auto User', () => {
     expect(project.name).toBe('Auto User Project');
   });
 
-  test('auto user is blocked from generating join codes', async ({ apiClient }) => {
+  test('auto user can generate join codes as project owner', async ({ apiClient }) => {
     const { token } = await apiClient.autoLogin();
     const project = await apiClient.createProject(token, { name: 'Test Project' });
 
@@ -31,8 +31,8 @@ test.describe('Auto User', () => {
       token,
     );
 
-    expect(response.status).toBe(403);
-    expect(response.body.error).toContain('account upgrade');
+    expect(response.status).toBe(201);
+    expect(response.body.data.joinCode).toBeTruthy();
   });
 
   test('auto user is blocked from removing collaborators', async ({ apiClient, db }) => {

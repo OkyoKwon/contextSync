@@ -12,15 +12,15 @@ test.describe('Sidebar Navigation', () => {
 
     await expect(sidebar.locator('text=Dashboard')).toBeVisible({ timeout: 5_000 });
     await expect(sidebar.locator('text=Conversations')).toBeVisible({ timeout: 5_000 });
-    await expect(sidebar.locator('text=Conflicts')).toBeVisible({ timeout: 5_000 });
+    await expect(sidebar.locator('text=Settings')).toBeVisible({ timeout: 5_000 });
   });
 
   test('clicking nav link navigates to page', async ({ authenticatedPage }) => {
-    const conflictsLink = authenticatedPage.locator('a:has-text("Conflicts")').first();
-    await conflictsLink.click();
+    const settingsLink = authenticatedPage.locator('a:has-text("Settings")').first();
+    await settingsLink.click();
 
-    await authenticatedPage.waitForURL('**/conflicts', { timeout: 5_000 });
-    expect(authenticatedPage.url()).toContain('/conflicts');
+    await authenticatedPage.waitForURL('**/settings', { timeout: 5_000 });
+    expect(authenticatedPage.url()).toContain('/settings');
   });
 
   test('sidebar collapse/expand toggle', async ({ authenticatedPage }) => {

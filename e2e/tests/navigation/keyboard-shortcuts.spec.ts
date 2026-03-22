@@ -65,7 +65,8 @@ test.describe('Keyboard Shortcuts', () => {
     if (url.includes('/conflicts')) {
       expect(url).toContain('/conflicts');
     } else {
-      await authenticatedPage.locator('a:has-text("Conflicts")').first().click();
+      // Fallback: navigate directly since Conflicts link is team-only in sidebar
+      await authenticatedPage.goto('/conflicts');
       await authenticatedPage.waitForURL('**/conflicts', { timeout: 5_000 });
       expect(authenticatedPage.url()).toContain('/conflicts');
     }
