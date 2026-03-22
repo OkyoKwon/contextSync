@@ -11,7 +11,6 @@ process.env['TEST_API_BASE'] = `http://localhost:${TEST_API_PORT}/api`;
 
 export default defineConfig({
   testDir: './tests/clean-env',
-  globalSetup: './clean-env-setup.ts',
   globalTeardown: './clean-env-teardown.ts',
   fullyParallel: false,
   forbidOnly: isCI,

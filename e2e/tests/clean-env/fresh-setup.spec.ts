@@ -98,7 +98,7 @@ test.describe('Fresh Setup — Infrastructure Verification', () => {
     const session = await apiClient.importSession(
       token,
       project.id,
-      resolve(process.cwd(), 'e2e/fixtures/sample-session.json'),
+      resolve(process.cwd(), 'e2e/fixtures/session-fixtures/sample-session.json'),
     );
     expect(session).toBeTruthy();
 

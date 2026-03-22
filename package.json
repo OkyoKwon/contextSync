@@ -17,7 +17,7 @@
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --ui --config=e2e/playwright.config.ts",
     "test:e2e:debug": "playwright test --debug --config=e2e/playwright.config.ts",
-    "test:e2e:clean": "playwright test --config=e2e/playwright.clean-env.config.ts",
+    "test:e2e:clean": "docker compose -f docker-compose.test.yml down -v && docker compose -f docker-compose.test.yml up -d --wait && playwright test --config=e2e/playwright.clean-env.config.ts; EXIT=$?; docker compose -f docker-compose.test.yml down -v; exit $EXIT",
     "seed:marketing": "pnpm --filter @context-sync/api seed:marketing",
     "capture-screenshots": "playwright test --config=scripts/playwright-capture.config.ts"
   },
