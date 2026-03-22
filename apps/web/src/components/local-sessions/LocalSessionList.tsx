@@ -84,8 +84,9 @@ export function LocalSessionList({
     getScrollElement: () => parentRef.current,
     estimateSize: (index) => {
       const item = flatItems[index];
-      return item?.type === 'group' ? 52 : 64;
+      return item?.type === 'group' ? 68 : 72;
     },
+    measureElement: (element) => element.getBoundingClientRect().height,
     overscan: 5,
   });
 
@@ -137,9 +138,10 @@ export function LocalSessionList({
               return (
                 <div
                   key={virtualRow.key}
-                  className="absolute left-0 top-0 w-full px-3"
+                  ref={virtualizer.measureElement}
+                  data-index={virtualRow.index}
+                  className="absolute left-0 top-0 w-full px-3 py-1"
                   style={{
-                    height: `${virtualRow.size}px`,
                     transform: `translateY(${virtualRow.start}px)`,
                   }}
                 >
@@ -195,7 +197,7 @@ function GroupHeader({
     <button
       type="button"
       onClick={() => onSelectProject(group.projectPath)}
-      className={`flex w-full items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left transition-colors ${
+      className={`flex w-full items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left transition-colors focus:outline-none ${
         isProjectSelected
           ? 'border-blue-500 bg-blue-500/10'
           : 'border-border-default bg-zinc-800/50 hover:border-border-input hover:bg-surface-hover'
@@ -239,7 +241,7 @@ function SessionRow({
     <button
       type="button"
       onClick={onSelect}
-      className={`flex w-full items-start gap-2 rounded-lg border p-2.5 text-left transition-colors ${
+      className={`flex w-full items-start gap-2 rounded-lg border p-2.5 text-left transition-colors focus:outline-none ${
         isSelected
           ? 'border-blue-500 bg-blue-500/10'
           : 'border-border-default hover:border-border-input hover:bg-surface-hover'
