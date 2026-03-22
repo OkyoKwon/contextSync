@@ -6,7 +6,7 @@ export const en: TranslationKeys = {
 
   // Hero
   'hero.title': 'The Hub for AI Session Context',
-  'hero.subtitle': 'Manage your Claude Code sessions — solo or with your team',
+  'hero.subtitle': 'Manage your Claude Code sessions — solo or with your\u00A0team',
   'hero.cta.login': 'Get Started',
   'hero.cta.features': 'Explore Features',
 
