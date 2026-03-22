@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
 import { useCurrentProject } from '../../hooks/use-current-project';
 import { usePermissions } from '../../hooks/use-permissions';
 import { useCollaborators } from '../../hooks/use-collaborators';
+import { useDatabaseStatus } from '../../hooks/use-database-status';
 import {
   useGenerateJoinCode,
   useRegenerateJoinCode,
@@ -10,6 +11,7 @@ import {
 } from '../../hooks/use-join-project';
 import { useAuthStore } from '../../stores/auth.store';
 import { projectsApi } from '../../api/projects.api';
+import { JoinCodeShare } from './JoinCodeShare';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
@@ -31,6 +33,11 @@ export function TeamTab({ projectId }: TeamTabProps) {
   const joinCode = project?.joinCode ?? null;
   const collaborators = collaboratorsData?.data ?? [];
 
+  const { data: dbStatus } = useDatabaseStatus();
+  const navigate = useNavigate();
+
+  const isRemoteDb = dbStatus?.data?.databaseMode === 'remote';
+
   const generateMutation = useGenerateJoinCode(projectId);
   const regenerateMutation = useRegenerateJoinCode(projectId);
   const deleteMutation = useDeleteJoinCode(projectId);
@@ -42,15 +49,6 @@ export function TeamTab({ projectId }: TeamTabProps) {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
-
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    if (!joinCode) return;
-    await navigator.clipboard.writeText(joinCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   if (isCollabLoading) return <Spinner />;
 
@@ -82,40 +80,44 @@ export function TeamTab({ projectId }: TeamTabProps) {
     <Card>
       <h3 className="text-lg font-semibold">Team</h3>
 
+      {/* DB status banner */}
+      {canManageCollaborators && (
+        <div className="mt-3">
+          {isRemoteDb ? (
+            <div className="flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/5 px-3 py-2">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-green-400" />
+              <p className="text-sm text-green-400">
+                Remote Database Connected &mdash; Ready for team collaboration
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 px-3 py-2">
+              <p className="text-sm text-yellow-400">
+                You&apos;re using a local database. Set up a remote database to enable team
+                collaboration.{' '}
+                <button
+                  onClick={() => navigate('/settings?tab=integrations')}
+                  className="underline underline-offset-2 hover:text-yellow-300"
+                >
+                  Go to Integrations &rarr;
+                </button>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Join Code section */}
       {canManageCollaborators && (
         <>
           {joinCode ? (
-            <div className="mt-4 space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-sm text-text-tertiary">Join Code:</span>
-                <code className="rounded-lg bg-surface-hover px-3 py-1.5 font-mono text-lg font-bold tracking-widest text-text-primary">
-                  {joinCode}
-                </code>
-                <Button size="sm" variant="secondary" onClick={handleCopy}>
-                  {copied ? 'Copied!' : 'Copy'}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => regenerateMutation.mutate()}
-                  disabled={regenerateMutation.isPending}
-                >
-                  {regenerateMutation.isPending ? 'Regenerating...' : 'Regenerate'}
-                </Button>
-              </div>
-              <p className="text-sm text-text-tertiary">
-                Share this code with your team members. They also need the database URL to connect.
-              </p>
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={() => deleteMutation.mutate()}
-                disabled={deleteMutation.isPending}
-              >
-                {deleteMutation.isPending ? 'Disabling...' : 'Disable Join Code'}
-              </Button>
-            </div>
+            <JoinCodeShare
+              joinCode={joinCode}
+              onRegenerate={() => regenerateMutation.mutate()}
+              onDelete={() => deleteMutation.mutate()}
+              isRegenerating={regenerateMutation.isPending}
+              isDeleting={deleteMutation.isPending}
+            />
           ) : (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-text-tertiary">
@@ -125,10 +127,16 @@ export function TeamTab({ projectId }: TeamTabProps) {
               </p>
               <Button
                 onClick={() => generateMutation.mutate()}
-                disabled={generateMutation.isPending}
+                disabled={generateMutation.isPending || !isRemoteDb}
+                title={!isRemoteDb ? 'Connect a remote database first' : undefined}
               >
                 {generateMutation.isPending ? 'Generating...' : 'Generate Join Code'}
               </Button>
+              {!isRemoteDb && (
+                <p className="text-xs text-text-tertiary">
+                  A remote database connection is required to generate join codes.
+                </p>
+              )}
             </div>
           )}
 

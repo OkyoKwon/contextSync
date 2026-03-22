@@ -4,6 +4,27 @@ import { testConnection, type ConnectionTestResult } from '../../lib/test-connec
 
 export { testConnection, type ConnectionTestResult };
 
+export interface DatabaseStatus {
+  readonly databaseMode: 'local' | 'remote';
+  readonly provider: 'local' | 'supabase' | 'custom';
+  readonly host: string;
+}
+
+export function getDatabaseStatus(databaseUrl: string): DatabaseStatus {
+  const url = new URL(databaseUrl);
+  const hostname = url.hostname;
+  const isRemote = !['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname);
+  const isSupabase = hostname.includes('supabase.com') || hostname.includes('supabase.co');
+
+  const maskedHost = isRemote ? `*.${hostname.split('.').slice(-2).join('.')}` : 'localhost';
+
+  return {
+    databaseMode: isRemote ? 'remote' : 'local',
+    provider: isSupabase ? 'supabase' : isRemote ? 'custom' : 'local',
+    host: maskedHost,
+  };
+}
+
 export interface SwitchToRemoteResult {
   readonly requiresRestart: boolean;
   readonly migrationsApplied: readonly string[];

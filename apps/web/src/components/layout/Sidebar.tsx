@@ -89,7 +89,16 @@ export function Sidebar() {
     >
       <div className="flex h-14 items-center gap-2 border-b border-border-default px-4">
         <img src="/logo.png" alt="ContextSync" className="h-7 w-7 flex-shrink-0" />
-        {!sidebarCollapsed && <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>}
+        {!sidebarCollapsed && (
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>
+            {isTeam && (
+              <span className="rounded-full bg-blue-500/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-blue-400">
+                Team
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {!sidebarCollapsed && (

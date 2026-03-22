@@ -1,7 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { ok, fail } from '../../lib/api-response.js';
-import { testConnection, switchToRemote } from './setup.service.js';
+import { testConnection, switchToRemote, getDatabaseStatus } from './setup.service.js';
 
 const testConnectionSchema = z.object({
   connectionUrl: z.string().min(1),
@@ -15,6 +15,11 @@ const switchToRemoteSchema = z.object({
 
 export const setupRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
+
+  app.get('/setup/status', async (_request, reply) => {
+    const result = getDatabaseStatus(app.env.DATABASE_URL);
+    return reply.send(ok(result));
+  });
 
   app.post('/setup/test-connection', async (request, reply) => {
     const { connectionUrl, sslEnabled } = testConnectionSchema.parse(request.body);

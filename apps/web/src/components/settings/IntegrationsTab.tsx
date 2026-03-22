@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/auth.store';
 import { authApi } from '../../api/auth.api';
+import { useDatabaseStatus } from '../../hooks/use-database-status';
+import { useCollaborators } from '../../hooks/use-collaborators';
 import { SupabaseAutoSetup } from './supabase-setup/SupabaseAutoSetup';
+import { TeamSetupCta } from './TeamSetupCta';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -142,8 +145,14 @@ function ApiKeySection() {
 }
 
 function DatabaseRemoteSection() {
-  const [setupComplete, setSetupComplete] = useState(false);
+  const [justCompleted, setJustCompleted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const { data: dbStatus } = useDatabaseStatus();
+  const currentProjectId = useAuthStore((s) => s.currentProjectId);
+  const { data: collaboratorsData } = useCollaborators(currentProjectId ?? '');
+
+  const isRemote = dbStatus?.data?.databaseMode === 'remote' || justCompleted;
+  const collaborators = collaboratorsData?.data ?? [];
 
   return (
     <Card>
@@ -151,13 +160,15 @@ function DatabaseRemoteSection() {
         onClick={() => setIsExpanded((prev) => !prev)}
         className="flex w-full items-center justify-between text-left"
       >
-        <div>
-          <h3 className="text-lg font-semibold">Database Remote (Supabase)</h3>
-          <p className="mt-1 text-sm text-text-tertiary">
-            {setupComplete
-              ? 'Connected — restart the API server for changes to take effect.'
-              : 'Connect a Supabase project as your remote database.'}
-          </p>
+        <div className="flex items-center gap-3">
+          <div>
+            <h3 className="text-lg font-semibold">Database Remote (Supabase)</h3>
+            <p className="mt-1 text-sm text-text-tertiary">
+              {isRemote
+                ? 'Connected — restart the API server for changes to take effect.'
+                : 'Connect a Supabase project as your remote database.'}
+            </p>
+          </div>
         </div>
         <svg
           className={`h-5 w-5 shrink-0 text-text-tertiary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -172,17 +183,21 @@ function DatabaseRemoteSection() {
 
       {isExpanded && (
         <>
-          {setupComplete ? (
-            <div className="mt-4 rounded-lg border border-green-500/20 bg-green-500/5 p-3">
-              <p className="text-sm font-medium text-green-400">Setup complete</p>
-              <p className="mt-1 text-xs text-green-400/70">
-                The server .env has been updated. Please restart the API server for changes to take
-                effect.
-              </p>
-            </div>
+          {isRemote ? (
+            <>
+              <div className="mt-4 rounded-lg border border-green-500/20 bg-green-500/5 p-3">
+                <p className="text-sm font-medium text-green-400">Setup complete</p>
+                <p className="mt-1 text-xs text-green-400/70">
+                  {justCompleted
+                    ? 'The server .env has been updated. Please restart the API server for changes to take effect.'
+                    : `Remote database connected (${dbStatus?.data?.provider ?? 'remote'}).`}
+                </p>
+              </div>
+              <TeamSetupCta hasCollaborators={collaborators.length > 0} />
+            </>
           ) : (
             <div className="mt-4">
-              <SupabaseAutoSetup onAutoSetupComplete={() => setSetupComplete(true)} />
+              <SupabaseAutoSetup onAutoSetupComplete={() => setJustCompleted(true)} />
             </div>
           )}
         </>
