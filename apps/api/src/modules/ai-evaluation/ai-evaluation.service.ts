@@ -30,11 +30,7 @@ export async function triggerEvaluation(
 ): Promise<AiEvaluation> {
   await assertProjectAccess(db, projectId, requestingUserId);
 
-  // Only owner/admin can trigger evaluations
-  const role = await getUserRoleInProject(db, projectId, requestingUserId);
-  if (role !== 'owner' && role !== 'admin') {
-    throw new ForbiddenError('Only project owners and admins can trigger evaluations');
-  }
+  // Any member with a registered API key can trigger evaluations
 
   // Check concurrent execution
   const existing = await evalRepo.findPendingOrAnalyzing(db, projectId, input.targetUserId);
