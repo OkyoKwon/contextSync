@@ -10,22 +10,30 @@ All colors are defined as CSS custom properties, toggling Dark/Light via the `da
 
 ### Theme Variables
 
-| Token                       | Dark (default) | Light     |
-| --------------------------- | -------------- | --------- |
-| `--color-page`              | `#141414`      | `#F9FAFB` |
-| `--color-surface`           | `#1C1C1C`      | `#FFFFFF` |
-| `--color-surface-hover`     | `#252525`      | `#F3F4F6` |
-| `--color-surface-sunken`    | `#111111`      | `#F3F4F6` |
-| `--color-text-primary`      | `#FAFAFA`      | `#111827` |
-| `--color-text-secondary`    | `#D4D4D8`      | `#374151` |
-| `--color-text-tertiary`     | `#A1A1AA`      | `#6B7280` |
-| `--color-text-muted`        | `#71717A`      | `#9CA3AF` |
-| `--color-border-default`    | `#27272A`      | `#E5E7EB` |
-| `--color-border-input`      | `#3F3F46`      | `#D1D5DB` |
-| `--color-btn-primary-bg`    | `#FAFAFA`      | `#2563EB` |
-| `--color-btn-primary-text`  | `#141414`      | `#FFFFFF` |
-| `--color-btn-primary-hover` | `#E4E4E7`      | `#1D4ED8` |
-| `--color-interactive-hover` | `#27272A`      | `#F3F4F6` |
+| Token                       | Dark (default)          | Light                  |
+| --------------------------- | ----------------------- | ---------------------- |
+| `--color-page`              | `#141414`               | `#F9FAFB`              |
+| `--color-surface`           | `#1C1C1C`               | `#FFFFFF`              |
+| `--color-surface-hover`     | `#252525`               | `#F3F4F6`              |
+| `--color-surface-sunken`    | `#111111`               | `#F3F4F6`              |
+| `--color-text-primary`      | `#FAFAFA`               | `#111827`              |
+| `--color-text-secondary`    | `#D4D4D8`               | `#374151`              |
+| `--color-text-tertiary`     | `#A1A1AA`               | `#6B7280`              |
+| `--color-text-muted`        | `#71717A`               | `#9CA3AF`              |
+| `--color-border-default`    | `#27272A`               | `#E5E7EB`              |
+| `--color-border-input`      | `#3F3F46`               | `#D1D5DB`              |
+| `--color-btn-primary-bg`    | `#FAFAFA`               | `#2563EB`              |
+| `--color-btn-primary-text`  | `#141414`               | `#FFFFFF`              |
+| `--color-btn-primary-hover` | `#E4E4E7`               | `#1D4ED8`              |
+| `--color-interactive-hover` | `#27272A`               | `#F3F4F6`              |
+| `--color-focus`             | `#3B82F6`               | `#2563EB`              |
+| `--color-error`             | `#EF4444`               | `#DC2626`              |
+| `--color-error-muted`       | `#F87171`               | `#EF4444`              |
+| `--color-error-bg`          | `rgb(239 68 68 / 0.15)` | `rgb(220 38 38 / 0.1)` |
+| `--color-link`              | `#60A5FA`               | `#2563EB`              |
+| `--color-link-hover`        | `#93BBFD`               | `#1D4ED8`              |
+| `--color-nav-active-bg`     | `rgb(59 130 246 / 0.1)` | `rgb(37 99 235 / 0.1)` |
+| `--color-nav-active-text`   | `#60A5FA`               | `#2563EB`              |
 
 ### Semantic Color Palette
 
@@ -47,6 +55,11 @@ Colors used for badges, status indicators, etc. Pattern: `{color}-500/15` backgr
 - **Mono font:** JetBrains Mono (`font-mono`) — code blocks, technical content (weights: 400, 500, 600, 700)
 - **CSS vars:** `--font-sans: "Inter", ...`, `--font-mono: "JetBrains Mono", ...`
 - **Size scale:** `text-xs` → `text-sm` → `text-base` → `text-lg` → `text-xl`
+- **Heading scale:**
+  - **h1 (Page title):** `text-2xl font-bold text-text-primary`
+  - **h2 (Section title):** `text-lg font-semibold text-text-primary`
+  - **h3 (Card title):** `text-sm font-semibold uppercase tracking-wider text-text-tertiary`
+  - **h4 (Subsection):** `text-sm font-medium text-text-secondary`
 - **Common combinations:**
   - Body: `text-sm text-text-secondary`
   - Label: `text-sm font-medium text-text-tertiary`
@@ -161,8 +174,35 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 - `label`: top label (`text-sm font-medium`)
 - `error`: bottom error message (`text-red-400`), border changes to red
-- `block w-full rounded-lg`, focus: `ring-blue-500`
+- `block w-full rounded-lg`, focus: `ring-focus`
+- Error state: `border-error`, `aria-invalid`, `aria-describedby` for accessibility
 - disabled: `bg-surface-hover text-muted`
+
+### Select
+
+```typescript
+// forwardRef supported
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+}
+```
+
+- Same styling pattern as Input: `block w-full rounded-lg`, focus: `ring-focus`
+- `label`: top label, `error`: bottom error message with `aria-invalid`/`aria-describedby`
+- disabled: `bg-surface-hover text-muted`
+
+### PageLayout
+
+```typescript
+interface PageLayoutProps {
+  readonly children: ReactNode;
+  readonly maxWidth?: 'sm' | 'md' | 'lg' | 'xl'; // default: 'md'
+  readonly className?: string;
+}
+```
+
+Common page wrapper: `mx-auto max-w-{size} space-y-6 p-6`. Replaces repeated inline layout classes across pages.
 
 ### Modal
 
@@ -229,7 +269,7 @@ interface SpinnerProps {
 | `md` | `h-6 w-6` (default) |
 | `lg` | `h-8 w-8`           |
 
-SVG based, `animate-spin`, uses `currentColor`.
+SVG based, `animate-spin`, uses `currentColor`. Includes `role="status"` and `aria-label` for screen reader accessibility. Optional `label` prop (default: "Loading").
 
 ### Icons
 

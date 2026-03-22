@@ -3,6 +3,9 @@ import { showToast } from '../lib/toast';
 import { usePlans, usePlanDetail, useDeletePlan } from '../hooks/use-plans';
 import { PlanList } from '../components/plans/PlanList';
 import { PlanViewer } from '../components/plans/PlanViewer';
+import { Spinner } from '../components/ui/Spinner';
+import { EmptyState } from '../components/ui/EmptyState';
+import { PlansIcon } from '../components/layout/sidebar-icons';
 import { useAuthStore } from '../stores/auth.store';
 
 export function PlansPage() {
@@ -34,47 +37,45 @@ export function PlansPage() {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+        <Spinner size="lg" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-full">
-      <div className="w-80 flex-shrink-0 border-r border-border-default">
+    <div className="flex h-full flex-col md:flex-row">
+      <div
+        className={`w-full border-b border-border-default md:w-80 md:flex-shrink-0 md:border-b-0 md:border-r ${selectedFilename ? 'hidden md:block' : ''}`}
+      >
         <PlanList
           plans={plans}
           selectedFilename={selectedFilename}
           onSelect={setSelectedFilename}
         />
       </div>
-      <div className="flex-1">
+      <div className={`flex-1 ${!selectedFilename ? 'hidden md:block' : ''}`}>
         {planDetail ? (
-          <PlanViewer
-            plan={planDetail}
-            onDelete={handleDelete}
-            isDeleting={deleteMutation.isPending}
-          />
-        ) : (
-          <div className="flex h-full flex-col items-center justify-center text-text-tertiary">
-            <svg
-              className="mb-3 h-12 w-12 opacity-50"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          <div>
+            <button
+              type="button"
+              onClick={() => setSelectedFilename(null)}
+              className="flex items-center gap-1 px-4 pt-3 text-sm text-link hover:text-link-hover md:hidden"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              />
-            </svg>
-            <p className="text-sm">Select a plan to view</p>
-            <p className="mt-1 text-xs">
-              {plans.length} plan{plans.length !== 1 ? 's' : ''} available
-            </p>
+              &larr; Back to list
+            </button>
+            <PlanViewer
+              plan={planDetail}
+              onDelete={handleDelete}
+              isDeleting={deleteMutation.isPending}
+            />
           </div>
+        ) : (
+          <EmptyState
+            icon={<PlansIcon />}
+            title="Select a plan to view"
+            description={`${plans.length} plan${plans.length !== 1 ? 's' : ''} available`}
+            className="h-full"
+          />
         )}
       </div>
     </div>

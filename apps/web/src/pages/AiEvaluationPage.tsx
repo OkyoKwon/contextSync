@@ -19,6 +19,7 @@ import { NoProjectState } from '../components/shared/NoProjectState';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
+import { PageLayout } from '../components/ui/PageLayout';
 
 export function AiEvaluationPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -72,7 +73,7 @@ export function AiEvaluationPage() {
 
   if (!isProjectSelected) {
     return (
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <PageLayout>
         <div>
           <h1 className="text-2xl font-bold text-text-primary">AI Evaluation</h1>
           <p className="mt-1 text-sm text-text-tertiary">
@@ -80,12 +81,12 @@ export function AiEvaluationPage() {
           </p>
         </div>
         <NoProjectState pageName="AI Evaluation" />
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <PageLayout maxWidth="lg">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-text-primary">AI Evaluation</h1>
@@ -163,7 +164,7 @@ export function AiEvaluationPage() {
         onTrigger={handleTrigger}
         isPending={startEvaluation.isPending}
       />
-    </div>
+    </PageLayout>
   );
 
   function handleSelectUser(userId: string) {

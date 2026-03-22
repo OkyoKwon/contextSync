@@ -20,6 +20,7 @@ import { ApiKeyMissingBanner } from '../components/shared/ApiKeyMissingBanner';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { Card } from '../components/ui/Card';
 import { Spinner } from '../components/ui/Spinner';
+import { PageLayout } from '../components/ui/PageLayout';
 
 export function PrdAnalysisPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -79,7 +80,7 @@ export function PrdAnalysisPage() {
 
   if (!isProjectSelected) {
     return (
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <PageLayout>
         <div>
           <h1 className="text-2xl font-bold text-text-primary">PRD Tracker</h1>
           <p className="mt-1 text-sm text-text-tertiary">
@@ -87,7 +88,7 @@ export function PrdAnalysisPage() {
           </p>
         </div>
         <NoProjectState pageName="PRD Tracker" />
-      </div>
+      </PageLayout>
     );
   }
 
@@ -101,7 +102,7 @@ export function PrdAnalysisPage() {
           onStartAnalysis={handleStartAnalysis}
         />
       )}
-      <div className="mx-auto max-w-4xl space-y-6 p-6">
+      <PageLayout>
         <div>
           <h1 className="text-2xl font-bold text-text-primary">PRD Tracker</h1>
           <p className="mt-1 text-sm text-text-tertiary">
@@ -157,7 +158,7 @@ export function PrdAnalysisPage() {
           </h2>
           <PrdAnalysisHistory onSelectAnalysis={setSelectedAnalysisId} />
         </Card>
-      </div>
+      </PageLayout>
     </>
   );
 }

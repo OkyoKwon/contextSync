@@ -2,6 +2,7 @@ import { useAdminStatus, useAdminConfig, useRunMigrations } from '../hooks/use-a
 import { DbHealthCard } from '../components/admin/DbHealthCard';
 import { MigrationStatusCard } from '../components/admin/MigrationStatusCard';
 import { TeamConnectionCard } from '../components/admin/TeamConnectionCard';
+import { PageLayout } from '../components/ui/PageLayout';
 
 export function AdminPage() {
   const { data: statusData, isLoading: statusLoading } = useAdminStatus();
@@ -13,7 +14,7 @@ export function AdminPage() {
   const migrationResult = runMigrations.data?.data ?? null;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 p-6">
+    <PageLayout>
       <div>
         <h1 className="text-2xl font-bold text-text-primary">Admin Dashboard</h1>
         <p className="mt-1 text-sm text-text-tertiary">Database management and configuration</p>
@@ -36,6 +37,6 @@ export function AdminPage() {
           isLoading={statusLoading || configLoading}
         />
       </div>
-    </div>
+    </PageLayout>
   );
 }

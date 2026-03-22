@@ -62,7 +62,7 @@ function ContactModal({
         <p className="mt-4 text-sm text-text-secondary">Feel free to reach out via email.</p>
         <a
           href={`mailto:${CONTACT_EMAIL}`}
-          className="mt-2 inline-block text-sm text-blue-400 transition-colors hover:text-blue-300"
+          className="mt-2 inline-block text-sm text-link transition-colors hover:text-link-hover"
         >
           {CONTACT_EMAIL}
         </a>

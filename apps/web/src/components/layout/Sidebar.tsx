@@ -155,7 +155,7 @@ export function Sidebar() {
                       className={({ isActive }) =>
                         `relative flex items-center justify-center rounded-lg p-2 transition-colors ${
                           isActive
-                            ? 'bg-blue-500/10 text-blue-400'
+                            ? 'bg-nav-active-bg text-nav-active-text'
                             : 'text-text-tertiary hover:bg-interactive-hover hover:text-text-primary'
                         }`
                       }
@@ -175,7 +175,7 @@ export function Sidebar() {
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                         isActive
-                          ? 'bg-blue-500/10 text-blue-400'
+                          ? 'bg-nav-active-bg text-nav-active-text'
                           : 'text-text-tertiary hover:bg-interactive-hover hover:text-text-primary'
                       }`
                     }

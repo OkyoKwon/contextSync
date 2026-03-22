@@ -29,13 +29,13 @@ export function Modal({ isOpen, onClose, title, size = 'md', children }: ModalPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div className="fixed inset-0 bg-black/70" onClick={onClose} />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className={`relative z-10 w-full ${SIZE_CLASSES[size]} rounded-xl border border-border-default bg-surface p-6 shadow-xl`}
+        className={`relative z-10 w-full ${SIZE_CLASSES[size]} rounded-t-xl border border-border-default bg-surface p-6 shadow-xl sm:rounded-xl`}
       >
         <div className="mb-4 flex items-center justify-between">
           <h2 id="modal-title" className="text-lg font-semibold text-text-primary">

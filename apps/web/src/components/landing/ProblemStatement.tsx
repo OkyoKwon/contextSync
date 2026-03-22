@@ -18,28 +18,28 @@ function TerminalLines({ lines }: { readonly lines: readonly TerminalLine[] }) {
         if (line.type === 'prompt') {
           return (
             <div key={i}>
-              <span className="text-green-400">{line.user}@project</span>
-              <span className="text-zinc-500">:~$ </span>
-              <span className="text-zinc-200">{line.text}</span>
+              <span className="text-green-400 dark:text-green-400">{line.user}@project</span>
+              <span className="text-text-muted">:~$ </span>
+              <span className="text-text-primary">{line.text}</span>
             </div>
           );
         }
         if (line.type === 'conflict') {
           return (
-            <div key={i} className="text-red-400 font-medium">
+            <div key={i} className="font-medium text-red-400 dark:text-red-400">
               {line.text}
             </div>
           );
         }
         if (line.type === 'solution') {
           return (
-            <div key={i} className="text-emerald-400">
+            <div key={i} className="text-emerald-400 dark:text-emerald-400">
               {line.text}
             </div>
           );
         }
         return (
-          <div key={i} className="text-zinc-500">
+          <div key={i} className="text-text-muted">
             {line.text}
           </div>
         );

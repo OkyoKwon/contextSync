@@ -33,7 +33,7 @@ export function LandingHero() {
 
         <div className="flex flex-col items-center gap-3 text-center">
           <p className="text-lg font-medium text-text-primary md:text-xl">{t('hero.title')}</p>
-          <p className="text-sm whitespace-nowrap text-text-tertiary">{t('hero.subtitle')}</p>
+          <p className="text-sm text-text-tertiary">{t('hero.subtitle')}</p>
         </div>
 
         <div className="flex flex-col items-center gap-4">

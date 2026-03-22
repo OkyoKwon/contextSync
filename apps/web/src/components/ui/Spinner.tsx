@@ -1,5 +1,6 @@
 interface SpinnerProps {
   size?: 'sm' | 'md' | 'lg';
+  label?: string;
 }
 
 const sizeClasses = {
@@ -8,12 +9,14 @@ const sizeClasses = {
   lg: 'h-8 w-8',
 };
 
-export function Spinner({ size = 'md' }: SpinnerProps) {
+export function Spinner({ size = 'md', label = 'Loading' }: SpinnerProps) {
   return (
     <svg
       className={`animate-spin text-text-primary ${sizeClasses[size]}`}
       fill="none"
       viewBox="0 0 24 24"
+      role="status"
+      aria-label={label}
     >
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path

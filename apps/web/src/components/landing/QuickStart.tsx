@@ -79,7 +79,7 @@ export function QuickStart() {
           <button
             type="button"
             onClick={handleCopy}
-            className="absolute right-3 top-12 cursor-pointer rounded-md border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-zinc-400 transition-colors hover:bg-zinc-700 hover:text-zinc-200"
+            className="absolute right-3 top-12 cursor-pointer rounded-md border border-border-input bg-surface px-2 py-1.5 text-text-muted transition-colors hover:bg-surface-hover hover:text-text-secondary"
             aria-label="Copy commands"
           >
             {copied ? (
@@ -97,8 +97,8 @@ export function QuickStart() {
               if (line.startsWith('$')) {
                 return (
                   <div key={i}>
-                    <span className="text-zinc-500">$ </span>
-                    <span className="text-zinc-200">{line.slice(2)}</span>
+                    <span className="text-text-muted">$ </span>
+                    <span className="text-text-primary">{line.slice(2)}</span>
                   </div>
                 );
               }
