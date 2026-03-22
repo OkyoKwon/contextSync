@@ -1,6 +1,6 @@
 # ContextSync
 
-AI 세션 컨텍스트 관리 플랫폼 — Claude Code 세션을 팀 단위로 아카이브·동기화·검색·충돌 감지한다.
+AI 개발 컨텍스트 허브 — 개인 또는 팀 단위로 세션, PRD 분석, 플랜을 통합 관리하고 AI로 평가한다.
 
 ## Quick Start
 
@@ -176,6 +176,7 @@ export async function createProject(
 | `apps/api/src/app.ts`                                      | `docs/architecture.md`              |
 | `apps/web/src/routes.tsx`                                  | `docs/architecture.md`              |
 | `packages/shared/src/`                                     | `docs/architecture.md`              |
+| E2E 테스트 추가/수정                                       | `docs/E2E_TC.md`                    |
 
-상세 문서: [Design System](docs/design-system.md) · [Architecture](docs/architecture.md)
+상세 문서: [Design System](docs/design-system.md) · [Architecture](docs/architecture.md) · [E2E Test Cases](docs/E2E_TC.md)
 대량 변경 시 `doc-updater` 에이전트로 일괄 동기화.

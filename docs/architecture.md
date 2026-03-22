@@ -1,6 +1,6 @@
 # Architecture
 
-ContextSync system architecture document. A session context management platform based on a 3-package monorepo.
+ContextSync system architecture document. An AI development context hub based on a 3-package monorepo.
 
 ---
 

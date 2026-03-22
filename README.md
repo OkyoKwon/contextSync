@@ -2,22 +2,87 @@
 
 [![CI](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml/badge.svg)](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-green.svg)](https://nodejs.org/)
+[![pnpm](https://img.shields.io/badge/pnpm-9+-orange.svg)](https://pnpm.io/)
 
-AI session context management platform — archive, sync, search, and manage Claude Code sessions — solo or with your team.
+**AI development context hub** — manage sessions, PRD analysis, and plans in one place with AI-powered evaluation — solo or with your team.
+
+Claude Code를 사용하는 개발자와 팀이 겪는 문제: 세션이 로컬에 흩어져 있고, 과거 컨텍스트가 사라지며, PRD와 플랜이 코드와 분리된다. ContextSync는 세션·PRD 분석·플랜을 한곳에서 통합 관리하고, AI 평가와 충돌 감지로 개발 맥락을 보존한다.
 
 <p align="center">
   <img src="apps/web/public/screenshots/dashboard-full.png" alt="ContextSync Dashboard" width="800" />
 </p>
 
-## Tech Stack
+---
 
-| Layer    | Stack                                                                      |
-| -------- | -------------------------------------------------------------------------- |
-| Frontend | React 19, Vite 6, Tailwind CSS 4, Zustand 5, React Query 5, React Router 7 |
-| Backend  | Fastify 5, Kysely, Zod                                                     |
-| Database | PostgreSQL 16                                                              |
-| Auth     | Email/Name local auth + JWT                                                |
-| Monorepo | pnpm workspaces + Turborepo                                                |
+## Table of Contents
+
+- [Key Features](#key-features)
+- [Getting Started](#getting-started)
+- [Deployment Modes](#deployment-modes)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Scripts](#scripts)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Community](#community)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
+
+---
+
+## Key Features
+
+### Session Archive & Sync
+
+Automatically scans local Claude Code sessions (`~/.claude/projects/`) and syncs them to the web dashboard. Active sessions are shown by default, grouped by project.
+
+<img src="apps/web/public/screenshots/session-conversation.png" alt="Session conversation" width="720" />
+
+### Conflict Detection
+
+Detects when multiple team members modify the same files simultaneously and classifies conflicts by severity.
+
+<img src="apps/web/public/screenshots/conflicts-list.png" alt="Conflict detection" width="720" />
+
+### Dashboard & Analytics
+
+Real-time timeline and stats showing your entire team's AI activity at a glance — session counts, token usage charts, hot files, and weekly trends.
+
+<img src="apps/web/public/screenshots/dashboard-stats.png" alt="Dashboard analytics" width="720" />
+
+### PRD Analysis
+
+Upload PRD documents and let Claude analyze requirement fulfillment across your sessions. Track per-requirement status and overall scores.
+
+<img src="apps/web/public/screenshots/prd-analysis.png" alt="PRD analysis" width="720" />
+
+### Plans
+
+Create structured markdown plans and link them to projects for organized development workflows.
+
+<img src="apps/web/public/screenshots/session-detail.png" alt="Plans" width="720" />
+
+### Full-text Search
+
+PostgreSQL tsvector-based search across session titles, message content, file paths, and tags.
+
+<img src="apps/web/public/screenshots/search-overlay.png" alt="Full-text search" width="720" />
+
+### AI Evaluation
+
+Score team members' AI utilization across sessions with multi-dimensional analysis and evidence tracking.
+
+<img src="apps/web/public/screenshots/ai-evaluation.png" alt="AI evaluation" width="720" />
+
+### Team Collaboration
+
+Role-based access control (Owner / Admin / Member). Invite teammates and share projects with granular permissions.
+
+<img src="apps/web/public/screenshots/settings-team.png" alt="Team settings" width="720" />
+
+---
 
 ## Getting Started
 
@@ -35,7 +100,10 @@ pnpm setup               # Installs deps, starts DB, migrates, seeds
 pnpm dev
 ```
 
+> `pnpm setup` runs the full bootstrap: Docker Compose up → DB migration → seed data.
 > Or run `bash scripts/setup.sh` (without `--defaults`) for an interactive wizard with deployment mode selection.
+
+Open `http://localhost:5173` and sign in with your name and email. API runs at `http://localhost:3001`.
 
 ### Manual Setup
 
@@ -82,11 +150,12 @@ No Docker required.
 
 </details>
 
-Open `http://localhost:5173` and sign in with your name and email.
-
-API runs at `http://localhost:3001`.
-
 ### Environment Variables
+
+Only `DATABASE_URL` is required. All others have sensible defaults.
+
+<details>
+<summary>Full environment variable reference</summary>
 
 | Variable            | Required | Description                                                        |
 | ------------------- | -------- | ------------------------------------------------------------------ |
@@ -107,6 +176,32 @@ API runs at `http://localhost:3001`.
 | `DATABASE_SSL_CA`   | No       | Path to CA certificate for self-signed certs                       |
 | `RUN_MIGRATIONS`    | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
 
+</details>
+
+---
+
+## Deployment Modes
+
+| Mode          | Docker? | DB          | Use Case                                                                        |
+| ------------- | ------- | ----------- | ------------------------------------------------------------------------------- |
+| `personal`    | Yes     | Local       | Solo dev archiving sessions locally. Simplest setup, everything on one machine. |
+| `team-host`   | Yes     | Local + SSL | Admin hosting a shared DB for the team. SSL-secured, manages migrations.        |
+| `team-member` | No      | Remote      | Developer connecting to team DB. No Docker needed, read-only migrations.        |
+
+---
+
+## Tech Stack
+
+| Layer    | Stack                                                                      |
+| -------- | -------------------------------------------------------------------------- |
+| Frontend | React 19, Vite 6, Tailwind CSS 4, Zustand 5, React Query 5, React Router 7 |
+| Backend  | Fastify 5, Kysely, Zod                                                     |
+| Database | PostgreSQL 16                                                              |
+| Auth     | Email/Name local auth + JWT                                                |
+| Monorepo | pnpm workspaces + Turborepo                                                |
+
+---
+
 ## Project Structure
 
 ```
@@ -119,7 +214,8 @@ contextSync/
 └── docker-compose.yml
 ```
 
-### API Modules
+<details>
+<summary>API Modules</summary>
 
 ```
 apps/api/src/modules/
@@ -138,78 +234,71 @@ apps/api/src/modules/
 └── sessions/        # Session import, sync, parsing
 ```
 
-## Key Features
+</details>
 
-### Session Archive & Sync
-
-Automatically scans local Claude Code sessions (`~/.claude/projects/`) and syncs them to the web dashboard. Active sessions are shown by default, grouped by project.
-
-<img src="apps/web/public/screenshots/session-conversation.png" alt="Session conversation" width="600" />
-
-### Conflict Detection
-
-Detects when multiple team members modify the same files simultaneously and classifies conflicts by severity.
-
-<img src="apps/web/public/screenshots/conflicts-list.png" alt="Conflict detection" width="600" />
-
-### Dashboard & Analytics
-
-Real-time timeline and stats showing your entire team's AI activity at a glance — session counts, token usage charts, hot files, and weekly trends.
-
-<img src="apps/web/public/screenshots/dashboard-stats.png" alt="Dashboard analytics" width="600" />
-
-### PRD Analysis
-
-Upload PRD documents and let Claude analyze requirement fulfillment across your sessions. Track per-requirement status and overall scores.
-
-<img src="apps/web/public/screenshots/prd-analysis.png" alt="PRD analysis" width="600" />
-
-### Plans
-
-Create structured markdown plans and link them to projects for organized development workflows.
-
-<img src="apps/web/public/screenshots/session-detail.png" alt="Plans" width="600" />
-
-### Full-text Search
-
-PostgreSQL tsvector-based search across session titles, message content, file paths, and tags.
-
-<img src="apps/web/public/screenshots/search-overlay.png" alt="Full-text search" width="600" />
-
-### AI Evaluation
-
-Score team members' AI utilization across sessions with multi-dimensional analysis and evidence tracking.
-
-<img src="apps/web/public/screenshots/ai-evaluation.png" alt="AI evaluation" width="600" />
-
-### Team Collaboration
-
-Role-based access control (Owner / Admin / Member). Invite teammates and share projects with granular permissions.
-
-<img src="apps/web/public/screenshots/settings-team.png" alt="Team settings" width="600" />
-
-## Deployment Modes
-
-| Mode          | Docker? | DB          | Use Case                          |
-| ------------- | ------- | ----------- | --------------------------------- |
-| `personal`    | Yes     | Local       | Solo dev, private session archive |
-| `team-host`   | Yes     | Local + SSL | Admin hosting shared DB           |
-| `team-member` | No      | Remote      | Dev connecting to team DB         |
+---
 
 ## Scripts
 
 ```bash
-pnpm dev              # Start all services
+pnpm dev              # Start all services (API + Web)
 pnpm build            # Build all packages
 pnpm test             # Run tests
-pnpm test:coverage    # Run tests with coverage
+pnpm test:coverage    # Run tests with coverage (80% threshold)
 pnpm typecheck        # Type check all packages
 pnpm lint             # Lint all packages
 ```
 
+---
+
+## Roadmap
+
+- [ ] Session export (JSON, CSV)
+- [ ] GitHub integration (link sessions to PRs/issues)
+- [ ] Real-time collaboration (WebSocket-based live sync)
+- [ ] Plugin system for custom session processors
+- [ ] Self-hosted Docker image (single `docker run` deployment)
+- [ ] VS Code extension for session management
+
+Have an idea? [Open a feature request](https://github.com/OkyoKwon/contextSync/issues/new?template=feature_request.md).
+
+---
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding guidelines, and PR process.
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding guidelines, and PR process.
+
+Looking for a place to start? Check out issues labeled [**good first issue**](https://github.com/OkyoKwon/contextSync/labels/good%20first%20issue).
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
+
+---
+
+## Community
+
+- [GitHub Issues](https://github.com/OkyoKwon/contextSync/issues) — Bug reports and feature requests
+- [GitHub Discussions](https://github.com/OkyoKwon/contextSync/discussions) — Questions, ideas, and general discussion
+
+---
+
+## Acknowledgements
+
+Built with these excellent open-source projects:
+
+- [Fastify](https://fastify.dev/) — Fast and low-overhead web framework
+- [Kysely](https://kysely.dev/) — Type-safe SQL query builder
+- [React](https://react.dev/) — UI library
+- [Vite](https://vite.dev/) — Frontend build tool
+- [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS
+- [Turborepo](https://turbo.build/) — Monorepo build system
+
+---
+
+## Security
+
+Found a vulnerability? Please see [SECURITY.md](SECURITY.md) for reporting instructions. Do not open public issues for security vulnerabilities.
+
+---
 
 ## License
 

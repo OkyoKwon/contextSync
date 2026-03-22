@@ -9,7 +9,8 @@ export const en: TranslationKeys = {
 
   // Hero
   'hero.title': 'The Hub for AI Session Context',
-  'hero.subtitle': 'Manage your Claude Code sessions — solo or with your team',
+  'hero.subtitle':
+    'Manage sessions, PRDs, and plans with AI-powered evaluation — solo or with your team',
   'hero.cta.login': 'Get Started',
   'hero.cta.features': 'Explore Features',
 
@@ -110,7 +111,7 @@ export const en: TranslationKeys = {
   // Docs
   'docs.hero.title': 'Learn how to get the most out of ContextSync',
   'docs.hero.subtitle':
-    "Archive, sync, search, and detect conflicts across your team's Claude Code sessions",
+    'Manage sessions, PRD analysis, and plans in one place — with AI evaluation and conflict detection',
   'docs.hero.highlight.0.title': 'Session Sync',
   'docs.hero.highlight.0.desc': 'Import and archive Claude Code sessions automatically',
   'docs.hero.highlight.1.title': 'Conflict Detection',

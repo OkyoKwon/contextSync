@@ -102,7 +102,7 @@ async function seedProject(ownerId: string) {
       owner_id: ownerId,
       name: 'ContextSync',
       description:
-        'AI session context management platform — archive, sync, search, and detect conflicts',
+        'AI development context hub — manage sessions, PRD analysis, and plans with AI evaluation',
       repo_url: 'https://github.com/contextsync/contextsync',
     })
     .returningAll()
