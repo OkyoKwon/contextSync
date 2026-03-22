@@ -84,8 +84,11 @@ export function AppRoutes() {
           <Route path="/plans" element={<PlansPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/settings/team" element={<Navigate to="/settings" replace />} />
-          <Route path="/settings/project" element={<Navigate to="/settings" replace />} />
+          <Route path="/settings/team" element={<Navigate to="/settings?tab=team" replace />} />
+          <Route
+            path="/settings/project"
+            element={<Navigate to="/settings?tab=general" replace />}
+          />
         </Route>
       </Routes>
     </Suspense>
