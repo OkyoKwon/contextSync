@@ -8,7 +8,7 @@
 
 **AI development context hub** — manage sessions, PRD analysis, and plans in one place with AI-powered evaluation — solo or with your team.
 
-Claude Code를 사용하는 개발자와 팀이 겪는 문제: 세션이 로컬에 흩어져 있고, 과거 컨텍스트가 사라지며, PRD와 플랜이 코드와 분리된다. ContextSync는 세션·PRD 분석·플랜을 한곳에서 통합 관리하고, AI 평가와 충돌 감지로 개발 맥락을 보존한다.
+The problem developers and teams face with Claude Code: sessions are scattered across local machines, past context gets lost, and PRDs and plans live separately from code. ContextSync unifies sessions, PRD analysis, and plans in one place, preserving development context with AI evaluation and conflict detection.
 
 <p align="center">
   <img src="apps/web/public/screenshots/dashboard-full.png" alt="ContextSync Dashboard" width="800" />
