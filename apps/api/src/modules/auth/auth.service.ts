@@ -1,4 +1,7 @@
 import crypto from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import type { Db } from '../../database/client.js';
 import type { LoginInput, UpgradeInput } from './auth.schema.js';
 import type { User, ClaudePlan } from '@context-sync/shared';
@@ -173,7 +176,51 @@ async function mergeAutoUserIntoExisting(
 export async function findUserById(db: Db, id: string): Promise<User | null> {
   const row = await db.selectFrom('users').selectAll().where('id', '=', id).executeTakeFirst();
 
-  return row ? toUser(row) : null;
+  if (!row) return null;
+
+  const user = toUser(row);
+
+  if (user.claudePlan === 'free') {
+    const detected = await detectClaudePlanFromCli();
+    if (detected !== 'free') {
+      const updated = await db
+        .updateTable('users')
+        .set({ claude_plan: detected, updated_at: new Date() })
+        .where('id', '=', id)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+      return toUser(updated);
+    }
+  }
+
+  return user;
+}
+
+async function detectClaudePlanFromCli(): Promise<ClaudePlan> {
+  try {
+    const credentialsPath = join(homedir(), '.claude', '.credentials.json');
+    const raw = await readFile(credentialsPath, 'utf-8');
+    const credentials = JSON.parse(raw) as {
+      claudeAiOauth?: {
+        subscriptionType?: string;
+        rateLimitTier?: string;
+      };
+    };
+
+    const { subscriptionType, rateLimitTier } = credentials.claudeAiOauth ?? {};
+
+    if (subscriptionType === 'max') {
+      if (rateLimitTier?.includes('20x')) return 'max_20x';
+      return 'max_5x';
+    }
+    if (subscriptionType === 'pro') return 'pro';
+    if (subscriptionType === 'team') return 'team';
+    if (subscriptionType === 'enterprise') return 'enterprise';
+
+    return 'free';
+  } catch {
+    return 'free';
+  }
 }
 
 export async function updateUserPlan(
