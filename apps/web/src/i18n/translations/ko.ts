@@ -176,6 +176,21 @@ export const ko: TranslationKeys = {
   'upgrade.modal.description': '팀 기능을 사용하려면 이름과 이메일을 입력하세요',
   'upgrade.modal.submit': '계정 설정 완료',
   'upgrade.banner': '팀 기능을 사용하려면 계정을 설정하세요',
+  'upgrade.settings.title': '이메일 연결',
+  'upgrade.settings.description':
+    '이메일을 연결하면 팀 기능을 사용하고 다른 기기에서도 접근할 수 있습니다.',
+  'upgrade.settings.benefit.invite': '팀 초대 받기',
+  'upgrade.settings.benefit.notification': '알림 수신',
+  'upgrade.settings.benefit.multiDevice': '다른 기기에서 접근',
+  'upgrade.settings.cta': '이메일 연결',
+
+  // User Dropdown
+  'user.localUser': '로컬 사용자',
+  'user.linkEmail': '이메일 연결',
+
+  // App Entry
+  'app.connectionError': '서버에 연결할 수 없습니다',
+  'app.retry': '재시도',
 
   // Login
   'login.backToHome': '\u2190 홈으로',

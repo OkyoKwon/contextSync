@@ -4,10 +4,13 @@ import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { useRequireProject } from '../hooks/use-require-project';
 import { usePermissions } from '../hooks/use-permissions';
+import { useUpgradeModal } from '../hooks/use-upgrade-modal';
+import { useT } from '../i18n/use-translation';
 import { projectsApi } from '../api/projects.api';
 import { authApi } from '../api/auth.api';
 import { CollaboratorList } from '../components/projects/CollaboratorList';
 import { CollaborationSection } from '../components/settings/CollaborationSection';
+import { SupabaseAutoSetup } from '../components/settings/supabase-setup/SupabaseAutoSetup';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { Button } from '../components/ui/Button';
@@ -51,13 +54,60 @@ function SettingsContent({ projectId }: { readonly projectId: string }) {
         <PageBreadcrumb pageName="Settings" />
       </div>
       <div className="space-y-6">
+        <AccountUpgradeSection />
         <ProjectInfoSection projectId={projectId} />
         <CollaborationSection projectId={projectId} />
         <CollaboratorSection projectId={projectId} />
         <ApiKeySection />
+        <DatabaseRemoteSection />
         <DangerZoneSection projectId={projectId} />
       </div>
     </div>
+  );
+}
+
+function AccountUpgradeSection() {
+  const user = useAuthStore((s) => s.user);
+  const openUpgradeModal = useUpgradeModal((s) => s.openUpgradeModal);
+  const t = useT();
+
+  if (!user?.isAuto) return null;
+
+  const benefits = [
+    t('upgrade.settings.benefit.invite'),
+    t('upgrade.settings.benefit.notification'),
+    t('upgrade.settings.benefit.multiDevice'),
+  ] as const;
+
+  return (
+    <Card className="border-blue-500/30">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">{t('upgrade.settings.title')}</h3>
+        <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-400">
+          {t('user.localUser')}
+        </span>
+      </div>
+      <p className="mt-2 text-sm text-text-tertiary">{t('upgrade.settings.description')}</p>
+      <ul className="mt-3 space-y-1.5">
+        {benefits.map((benefit) => (
+          <li key={benefit} className="flex items-center gap-2 text-sm text-text-secondary">
+            <svg
+              className="h-4 w-4 shrink-0 text-blue-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            {benefit}
+          </li>
+        ))}
+      </ul>
+      <Button className="mt-4" onClick={() => openUpgradeModal()}>
+        {t('upgrade.settings.cta')}
+      </Button>
+    </Card>
   );
 }
 
@@ -252,6 +302,33 @@ function ApiKeySection() {
 function CollaboratorSection({ projectId }: { readonly projectId: string }) {
   const { canManageCollaborators } = usePermissions();
   return <CollaboratorList projectId={projectId} canManage={canManageCollaborators} />;
+}
+
+function DatabaseRemoteSection() {
+  const [setupComplete, setSetupComplete] = useState(false);
+
+  return (
+    <Card>
+      <h3 className="text-lg font-semibold">Database Remote (Supabase)</h3>
+      <p className="mt-2 text-sm text-text-tertiary">
+        Connect a Supabase project to use as your remote database. This replaces the local Docker
+        PostgreSQL with a cloud-hosted instance.
+      </p>
+      {setupComplete ? (
+        <div className="mt-4 rounded-lg border border-green-500/20 bg-green-500/5 p-3">
+          <p className="text-sm font-medium text-green-400">Setup complete</p>
+          <p className="mt-1 text-xs text-green-400/70">
+            The server .env has been updated. Please restart the API server for changes to take
+            effect.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <SupabaseAutoSetup onAutoSetupComplete={() => setSetupComplete(true)} />
+        </div>
+      )}
+    </Card>
+  );
 }
 
 function DangerZoneSection({ projectId }: { readonly projectId: string }) {

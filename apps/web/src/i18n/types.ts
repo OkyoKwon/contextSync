@@ -149,6 +149,20 @@ export interface TranslationKeys {
   readonly 'upgrade.modal.description': string;
   readonly 'upgrade.modal.submit': string;
   readonly 'upgrade.banner': string;
+  readonly 'upgrade.settings.title': string;
+  readonly 'upgrade.settings.description': string;
+  readonly 'upgrade.settings.benefit.invite': string;
+  readonly 'upgrade.settings.benefit.notification': string;
+  readonly 'upgrade.settings.benefit.multiDevice': string;
+  readonly 'upgrade.settings.cta': string;
+
+  // User Dropdown
+  readonly 'user.localUser': string;
+  readonly 'user.linkEmail': string;
+
+  // App Entry
+  readonly 'app.connectionError': string;
+  readonly 'app.retry': string;
 
   // Login
   readonly 'login.backToHome': string;

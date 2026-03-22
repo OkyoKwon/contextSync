@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuthStore } from '../../stores/auth.store';
 import { useThemeStore } from '../../stores/theme.store';
+import { useUpgradeModal } from '../../hooks/use-upgrade-modal';
+import { useT } from '../../i18n/use-translation';
 import { Avatar } from '../ui/Avatar';
 
 export function UserDropdown() {
@@ -12,6 +14,10 @@ export function UserDropdown() {
   const theme = useThemeStore((s) => s.theme);
   const toggleTheme = useThemeStore((s) => s.toggleTheme);
   const navigate = useNavigate();
+  const openUpgradeModal = useUpgradeModal((s) => s.openUpgradeModal);
+  const t = useT();
+
+  const isAuto = user?.isAuto ?? false;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -50,11 +56,38 @@ export function UserDropdown() {
           style={{ animation: 'fadeIn 0.15s ease-out' }}
         >
           <div className="border-b border-border-default px-4 py-3">
-            <p className="text-sm font-medium text-text-primary">{user.name}</p>
-            <p className="text-xs text-text-muted">{user.email}</p>
+            <p className="text-sm font-medium text-text-primary">
+              {isAuto ? t('user.localUser') : user.name}
+            </p>
+            <p className="text-xs text-text-muted">{isAuto ? 'auto@local' : user.email}</p>
           </div>
 
           <div className="py-1">
+            {isAuto && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  openUpgradeModal();
+                }}
+                className="flex w-full items-center gap-3 px-4 py-2 text-sm text-blue-400 transition-colors hover:bg-surface-hover"
+              >
+                <svg
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+                  />
+                </svg>
+                {t('user.linkEmail')}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {

@@ -180,6 +180,21 @@ export const en: TranslationKeys = {
   'upgrade.modal.description': 'Enter your name and email to use team features',
   'upgrade.modal.submit': 'Complete Setup',
   'upgrade.banner': 'Set up your account to use team features',
+  'upgrade.settings.title': 'Link Email',
+  'upgrade.settings.description':
+    'Link your email to unlock team features and access your account from any device.',
+  'upgrade.settings.benefit.invite': 'Receive team invitations',
+  'upgrade.settings.benefit.notification': 'Get notifications',
+  'upgrade.settings.benefit.multiDevice': 'Access from multiple devices',
+  'upgrade.settings.cta': 'Link Email',
+
+  // User Dropdown
+  'user.localUser': 'Local User',
+  'user.linkEmail': 'Link Email',
+
+  // App Entry
+  'app.connectionError': 'Could not connect to server',
+  'app.retry': 'Retry',
 
   // Login
   'login.backToHome': '\u2190 Back to home',

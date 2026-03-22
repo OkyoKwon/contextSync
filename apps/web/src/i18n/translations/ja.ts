@@ -177,6 +177,21 @@ export const ja: TranslationKeys = {
   'upgrade.modal.description': 'チーム機能を使うには名前とメールを入力してください',
   'upgrade.modal.submit': '設定完了',
   'upgrade.banner': 'チーム機能を使うにはアカウントを設定してください',
+  'upgrade.settings.title': 'メール連携',
+  'upgrade.settings.description':
+    'メールを連携するとチーム機能を使い、他のデバイスからもアクセスできます。',
+  'upgrade.settings.benefit.invite': 'チーム招待を受け取る',
+  'upgrade.settings.benefit.notification': '通知を受け取る',
+  'upgrade.settings.benefit.multiDevice': '複数デバイスからアクセス',
+  'upgrade.settings.cta': 'メール連携',
+
+  // User Dropdown
+  'user.localUser': 'ローカルユーザー',
+  'user.linkEmail': 'メール連携',
+
+  // App Entry
+  'app.connectionError': 'サーバーに接続できません',
+  'app.retry': '再試行',
 
   // Login
   'login.backToHome': '\u2190 ホームへ',
