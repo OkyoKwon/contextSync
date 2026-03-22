@@ -12,6 +12,7 @@ import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 import { logActivity } from '../activity/activity.service.js';
 import * as sessionRepo from './session.repository.js';
+import { countLocalSessionsByDate } from './local-session.service.js';
 
 export async function getSessionsByProject(
   db: Db,
@@ -96,57 +97,44 @@ export async function getDashboardStats(
   await assertProjectAccess(db, projectId, userId);
 
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekStart = new Date(todayStart);
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   weekStart.setDate(weekStart.getDate() - 7);
 
-  const [todayResult, weekResult, conflictsResult, membersResult, hotFilesResult] =
-    await Promise.all([
-      db
-        .selectFrom('sessions')
-        .select(db.fn.countAll().as('count'))
-        .where('project_id', '=', projectId)
-        .where('created_at', '>=', todayStart)
-        .executeTakeFirstOrThrow(),
-      db
-        .selectFrom('sessions')
-        .select(db.fn.countAll().as('count'))
-        .where('project_id', '=', projectId)
-        .where('created_at', '>=', weekStart)
-        .executeTakeFirstOrThrow(),
-      db
-        .selectFrom('conflicts')
-        .select(db.fn.countAll().as('count'))
-        .where('project_id', '=', projectId)
-        .where('status', 'in', ['detected', 'reviewing'])
-        .executeTakeFirstOrThrow(),
-      db
-        .selectFrom('sessions')
-        .select(db.fn.count('user_id').distinct().as('count'))
-        .where('project_id', '=', projectId)
-        .where('created_at', '>=', weekStart)
-        .executeTakeFirstOrThrow(),
-      db
-        .selectFrom('sessions')
-        .select([sql<string>`unnest(file_paths)`.as('path'), db.fn.countAll().as('count')])
-        .where('project_id', '=', projectId)
-        .where('created_at', '>=', weekStart)
-        .groupBy(sql`unnest(file_paths)`)
-        .orderBy(sql`count(*)`, 'desc')
-        .limit(10)
-        .execute()
-        .catch((err: unknown) => {
-          console.warn(
-            '[session] Failed to query hot file paths:',
-            err instanceof Error ? err.message : err,
-          );
-          return [];
-        }),
-    ]);
+  const [localCounts, conflictsResult, membersResult, hotFilesResult] = await Promise.all([
+    countLocalSessionsByDate(db, projectId),
+    db
+      .selectFrom('conflicts')
+      .select(db.fn.countAll().as('count'))
+      .where('project_id', '=', projectId)
+      .where('status', 'in', ['detected', 'reviewing'])
+      .executeTakeFirstOrThrow(),
+    db
+      .selectFrom('sessions')
+      .select(db.fn.count('user_id').distinct().as('count'))
+      .where('project_id', '=', projectId)
+      .where('created_at', '>=', weekStart)
+      .executeTakeFirstOrThrow(),
+    db
+      .selectFrom('sessions')
+      .select([sql<string>`unnest(file_paths)`.as('path'), db.fn.countAll().as('count')])
+      .where('project_id', '=', projectId)
+      .where('created_at', '>=', weekStart)
+      .groupBy(sql`unnest(file_paths)`)
+      .orderBy(sql`count(*)`, 'desc')
+      .limit(10)
+      .execute()
+      .catch((err: unknown) => {
+        console.warn(
+          '[session] Failed to query hot file paths:',
+          err instanceof Error ? err.message : err,
+        );
+        return [];
+      }),
+  ]);
 
   return {
-    todaySessions: Number(todayResult.count),
-    weekSessions: Number(weekResult.count),
+    todaySessions: localCounts.todaySessions,
+    weekSessions: localCounts.weekSessions,
     activeConflicts: Number(conflictsResult.count),
     activeMembers: Number(membersResult.count),
     hotFilePaths: hotFilesResult.map((r) => ({

@@ -110,19 +110,13 @@ export async function listLocalDirectories(): Promise<readonly LocalDirectory[]>
   return directories;
 }
 
-export async function listLocalSessions(
-  db: Db,
-  projectId: string,
-  activeOnly = true,
-): Promise<readonly LocalProjectGroup[]> {
-  // Look up the project's linked local_directory and owner
+async function getProjectSessionFiles(db: Db, projectId: string): Promise<readonly SessionFile[]> {
   const project = await db
     .selectFrom('projects')
     .select(['local_directory', 'owner_id'])
     .where('id', '=', projectId)
     .executeTakeFirst();
 
-  // Collect all member directories (owner + collaborators with local_directory set)
   const directoriesToScan: string[] = [];
   if (project?.local_directory) {
     directoriesToScan.push(project.local_directory);
@@ -146,7 +140,15 @@ export async function listLocalSessions(
   const encodedDirs = new Set(directoriesToScan.map(encodeProjectPath));
 
   const allSessionFiles = await findSessionFiles();
-  const sessionFiles = allSessionFiles.filter((f) => encodedDirs.has(f.dir));
+  return allSessionFiles.filter((f) => encodedDirs.has(f.dir));
+}
+
+export async function listLocalSessions(
+  db: Db,
+  projectId: string,
+  activeOnly = true,
+): Promise<readonly LocalProjectGroup[]> {
+  const sessionFiles = await getProjectSessionFiles(db, projectId);
 
   if (sessionFiles.length === 0) return [];
 
@@ -263,7 +265,7 @@ export async function getLocalSessionDetail(sessionId: string): Promise<LocalSes
   };
 }
 
-function findFirstTimestamp(raw: string): string | null {
+export function findFirstTimestamp(raw: string): string | null {
   const lines = raw.trim().split('\n');
   for (const line of lines.slice(0, 10)) {
     try {
@@ -276,6 +278,44 @@ function findFirstTimestamp(raw: string): string | null {
     }
   }
   return null;
+}
+
+export async function countLocalSessionsByDate(
+  db: Db,
+  projectId: string,
+): Promise<{ readonly todaySessions: number; readonly weekSessions: number }> {
+  const sessionFiles = await getProjectSessionFiles(db, projectId);
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(todayStart);
+  weekStart.setDate(weekStart.getDate() - 7);
+
+  const todayMs = todayStart.getTime();
+  const weekMs = weekStart.getTime();
+
+  let todaySessions = 0;
+  let weekSessions = 0;
+
+  for (const file of sessionFiles) {
+    try {
+      const content = await readFile(file.fullPath, 'utf-8');
+      const timestamp = findFirstTimestamp(content);
+      if (!timestamp) continue;
+
+      const startedMs = new Date(timestamp).getTime();
+      if (startedMs >= weekMs) {
+        weekSessions++;
+        if (startedMs >= todayMs) {
+          todaySessions++;
+        }
+      }
+    } catch {
+      // Skip files we can't read
+    }
+  }
+
+  return { todaySessions, weekSessions };
 }
 
 function encodeProjectPath(absolutePath: string): string {

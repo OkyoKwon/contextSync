@@ -124,6 +124,12 @@ export function ProjectPage() {
 
   const selectedSessionId = selection.type === 'session' ? selection.sessionId : null;
   const selectedProjectPath = selection.type === 'project' ? selection.projectPath : null;
+  const isSelectedSessionSynced = useMemo(() => {
+    if (!selectedSessionId) return false;
+    return groups.some((g) =>
+      g.sessions.some((s) => s.sessionId === selectedSessionId && s.isSynced),
+    );
+  }, [groups, selectedSessionId]);
 
   const myDirectory = currentProject?.myLocalDirectory ?? null;
 
@@ -283,6 +289,7 @@ export function ProjectPage() {
             {selection.type === 'session' && (
               <LocalSessionConversation
                 sessionId={selection.sessionId}
+                isSynced={isSelectedSessionSynced}
                 isSyncing={syncMutation.isPending}
                 onSync={handleSingleSync}
               />

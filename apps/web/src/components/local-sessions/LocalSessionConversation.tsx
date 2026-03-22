@@ -7,12 +7,14 @@ import { useLocalSessionDetail } from '../../hooks/use-local-session-detail';
 
 interface LocalSessionConversationProps {
   readonly sessionId: string | null;
+  readonly isSynced: boolean;
   readonly isSyncing: boolean;
   readonly onSync: (sessionId: string) => void;
 }
 
 export function LocalSessionConversation({
   sessionId,
+  isSynced,
   isSyncing,
   onSync,
 }: LocalSessionConversationProps) {
@@ -50,7 +52,7 @@ export function LocalSessionConversation({
 
   return (
     <div className="flex h-full flex-col">
-      <SessionHeader detail={detail} isSyncing={isSyncing} onSync={onSync} />
+      <SessionHeader detail={detail} isSynced={isSynced} isSyncing={isSyncing} onSync={onSync} />
       <div className="flex-1 overflow-y-auto p-4">
         <MessageThread messages={detail.messages} />
       </div>
@@ -60,10 +62,12 @@ export function LocalSessionConversation({
 
 function SessionHeader({
   detail,
+  isSynced,
   isSyncing,
   onSync,
 }: {
   readonly detail: LocalSessionDetail;
+  readonly isSynced: boolean;
   readonly isSyncing: boolean;
   readonly onSync: (sessionId: string) => void;
 }) {
@@ -88,9 +92,11 @@ function SessionHeader({
             )}
           </div>
         </div>
-        <Button variant="primary" onClick={() => onSync(detail.sessionId)} disabled={isSyncing}>
-          {isSyncing ? <Spinner size="sm" /> : 'Sync this session'}
-        </Button>
+        {!isSynced && (
+          <Button variant="primary" onClick={() => onSync(detail.sessionId)} disabled={isSyncing}>
+            {isSyncing ? <Spinner size="sm" /> : 'Sync this session'}
+          </Button>
+        )}
       </div>
     </div>
   );
