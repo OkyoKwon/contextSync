@@ -13,14 +13,6 @@ interface HeroFeature {
   readonly screenshotAltKey: TranslationKey;
 }
 
-interface SubFeature {
-  readonly titleKey: TranslationKey;
-  readonly descriptionKey: TranslationKey;
-  readonly icon: string;
-  readonly screenshot: string;
-  readonly screenshotAltKey: TranslationKey;
-}
-
 const HERO_FEATURES: readonly HeroFeature[] = [
   {
     label: '01',
@@ -60,51 +52,6 @@ const HERO_FEATURES: readonly HeroFeature[] = [
     ],
     screenshot: assetUrl('/screenshots/prd-analysis.png'),
     screenshotAltKey: 'screenshot.alt.prdAnalysis',
-  },
-];
-
-const SUB_FEATURES: readonly SubFeature[] = [
-  {
-    titleKey: 'features.sub.0.title',
-    descriptionKey: 'features.sub.0.description',
-    icon: '📊',
-    screenshot: assetUrl('/screenshots/dashboard-stats.png'),
-    screenshotAltKey: 'screenshot.alt.dashboard',
-  },
-  {
-    titleKey: 'features.sub.1.title',
-    descriptionKey: 'features.sub.1.description',
-    icon: '🔍',
-    screenshot: assetUrl('/screenshots/search-overlay.png'),
-    screenshotAltKey: 'screenshot.alt.searchOverlay',
-  },
-  {
-    titleKey: 'features.sub.2.title',
-    descriptionKey: 'features.sub.2.description',
-    icon: '👥',
-    screenshot: assetUrl('/screenshots/settings-team.png'),
-    screenshotAltKey: 'screenshot.alt.settingsTeam',
-  },
-  {
-    titleKey: 'features.sub.3.title',
-    descriptionKey: 'features.sub.3.description',
-    icon: '⚡',
-    screenshot: assetUrl('/screenshots/token-usage-chart.png'),
-    screenshotAltKey: 'screenshot.alt.tokenUsageChart',
-  },
-  {
-    titleKey: 'features.sub.4.title',
-    descriptionKey: 'features.sub.4.description',
-    icon: '📋',
-    screenshot: assetUrl('/screenshots/session-detail.png'),
-    screenshotAltKey: 'screenshot.alt.sessionDetail',
-  },
-  {
-    titleKey: 'features.sub.5.title',
-    descriptionKey: 'features.sub.5.description',
-    icon: '🎯',
-    screenshot: assetUrl('/screenshots/ai-evaluation.png'),
-    screenshotAltKey: 'screenshot.alt.aiEvaluation',
   },
 ];
 
@@ -148,33 +95,7 @@ function HeroFeatureCard({
   );
 }
 
-function SubFeatureCard({ feature }: { readonly feature: SubFeature }) {
-  const t = useT();
-
-  return (
-    <div className="overflow-hidden rounded-lg border border-border-default bg-surface transition-colors hover:border-text-muted">
-      <div className="aspect-video overflow-hidden border-b border-border-default">
-        <ScreenshotImage
-          src={feature.screenshot}
-          alt={t(feature.screenshotAltKey)}
-          className="h-full w-full"
-        />
-      </div>
-      <div className="p-6">
-        <div className="mb-3 text-lg">{feature.icon}</div>
-        <h4 className="mb-2 font-mono text-sm font-medium text-text-primary">
-          {t(feature.titleKey)}
-        </h4>
-        <p className="font-mono text-xs leading-relaxed text-text-tertiary">
-          {t(feature.descriptionKey)}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export function FeatureShowcase() {
-  const { ref, isVisible } = useInView();
   const t = useT();
 
   return (
@@ -187,17 +108,6 @@ export function FeatureShowcase() {
         <div className="space-y-16">
           {HERO_FEATURES.map((feature, i) => (
             <HeroFeatureCard key={feature.label} feature={feature} index={i} />
-          ))}
-        </div>
-
-        <div
-          ref={ref}
-          className={`mt-20 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 transition-all duration-700 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}
-        >
-          {SUB_FEATURES.map((feature) => (
-            <SubFeatureCard key={feature.titleKey} feature={feature} />
           ))}
         </div>
       </div>

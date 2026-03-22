@@ -55,24 +55,6 @@ export const en: TranslationKeys = {
   'features.hero.2.detail.1': 'Auto-calculate fulfillment rate from session conversations',
   'features.hero.2.detail.2': 'Detailed per-requirement status tracking',
   'features.hero.2.detail.3': 'Trend charts & change-rate reports',
-  'features.sub.0.title': 'Dashboard & Analytics',
-  'features.sub.0.description':
-    "Real-time timeline and stats showing your entire team's AI activity at a glance",
-  'features.sub.1.title': 'Full-text Search',
-  'features.sub.1.description':
-    'Instantly search conversations across thousands of sessions. Filter by message, file, or code',
-  'features.sub.2.title': 'Team Collaboration',
-  'features.sub.2.description':
-    'Role-based access control (Owner / Admin / Member). Invite teammates & share projects',
-  'features.sub.3.title': 'Local Session Sync',
-  'features.sub.3.description':
-    'Share local Claude Code sessions with your team in one click. Auto project matching',
-  'features.sub.4.title': 'Plans',
-  'features.sub.4.description':
-    'Create structured markdown plans and link them to projects for organized development workflows',
-  'features.sub.5.title': 'AI Evaluation',
-  'features.sub.5.description':
-    "Score and evaluate team members' AI utilization across sessions with multi-dimensional analysis",
 
   // How It Works
   'howItWorks.sectionLabel': '// How It Works',
@@ -98,15 +80,6 @@ export const en: TranslationKeys = {
   'social.testimonial.1.quote':
     '"Merge hell from simultaneous edits dropped dramatically. Conflict detection is the key feature."',
   'social.testimonial.1.author': '— CTO, Startup B',
-
-  // Terminal Demo
-  'demo.sectionLabel': '// Terminal Demo',
-  'demo.scanning': '⠋ Scanning local sessions...',
-  'demo.found': '✓ 3 new sessions found',
-  'demo.uploaded': '✓ Upload complete — 1,247 messages, 34 file changes',
-  'demo.conflict1': '⚠ src/auth/session.ts — dev-A, dev-B working simultaneously',
-  'demo.conflict2': '⚠ src/api/routes.ts — dev-A, dev-C working simultaneously',
-  'demo.notified': '→ Notifications sent to affected teammates.',
 
   // Docs
   'docs.hero.title': 'Learn how to get the most out of ContextSync',
@@ -198,26 +171,6 @@ export const en: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code stores session data in the .claude/ directory within your project root. ContextSync reads from this directory when you trigger a session scan. The data stays on your machine until you explicitly sync it to a project.',
 
-  // Deploy Modes
-  'deployModes.sectionLabel': '// Deploy Your Way',
-  'deployModes.title': 'One Tool, Three Modes',
-  'deployModes.subtitle': 'From solo archive to full team sync — pick the setup that fits',
-  'deployModes.0.title': 'Personal',
-  'deployModes.0.description': 'Solo developer, local everything',
-  'deployModes.0.detail.0': 'Local Docker PostgreSQL — zero config',
-  'deployModes.0.detail.1': 'Private session archive & search',
-  'deployModes.0.detail.2': 'Token usage tracking & cost analysis',
-  'deployModes.1.title': 'Team Host',
-  'deployModes.1.description': 'Admin hosting a shared DB for the team',
-  'deployModes.1.detail.0': 'SSL-enabled PostgreSQL with team roles',
-  'deployModes.1.detail.1': 'Centralized migrations & access control',
-  'deployModes.1.detail.2': 'Interactive setup wizard included',
-  'deployModes.2.title': 'Team Member',
-  'deployModes.2.description': 'Connect to your team — no Docker needed',
-  'deployModes.2.detail.0': 'Point to the remote DB and run pnpm dev',
-  'deployModes.2.detail.1': 'Full conflict detection & notifications',
-  'deployModes.2.detail.2': 'Shared sessions, search, and dashboards',
-
   // Hero (auto login)
   'hero.cta.start': 'Get Started',
   'hero.cta.loginExisting': 'Log in',
@@ -244,20 +197,6 @@ export const en: TranslationKeys = {
   'quickstart.prerequisites': 'Prerequisites: Node.js 22 \u00b7 pnpm 9+ \u00b7 Docker',
   'quickstart.copied': 'Copied!',
 
-  // Tech Stack
-  'techstack.sectionLabel': '// Built With',
-  'techstack.frontend': 'Frontend',
-  'techstack.backend': 'Backend',
-  'techstack.database': 'Database',
-  'techstack.tooling': 'Tooling',
-
-  // Contributing
-  'contributing.sectionLabel': '// Open Source',
-  'contributing.title': 'MIT Licensed & Open to Contributions',
-  'contributing.subtitle': 'Star, fork, or open an issue \u2014 all contributions welcome.',
-  'contributing.guide': 'Read the Contributing Guide',
-  'contributing.issues': 'Report an Issue',
-
   // Screenshot Alt
   'screenshot.alt.dashboard': 'ContextSync dashboard overview',
   'screenshot.alt.sessionConversation': 'Session conversation view',
@@ -265,9 +204,27 @@ export const en: TranslationKeys = {
   'screenshot.alt.prdAnalysis': 'PRD analysis results',
   'screenshot.alt.searchOverlay': 'Full-text search overlay',
   'screenshot.alt.settingsTeam': 'Team settings and member management',
-  'screenshot.alt.tokenUsageChart': 'Token usage analytics chart',
-  'screenshot.alt.sessionDetail': 'Session detail view',
   'screenshot.alt.aiEvaluation': 'AI evaluation scores',
+
+  // Open Source
+  'openSource.sectionLabel': '// Open Source',
+  'openSource.title': 'MIT Licensed & Community Driven',
+  'openSource.subtitle': 'Built in the open. Fork it, extend it, make it yours.',
+  'openSource.license.title': 'MIT License',
+  'openSource.license.description':
+    'Free to use, modify, and distribute. No vendor lock-in, no strings attached.',
+  'openSource.community.title': 'Community First',
+  'openSource.community.description':
+    'Built by developers, for developers. Every feature is shaped by real-world usage.',
+  'openSource.contributors.title': 'Open Contributions',
+  'openSource.contributors.description':
+    'PRs welcome. Check the contributing guide to get started in minutes.',
+  'openSource.cta.star': 'Star on GitHub',
+  'openSource.cta.contributing': 'Contributing Guide',
+  'openSource.cta.issues': 'Report an Issue',
+
+  // Hero (additional CTA)
+  'hero.cta.getStarted': 'Get Started',
 
   // Footer
   'footer.cta.title': 'Sync your AI workflow',

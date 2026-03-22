@@ -3,11 +3,8 @@ import { LandingHero } from '../components/landing/LandingHero';
 import { ProblemStatement } from '../components/landing/ProblemStatement';
 import { FeatureShowcase } from '../components/landing/FeatureShowcase';
 import { QuickStart } from '../components/landing/QuickStart';
-import { DeployModes } from '../components/landing/DeployModes';
 import { HowItWorks } from '../components/landing/HowItWorks';
-import { TerminalDemo } from '../components/landing/TerminalDemo';
-import { TechStack } from '../components/landing/TechStack';
-import { Contributing } from '../components/landing/Contributing';
+import { OpenSource } from '../components/landing/OpenSource';
 import { LandingFooter } from '../components/landing/LandingFooter';
 
 export function LandingPage() {
@@ -18,11 +15,8 @@ export function LandingPage() {
       <ProblemStatement />
       <FeatureShowcase />
       <QuickStart />
-      <DeployModes />
       <HowItWorks />
-      <TerminalDemo />
-      <TechStack />
-      <Contributing />
+      <OpenSource />
       <LandingFooter />
     </div>
   );

@@ -54,21 +54,6 @@ export const ko: TranslationKeys = {
   'features.hero.2.detail.1': '세션 대화 기반 달성률 자동 계산',
   'features.hero.2.detail.2': '요구사항별 상세 상태 추적',
   'features.hero.2.detail.3': '변화율 트렌드 차트 및 리포트',
-  'features.sub.0.title': 'Dashboard & Analytics',
-  'features.sub.0.description': '팀 전체의 AI 작업 현황을 실시간 타임라인과 통계로 한눈에 파악',
-  'features.sub.1.title': 'Full-text Search',
-  'features.sub.1.description':
-    '수천 개의 세션에서 필요한 대화를 즉시 검색. 메시지 · 파일 · 코드 단위 필터링',
-  'features.sub.2.title': 'Team Collaboration',
-  'features.sub.2.description':
-    '역할 기반 접근 제어 (Owner / Admin / Member). 팀원 초대 및 프로젝트 공유',
-  'features.sub.3.title': 'Local Session Sync',
-  'features.sub.3.description': '로컬 Claude Code 세션을 원클릭으로 팀에 공유. 자동 프로젝트 매칭',
-  'features.sub.4.title': 'Plans',
-  'features.sub.4.description':
-    '구조화된 마크다운 플랜을 작성하고 프로젝트에 연결하여 체계적인 개발 워크플로우 관리',
-  'features.sub.5.title': 'AI Evaluation',
-  'features.sub.5.description': '팀원의 AI 활용도를 세션 단위로 평가하고 다차원 분석으로 점수화',
 
   // How It Works
   'howItWorks.sectionLabel': '// How It Works',
@@ -94,15 +79,6 @@ export const ko: TranslationKeys = {
   'social.testimonial.1.quote':
     '"같은 파일 동시 작업하다 머지 지옥 빠지는 일이 확 줄었습니다. 충돌 감지가 핵심이에요."',
   'social.testimonial.1.author': '— CTO, 스타트업 B',
-
-  // Terminal Demo
-  'demo.sectionLabel': '// Terminal Demo',
-  'demo.scanning': '⠋ 로컬 세션 스캔 중...',
-  'demo.found': '✓ 3개 새 세션 발견',
-  'demo.uploaded': '✓ 업로드 완료 — 1,247 메시지, 34 파일 변경',
-  'demo.conflict1': '⚠ src/auth/session.ts — dev-A, dev-B 동시 작업',
-  'demo.conflict2': '⚠ src/api/routes.ts — dev-A, dev-C 동시 작업',
-  'demo.notified': '→ 관련 팀원에게 알림을 전송했습니다.',
 
   // Docs
   'docs.hero.title': 'ContextSync 활용법을 알아보세요',
@@ -191,26 +167,6 @@ export const ko: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 명시적으로 동기화하기 전까지 데이터는 로컬에 남아있습니다.',
 
-  // Deploy Modes
-  'deployModes.sectionLabel': '// Deploy Your Way',
-  'deployModes.title': '하나의 도구, 세 가지 모드',
-  'deployModes.subtitle': '개인 아카이브부터 팀 동기화까지 — 맞는 설정을 선택하세요',
-  'deployModes.0.title': 'Personal',
-  'deployModes.0.description': '솔로 개발자, 로컬 환경',
-  'deployModes.0.detail.0': '로컬 Docker PostgreSQL — 설정 불필요',
-  'deployModes.0.detail.1': '개인 세션 아카이브 및 검색',
-  'deployModes.0.detail.2': '토큰 사용량 추적 및 비용 분석',
-  'deployModes.1.title': 'Team Host',
-  'deployModes.1.description': '팀을 위한 공유 DB를 호스팅하는 관리자',
-  'deployModes.1.detail.0': '팀 역할이 포함된 SSL 지원 PostgreSQL',
-  'deployModes.1.detail.1': '중앙 집중식 마이그레이션 및 접근 제어',
-  'deployModes.1.detail.2': '대화형 설정 마법사 포함',
-  'deployModes.2.title': 'Team Member',
-  'deployModes.2.description': '팀에 연결 — Docker 불필요',
-  'deployModes.2.detail.0': '원격 DB를 가리키고 pnpm dev 실행',
-  'deployModes.2.detail.1': '충돌 감지 및 알림 완전 지원',
-  'deployModes.2.detail.2': '공유 세션, 검색, 대시보드',
-
   // Hero (auto login)
   'hero.cta.start': '바로 시작하기',
   'hero.cta.loginExisting': '로그인',
@@ -237,20 +193,6 @@ export const ko: TranslationKeys = {
   'quickstart.prerequisites': '필수 조건: Node.js 22 \u00b7 pnpm 9+ \u00b7 Docker',
   'quickstart.copied': '복사됨!',
 
-  // Tech Stack
-  'techstack.sectionLabel': '// Built With',
-  'techstack.frontend': 'Frontend',
-  'techstack.backend': 'Backend',
-  'techstack.database': 'Database',
-  'techstack.tooling': 'Tooling',
-
-  // Contributing
-  'contributing.sectionLabel': '// Open Source',
-  'contributing.title': 'MIT 라이선스 & 기여 환영',
-  'contributing.subtitle': 'Star, fork, 또는 이슈를 열어주세요 — 모든 기여를 환영합니다.',
-  'contributing.guide': '기여 가이드 읽기',
-  'contributing.issues': '이슈 제출',
-
   // Screenshot Alt
   'screenshot.alt.dashboard': 'ContextSync 대시보드 개요',
   'screenshot.alt.sessionConversation': '세션 대화 뷰',
@@ -258,9 +200,26 @@ export const ko: TranslationKeys = {
   'screenshot.alt.prdAnalysis': 'PRD 분석 결과',
   'screenshot.alt.searchOverlay': '전문 검색 오버레이',
   'screenshot.alt.settingsTeam': '팀 설정 및 멤버 관리',
-  'screenshot.alt.tokenUsageChart': '토큰 사용량 분석 차트',
-  'screenshot.alt.sessionDetail': '세션 상세 뷰',
   'screenshot.alt.aiEvaluation': 'AI 평가 점수',
+
+  // Open Source
+  'openSource.sectionLabel': '// Open Source',
+  'openSource.title': 'MIT 라이선스 & 커뮤니티 주도',
+  'openSource.subtitle': '오픈 소스로 개발됩니다. Fork하고, 확장하고, 나만의 것으로 만드세요.',
+  'openSource.license.title': 'MIT License',
+  'openSource.license.description': '자유롭게 사용, 수정, 배포하세요. 벤더 종속 없이, 조건 없이.',
+  'openSource.community.title': '커뮤니티 우선',
+  'openSource.community.description':
+    '개발자가, 개발자를 위해 만듭니다. 모든 기능은 실제 사용 경험에서 나옵니다.',
+  'openSource.contributors.title': '열린 기여',
+  'openSource.contributors.description':
+    'PR을 환영합니다. 기여 가이드를 확인하고 몇 분 안에 시작하세요.',
+  'openSource.cta.star': 'Star on GitHub',
+  'openSource.cta.contributing': '기여 가이드',
+  'openSource.cta.issues': '이슈 제출',
+
+  // Hero (additional CTA)
+  'hero.cta.getStarted': '시작하기',
 
   // Footer
   'footer.cta.title': 'AI 워크플로우를 동기화하세요',

@@ -2,16 +2,12 @@ import type { ReactNode } from 'react';
 import { useT } from '../../i18n/use-translation';
 import type { TranslationKey } from '../../i18n/types';
 import { useInView } from './use-in-view';
-import { ScreenshotImage } from '../ui/ScreenshotImage';
-import { assetUrl } from '@/lib/asset-url';
 
 interface Step {
   readonly number: string;
   readonly titleKey: TranslationKey;
   readonly descriptionKey: TranslationKey;
   readonly icon: ReactNode;
-  readonly screenshot: string;
-  readonly screenshotAltKey: TranslationKey;
 }
 
 const STEPS: readonly Step[] = [
@@ -19,8 +15,6 @@ const STEPS: readonly Step[] = [
     number: '01',
     titleKey: 'howItWorks.step.0.title',
     descriptionKey: 'howItWorks.step.0.description',
-    screenshot: assetUrl('/screenshots/session-conversation.png'),
-    screenshotAltKey: 'screenshot.alt.sessionConversation',
     icon: (
       <svg
         className="h-6 w-6"
@@ -40,8 +34,6 @@ const STEPS: readonly Step[] = [
     number: '02',
     titleKey: 'howItWorks.step.1.title',
     descriptionKey: 'howItWorks.step.1.description',
-    screenshot: assetUrl('/screenshots/prd-analysis.png'),
-    screenshotAltKey: 'screenshot.alt.prdAnalysis',
     icon: (
       <svg
         className="h-6 w-6"
@@ -61,8 +53,6 @@ const STEPS: readonly Step[] = [
     number: '03',
     titleKey: 'howItWorks.step.2.title',
     descriptionKey: 'howItWorks.step.2.description',
-    screenshot: assetUrl('/screenshots/settings-team.png'),
-    screenshotAltKey: 'screenshot.alt.settingsTeam',
     icon: (
       <svg
         className="h-6 w-6"
@@ -89,7 +79,7 @@ export function HowItWorks() {
   return (
     <section
       ref={ref}
-      className={`bg-surface-sunken py-20 md:py-28 transition-all duration-700 ${
+      className={`bg-page py-20 md:py-28 transition-all duration-700 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
       }`}
     >
@@ -117,14 +107,6 @@ export function HowItWorks() {
               <p className="max-w-xs font-mono text-xs leading-relaxed text-text-tertiary">
                 {t(step.descriptionKey)}
               </p>
-
-              <div className="mt-4 w-full overflow-hidden rounded-lg border border-border-default">
-                <ScreenshotImage
-                  src={step.screenshot}
-                  alt={t(step.screenshotAltKey)}
-                  className="w-full"
-                />
-              </div>
             </div>
           ))}
         </div>

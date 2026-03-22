@@ -56,18 +56,6 @@ export interface TranslationKeys {
   readonly 'features.hero.2.detail.1': string;
   readonly 'features.hero.2.detail.2': string;
   readonly 'features.hero.2.detail.3': string;
-  readonly 'features.sub.0.title': string;
-  readonly 'features.sub.0.description': string;
-  readonly 'features.sub.1.title': string;
-  readonly 'features.sub.1.description': string;
-  readonly 'features.sub.2.title': string;
-  readonly 'features.sub.2.description': string;
-  readonly 'features.sub.3.title': string;
-  readonly 'features.sub.3.description': string;
-  readonly 'features.sub.4.title': string;
-  readonly 'features.sub.4.description': string;
-  readonly 'features.sub.5.title': string;
-  readonly 'features.sub.5.description': string;
 
   // How It Works
   readonly 'howItWorks.sectionLabel': string;
@@ -88,15 +76,6 @@ export interface TranslationKeys {
   readonly 'social.testimonial.0.author': string;
   readonly 'social.testimonial.1.quote': string;
   readonly 'social.testimonial.1.author': string;
-
-  // Terminal Demo
-  readonly 'demo.sectionLabel': string;
-  readonly 'demo.scanning': string;
-  readonly 'demo.found': string;
-  readonly 'demo.uploaded': string;
-  readonly 'demo.conflict1': string;
-  readonly 'demo.conflict2': string;
-  readonly 'demo.notified': string;
 
   // Docs
   readonly 'docs.hero.title': string;
@@ -161,26 +140,6 @@ export interface TranslationKeys {
   readonly 'docs.faq.5.q': string;
   readonly 'docs.faq.5.a': string;
 
-  // Deploy Modes
-  readonly 'deployModes.sectionLabel': string;
-  readonly 'deployModes.title': string;
-  readonly 'deployModes.subtitle': string;
-  readonly 'deployModes.0.title': string;
-  readonly 'deployModes.0.description': string;
-  readonly 'deployModes.0.detail.0': string;
-  readonly 'deployModes.0.detail.1': string;
-  readonly 'deployModes.0.detail.2': string;
-  readonly 'deployModes.1.title': string;
-  readonly 'deployModes.1.description': string;
-  readonly 'deployModes.1.detail.0': string;
-  readonly 'deployModes.1.detail.1': string;
-  readonly 'deployModes.1.detail.2': string;
-  readonly 'deployModes.2.title': string;
-  readonly 'deployModes.2.description': string;
-  readonly 'deployModes.2.detail.0': string;
-  readonly 'deployModes.2.detail.1': string;
-  readonly 'deployModes.2.detail.2': string;
-
   // Hero (auto login)
   readonly 'hero.cta.start': string;
   readonly 'hero.cta.loginExisting': string;
@@ -207,20 +166,6 @@ export interface TranslationKeys {
   readonly 'quickstart.prerequisites': string;
   readonly 'quickstart.copied': string;
 
-  // Tech Stack
-  readonly 'techstack.sectionLabel': string;
-  readonly 'techstack.frontend': string;
-  readonly 'techstack.backend': string;
-  readonly 'techstack.database': string;
-  readonly 'techstack.tooling': string;
-
-  // Contributing
-  readonly 'contributing.sectionLabel': string;
-  readonly 'contributing.title': string;
-  readonly 'contributing.subtitle': string;
-  readonly 'contributing.guide': string;
-  readonly 'contributing.issues': string;
-
   // Screenshot Alt
   readonly 'screenshot.alt.dashboard': string;
   readonly 'screenshot.alt.sessionConversation': string;
@@ -228,9 +173,24 @@ export interface TranslationKeys {
   readonly 'screenshot.alt.prdAnalysis': string;
   readonly 'screenshot.alt.searchOverlay': string;
   readonly 'screenshot.alt.settingsTeam': string;
-  readonly 'screenshot.alt.tokenUsageChart': string;
-  readonly 'screenshot.alt.sessionDetail': string;
   readonly 'screenshot.alt.aiEvaluation': string;
+
+  // Open Source
+  readonly 'openSource.sectionLabel': string;
+  readonly 'openSource.title': string;
+  readonly 'openSource.subtitle': string;
+  readonly 'openSource.license.title': string;
+  readonly 'openSource.license.description': string;
+  readonly 'openSource.community.title': string;
+  readonly 'openSource.community.description': string;
+  readonly 'openSource.contributors.title': string;
+  readonly 'openSource.contributors.description': string;
+  readonly 'openSource.cta.star': string;
+  readonly 'openSource.cta.contributing': string;
+  readonly 'openSource.cta.issues': string;
+
+  // Hero (additional CTA)
+  readonly 'hero.cta.getStarted': string;
 
   // Footer
   readonly 'footer.cta.title': string;

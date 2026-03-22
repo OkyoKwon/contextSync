@@ -54,23 +54,6 @@ export const ja: TranslationKeys = {
   'features.hero.2.detail.1': 'セッション会話ベースの達成率自動計算',
   'features.hero.2.detail.2': '要件別の詳細ステータス追跡',
   'features.hero.2.detail.3': '変化率トレンドチャート・レポート',
-  'features.sub.0.title': 'Dashboard & Analytics',
-  'features.sub.0.description': 'チーム全体のAI作業状況をリアルタイムタイムラインと統計で一目把握',
-  'features.sub.1.title': 'Full-text Search',
-  'features.sub.1.description':
-    '数千のセッションから必要な会話を即座に検索。メッセージ・ファイル・コード単位フィルタリング',
-  'features.sub.2.title': 'Team Collaboration',
-  'features.sub.2.description':
-    'ロールベースアクセス制御（Owner / Admin / Member）。メンバー招待・プロジェクト共有',
-  'features.sub.3.title': 'Local Session Sync',
-  'features.sub.3.description':
-    'ローカルClaude Codeセッションをワンクリックでチームに共有。自動プロジェクトマッチング',
-  'features.sub.4.title': 'Plans',
-  'features.sub.4.description':
-    '構造化されたMarkdownプランを作成し、プロジェクトに紐づけて体系的な開発ワークフローを管理',
-  'features.sub.5.title': 'AI Evaluation',
-  'features.sub.5.description':
-    'チームメンバーのAI活用度をセッション単位で評価し、多次元分析でスコア化',
 
   // How It Works
   'howItWorks.sectionLabel': '// How It Works',
@@ -96,15 +79,6 @@ export const ja: TranslationKeys = {
   'social.testimonial.1.quote':
     '「同じファイルの同時作業でマージ地獄に陥ることが大幅に減りました。コンフリクト検知が核心機能です。」',
   'social.testimonial.1.author': '— CTO、スタートアップB',
-
-  // Terminal Demo
-  'demo.sectionLabel': '// Terminal Demo',
-  'demo.scanning': '⠋ ローカルセッションスキャン中...',
-  'demo.found': '✓ 新規セッション3件発見',
-  'demo.uploaded': '✓ アップロード完了 — 1,247メッセージ、34ファイル変更',
-  'demo.conflict1': '⚠ src/auth/session.ts — dev-A, dev-B 同時作業中',
-  'demo.conflict2': '⚠ src/api/routes.ts — dev-A, dev-C 同時作業中',
-  'demo.notified': '→ 関連メンバーに通知を送信しました。',
 
   // Docs
   'docs.hero.title': 'ContextSyncの活用方法を学ぼう',
@@ -194,26 +168,6 @@ export const ja: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Codeはプロジェクトルートの.claude/ディレクトリにセッションデータを保存します。セッションスキャンをトリガーするとこのディレクトリから読み取ります。明示的に同期するまでデータはローカルに残ります。',
 
-  // Deploy Modes
-  'deployModes.sectionLabel': '// Deploy Your Way',
-  'deployModes.title': '1つのツール、3つのモード',
-  'deployModes.subtitle': 'ソロアーカイブからチーム同期まで — 合うセットアップを選択',
-  'deployModes.0.title': 'Personal',
-  'deployModes.0.description': 'ソロ開発者、ローカル環境',
-  'deployModes.0.detail.0': 'ローカルDocker PostgreSQL — 設定不要',
-  'deployModes.0.detail.1': 'プライベートセッションアーカイブ＆検索',
-  'deployModes.0.detail.2': 'トークン使用量追跡＆コスト分析',
-  'deployModes.1.title': 'Team Host',
-  'deployModes.1.description': 'チーム用の共有DBをホスティングする管理者',
-  'deployModes.1.detail.0': 'チームロール付きSSL対応PostgreSQL',
-  'deployModes.1.detail.1': '一元管理のマイグレーション＆アクセス制御',
-  'deployModes.1.detail.2': '対話式セットアップウィザード内蔵',
-  'deployModes.2.title': 'Team Member',
-  'deployModes.2.description': 'チームに接続 — Docker不要',
-  'deployModes.2.detail.0': 'リモートDBを指定してpnpm devを実行',
-  'deployModes.2.detail.1': 'コンフリクト検知＆通知をフルサポート',
-  'deployModes.2.detail.2': '共有セッション、検索、ダッシュボード',
-
   // Hero (auto login)
   'hero.cta.start': 'すぐ始める',
   'hero.cta.loginExisting': 'ログイン',
@@ -240,20 +194,6 @@ export const ja: TranslationKeys = {
   'quickstart.prerequisites': '前提条件: Node.js 22 \u00b7 pnpm 9+ \u00b7 Docker',
   'quickstart.copied': 'コピーしました！',
 
-  // Tech Stack
-  'techstack.sectionLabel': '// Built With',
-  'techstack.frontend': 'Frontend',
-  'techstack.backend': 'Backend',
-  'techstack.database': 'Database',
-  'techstack.tooling': 'Tooling',
-
-  // Contributing
-  'contributing.sectionLabel': '// Open Source',
-  'contributing.title': 'MITライセンス & コントリビューション歓迎',
-  'contributing.subtitle': 'Star、fork、またはissueを開いてください — すべての貢献を歓迎します。',
-  'contributing.guide': 'コントリビューションガイドを読む',
-  'contributing.issues': 'Issueを報告',
-
   // Screenshot Alt
   'screenshot.alt.dashboard': 'ContextSyncダッシュボード概要',
   'screenshot.alt.sessionConversation': 'セッション会話ビュー',
@@ -261,9 +201,27 @@ export const ja: TranslationKeys = {
   'screenshot.alt.prdAnalysis': 'PRD分析結果',
   'screenshot.alt.searchOverlay': '全文検索オーバーレイ',
   'screenshot.alt.settingsTeam': 'チーム設定・メンバー管理',
-  'screenshot.alt.tokenUsageChart': 'トークン使用量分析チャート',
-  'screenshot.alt.sessionDetail': 'セッション詳細ビュー',
   'screenshot.alt.aiEvaluation': 'AI評価スコア',
+
+  // Open Source
+  'openSource.sectionLabel': '// Open Source',
+  'openSource.title': 'MITライセンス & コミュニティ主導',
+  'openSource.subtitle': 'オープンに開発。Fork、拡張、あなた自身のものにしてください。',
+  'openSource.license.title': 'MIT License',
+  'openSource.license.description':
+    '自由に使用、変更、配布できます。ベンダーロックインなし、制約なし。',
+  'openSource.community.title': 'コミュニティファースト',
+  'openSource.community.description':
+    '開発者が開発者のために構築。すべての機能は実際の使用経験から生まれます。',
+  'openSource.contributors.title': 'オープンコントリビューション',
+  'openSource.contributors.description':
+    'PRを歓迎します。コントリビューションガイドを確認して数分で始められます。',
+  'openSource.cta.star': 'Star on GitHub',
+  'openSource.cta.contributing': 'コントリビューションガイド',
+  'openSource.cta.issues': 'Issueを報告',
+
+  // Hero (additional CTA)
+  'hero.cta.getStarted': '始める',
 
   // Footer
   'footer.cta.title': 'AIワークフローを同期しよう',
