@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useT } from '../../i18n/use-translation';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { assetUrl } from '@/lib/asset-url';
 
 function GitHubIcon() {
   return (
@@ -28,7 +29,7 @@ export function LandingNav() {
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <a href="/">
-          <img src="/logo.png" alt="ContextSync" className="h-8" />
+          <img src={assetUrl('/logo.png')} alt="ContextSync" className="h-8" />
         </a>
         <div className="flex items-center gap-3">
           <a
