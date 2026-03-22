@@ -3,41 +3,6 @@ import { buildUser, buildProject } from '../../helpers/test-data.js';
 import { waitForAppReady } from '../../helpers/wait-for.js';
 
 test.describe('Login Flow', () => {
-  test('landing page CTA auto-login navigates to /onboarding', async ({ page }) => {
-    await page.goto('/');
-    await waitForAppReady(page);
-
-    // Primary CTA is now auto-login button
-    const cta = page
-      .locator('button')
-      .filter({ hasText: /Get Started|시작하기|始める/ })
-      .first();
-    await cta.click();
-
-    await page.waitForURL(
-      (url) => {
-        const p = url.pathname;
-        return p.includes('/onboarding') || p.includes('/dashboard');
-      },
-      { timeout: 15_000 },
-    );
-
-    // Auto user should go to onboarding
-    const url = page.url();
-    expect(url.includes('/onboarding') || url.includes('/dashboard')).toBe(true);
-  });
-
-  test('landing page has login link for existing users', async ({ page }) => {
-    await page.goto('/');
-    await waitForAppReady(page);
-
-    const loginLink = page.locator('a[href="/login"]').first();
-    await expect(loginLink).toBeVisible();
-    await loginLink.click();
-    await page.waitForURL('**/login');
-    expect(page.url()).toContain('/login');
-  });
-
   test('new user login → onboarding → dashboard', async ({ page }) => {
     await page.goto('/login');
     await waitForAppReady(page);

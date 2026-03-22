@@ -3,6 +3,9 @@ export type Locale = 'en' | 'ko' | 'ja';
 export type TranslationKey = keyof TranslationKeys;
 
 export interface TranslationKeys {
+  // App
+  readonly 'app.loading': string;
+
   // Nav
   readonly 'nav.login': string;
 

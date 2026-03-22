@@ -26,16 +26,16 @@ test.describe('Auth Guard', () => {
     expect(page.url()).toContain('/login');
   });
 
-  test('public routes are accessible without auth', async ({ page }) => {
+  test('unauthenticated → / redirects to /login', async ({ page }) => {
     await page.goto('/');
-    await waitForAppReady(page);
-    expect(page.url()).not.toContain('/login');
+    await page.waitForURL('**/login', { timeout: 10_000 });
+    expect(page.url()).toContain('/login');
+  });
 
+  test('public routes are accessible without auth', async ({ page }) => {
     await page.goto('/docs');
     await waitForAppReady(page);
-    // Should render docs page, not redirect
-    const url = page.url();
-    expect(url).toContain('/docs');
+    expect(page.url()).toContain('/docs');
 
     await page.goto('/login');
     await waitForAppReady(page);

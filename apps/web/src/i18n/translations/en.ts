@@ -1,6 +1,9 @@
 import type { TranslationKeys } from '../types';
 
 export const en: TranslationKeys = {
+  // App
+  'app.loading': 'Loading...',
+
   // Nav
   'nav.login': 'Log In',
 

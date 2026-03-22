@@ -1,6 +1,9 @@
 import type { TranslationKeys } from '../types';
 
 export const ko: TranslationKeys = {
+  // App
+  'app.loading': '준비 중...',
+
   // Nav
   'nav.login': '로그인',
 

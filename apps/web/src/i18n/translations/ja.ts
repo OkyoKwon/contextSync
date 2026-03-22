@@ -1,6 +1,9 @@
 import type { TranslationKeys } from '../types';
 
 export const ja: TranslationKeys = {
+  // App
+  'app.loading': '読み込み中...',
+
   // Nav
   'nav.login': 'ログイン',
 

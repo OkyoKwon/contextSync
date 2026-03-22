@@ -4,6 +4,7 @@ import { CONTEXT_SYNC_ASCII, CONTEXT_SYNC_ASCII_COMPACT } from '../auth/login-as
 import { useT } from '../../i18n/use-translation';
 import { authApi } from '../../api/auth.api';
 import { useAuthStore } from '../../stores/auth.store';
+import { appLink, isExternalApp } from '../../lib/app-url';
 
 function ChevronDownIcon() {
   return (
@@ -75,14 +76,23 @@ export function LandingHero() {
 
         <div className="flex flex-col items-center gap-4">
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <button
-              type="button"
-              onClick={handleAutoLogin}
-              disabled={isLoading}
-              className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isLoading ? '...' : t('hero.cta.start')}
-            </button>
+            {isExternalApp() ? (
+              <a
+                href={appLink('/')}
+                className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+              >
+                {t('hero.cta.start')}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={handleAutoLogin}
+                disabled={isLoading}
+                className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isLoading ? '...' : t('hero.cta.start')}
+              </button>
+            )}
             <a
               href="https://github.com/OkyoKwon/contextSync"
               target="_blank"
@@ -93,7 +103,7 @@ export function LandingHero() {
             </a>
           </div>
           <a
-            href="/login"
+            href={appLink('/login')}
             className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
           >
             {t('hero.cta.loginExisting')}

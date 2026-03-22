@@ -1,0 +1,71 @@
+name: Deploy Landing Page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/src/components/landing/**'
+      - 'apps/web/src/pages/LandingPage.tsx'
+      - 'apps/web/src/pages/DocsPage.tsx'
+      - 'apps/web/src/i18n/**'
+      - 'apps/web/src/landing-entry.tsx'
+      - 'apps/web/src/landing-routes.tsx'
+      - 'apps/web/landing.html'
+      - 'apps/web/vite.config.landing.ts'
+      - 'apps/web/.env.static'
+      - '.github/workflows/deploy-landing.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build shared package
+        run: pnpm --filter @context-sync/shared build
+
+      - name: Build static landing
+        run: pnpm --filter @context-sync/web build:static
+        env:
+          VITE_APP_URL: ${{ vars.APP_URL }}
+          PAGES_BASE_PATH: /contextSync/
+
+      - name: Prepare GitHub Pages output
+        run: |
+          mv apps/web/dist-landing/landing.html apps/web/dist-landing/index.html
+          cp apps/web/dist-landing/index.html apps/web/dist-landing/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist-landing
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:landing": "tsc && vite build --mode landing",
+    "build:static": "tsc && vite build --config vite.config.landing.ts --mode static",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist dist-landing"
   },
   "dependencies": {
     "@context-sync/shared": "workspace:*",

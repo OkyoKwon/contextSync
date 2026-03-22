@@ -4,6 +4,9 @@ import { useAuthStore } from './stores/auth.store';
 import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
+import { AppEntryRedirect } from './components/auth/AppEntryRedirect';
+
+const SHOW_LANDING = import.meta.env.VITE_SHOW_LANDING === 'true';
 
 const LandingPage = lazy(() =>
   import('./pages/LandingPage').then((m) => ({ default: m.LandingPage })),
@@ -69,7 +72,7 @@ export function AppRoutes() {
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={SHOW_LANDING ? <LandingPage /> : <AppEntryRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
