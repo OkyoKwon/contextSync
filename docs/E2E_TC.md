@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **103 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **121 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -324,6 +324,69 @@
 | 101 | EVAL-001 | Evaluation page renders                             | AI evaluation page renders                          | URL → `/ai-evaluation`, root element visible |
 | 102 | EVAL-002 | Evaluation trigger fails gracefully without API key | Evaluation trigger fails gracefully without API key | success === false                            |
 | 103 | EVAL-003 | Empty evaluation history                            | Empty evaluation history query                      | data.length === 0                            |
+
+---
+
+## 15. Auth Profile & Token
+
+**File:** `e2e/tests/auth/auth-profile.spec.ts` (4 TC)
+
+| #   | TC ID    | Test Name                               | Description                      | Assertions                            |
+| --- | -------- | --------------------------------------- | -------------------------------- | ------------------------------------- |
+| 104 | PROF-001 | GET /me returns current user            | Fetch authenticated user profile | user.id, email, name match login data |
+| 105 | PROF-002 | GET /me returns 401 without token       | Unauthenticated request rejected | status === 401                        |
+| 106 | PROF-003 | POST /refresh returns new token         | Refresh JWT token                | token is truthy, typeof === 'string'  |
+| 107 | PROF-004 | POST /refresh returns 401 without token | Unauthenticated refresh rejected | status === 401                        |
+
+---
+
+## 16. API Key Management
+
+**File:** `e2e/tests/auth/api-key.spec.ts` (4 TC)
+
+| #   | TC ID    | Test Name                            | Description                  | Assertions                       |
+| --- | -------- | ------------------------------------ | ---------------------------- | -------------------------------- |
+| 108 | AKEY-001 | Set API key via PUT /me/api-key      | Save Anthropic API key       | status === 200, success === true |
+| 109 | AKEY-002 | GET /me reflects hasApiKey after set | Profile shows API key status | user.hasAnthropicApiKey === true |
+| 110 | AKEY-003 | DELETE /me/api-key removes key       | Remove API key               | status === 200, success === true |
+| 111 | AKEY-004 | PUT /me/api-key rejects empty key    | Empty/invalid key rejected   | status === 400                   |
+
+---
+
+## 17. Session Export
+
+**File:** `e2e/tests/api/session-export.spec.ts` (3 TC)
+
+| #   | TC ID    | Test Name                                   | Description                     | Assertions                                  |
+| --- | -------- | ------------------------------------------- | ------------------------------- | ------------------------------------------- |
+| 112 | SEXP-001 | Export sessions as markdown                 | Export project sessions         | status === 200, body contains session title |
+| 113 | SEXP-002 | Export empty project returns valid response | No sessions to export           | status === 200                              |
+| 114 | SEXP-003 | Export requires authentication              | Unauthenticated export rejected | status === 401                              |
+
+---
+
+## 18. Token Usage
+
+**File:** `e2e/tests/api/token-usage.spec.ts` (4 TC)
+
+| #   | TC ID    | Test Name                         | Description                          | Assertions                                    |
+| --- | -------- | --------------------------------- | ------------------------------------ | --------------------------------------------- |
+| 115 | TKUS-001 | Token usage endpoint returns data | Get token usage for project          | status === 200, success === true, data exists |
+| 116 | TKUS-002 | Token usage with period filter    | Filter by 7d/30d/90d                 | Each period returns valid response            |
+| 117 | TKUS-003 | Token usage after session import  | Import session, check usage reflects | response data exists                          |
+| 118 | TKUS-004 | Recalculate tokens endpoint       | POST recalculate-tokens              | status === 200, success === true              |
+
+---
+
+## 19. Local Sessions
+
+**File:** `e2e/tests/sessions/local-sessions.spec.ts` (3 TC)
+
+| #   | TC ID    | Test Name                                | Description                                      | Assertions                    |
+| --- | -------- | ---------------------------------------- | ------------------------------------------------ | ----------------------------- |
+| 119 | LSES-001 | List local sessions endpoint responds    | GET /sessions/local returns response             | status === 200, data is array |
+| 120 | LSES-002 | Browse local directory endpoint responds | GET /sessions/local/browse returns response      | status === 200                |
+| 121 | LSES-003 | Local directories endpoint responds      | GET /sessions/local/directories returns response | status === 200, data is array |
 
 ---
 

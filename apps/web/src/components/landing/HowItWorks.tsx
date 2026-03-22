@@ -3,6 +3,7 @@ import { useT } from '../../i18n/use-translation';
 import type { TranslationKey } from '../../i18n/types';
 import { useInView } from './use-in-view';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
+import { assetUrl } from '@/lib/asset-url';
 
 interface Step {
   readonly number: string;
@@ -18,7 +19,7 @@ const STEPS: readonly Step[] = [
     number: '01',
     titleKey: 'howItWorks.step.0.title',
     descriptionKey: 'howItWorks.step.0.description',
-    screenshot: '/screenshots/session-conversation.png',
+    screenshot: assetUrl('/screenshots/session-conversation.png'),
     screenshotAltKey: 'screenshot.alt.sessionConversation',
     icon: (
       <svg
@@ -39,7 +40,7 @@ const STEPS: readonly Step[] = [
     number: '02',
     titleKey: 'howItWorks.step.1.title',
     descriptionKey: 'howItWorks.step.1.description',
-    screenshot: '/screenshots/prd-analysis.png',
+    screenshot: assetUrl('/screenshots/prd-analysis.png'),
     screenshotAltKey: 'screenshot.alt.prdAnalysis',
     icon: (
       <svg
@@ -60,7 +61,7 @@ const STEPS: readonly Step[] = [
     number: '03',
     titleKey: 'howItWorks.step.2.title',
     descriptionKey: 'howItWorks.step.2.description',
-    screenshot: '/screenshots/settings-team.png',
+    screenshot: assetUrl('/screenshots/settings-team.png'),
     screenshotAltKey: 'screenshot.alt.settingsTeam',
     icon: (
       <svg

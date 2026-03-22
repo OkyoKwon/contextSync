@@ -3,6 +3,7 @@ import { useT } from '../../i18n/use-translation';
 import { Card } from '../ui/Card';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
 import type { TranslationKey } from '../../i18n/types';
+import { assetUrl } from '@/lib/asset-url';
 
 const FEATURE_COLORS = [
   { bg: 'bg-blue-500/10', text: 'text-blue-400' },
@@ -27,14 +28,14 @@ const featureIcons = [
 ] as const;
 
 const FEATURE_SCREENSHOTS: readonly (string | null)[] = [
-  '/screenshots/session-conversation.png',
-  '/screenshots/conflicts-list.png',
-  '/screenshots/dashboard-full.png',
-  '/screenshots/prd-analysis.png',
+  assetUrl('/screenshots/session-conversation.png'),
+  assetUrl('/screenshots/conflicts-list.png'),
+  assetUrl('/screenshots/dashboard-full.png'),
+  assetUrl('/screenshots/prd-analysis.png'),
   null,
-  '/screenshots/search-overlay.png',
-  '/screenshots/settings-team.png',
-  '/screenshots/ai-evaluation.png',
+  assetUrl('/screenshots/search-overlay.png'),
+  assetUrl('/screenshots/settings-team.png'),
+  assetUrl('/screenshots/ai-evaluation.png'),
 ];
 
 const FEATURE_SCREENSHOT_ALT_KEYS: readonly (TranslationKey | null)[] = [

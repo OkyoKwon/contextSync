@@ -7,6 +7,7 @@ import { useAuthStore } from '../../stores/auth.store';
 import { isExternalApp } from '../../lib/app-url';
 import { BrowserFrame } from '../ui/BrowserFrame';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
+import { assetUrl } from '@/lib/asset-url';
 
 function ChevronDownIcon() {
   return (
@@ -123,7 +124,7 @@ export function LandingHero() {
       <div className="group mt-12 w-full max-w-4xl [perspective:1200px]">
         <BrowserFrame className="transition-transform duration-500 [transform:rotateX(2deg)] group-hover:[transform:rotateX(0deg)]">
           <ScreenshotImage
-            src="/screenshots/dashboard-full.png"
+            src={assetUrl('/screenshots/dashboard-full.png')}
             alt={t('screenshot.alt.dashboard')}
             className="w-full"
           />

@@ -10,6 +10,7 @@ import {
 } from './DocsIllustrations';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
 import type { TranslationKey } from '../../i18n/types';
+import { assetUrl } from '@/lib/asset-url';
 
 interface StepConfig {
   readonly illustration: () => ReactNode;
@@ -21,17 +22,17 @@ const STEP_CONFIGS: readonly StepConfig[] = [
   { illustration: CreateProjectIllustration, screenshot: null, screenshotAltKey: null },
   {
     illustration: SyncSessionIllustration,
-    screenshot: '/screenshots/session-conversation.png',
+    screenshot: assetUrl('/screenshots/session-conversation.png'),
     screenshotAltKey: 'screenshot.alt.sessionConversation',
   },
   {
     illustration: DashboardIllustration,
-    screenshot: '/screenshots/dashboard-full.png',
+    screenshot: assetUrl('/screenshots/dashboard-full.png'),
     screenshotAltKey: 'screenshot.alt.dashboard',
   },
   {
     illustration: InviteTeamIllustration,
-    screenshot: '/screenshots/settings-team.png',
+    screenshot: assetUrl('/screenshots/settings-team.png'),
     screenshotAltKey: 'screenshot.alt.settingsTeam',
   },
 ];

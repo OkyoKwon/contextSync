@@ -2,6 +2,7 @@ import { useT } from '../../i18n/use-translation';
 import type { TranslationKey } from '../../i18n/types';
 import { useInView } from './use-in-view';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
+import { assetUrl } from '@/lib/asset-url';
 
 interface HeroFeature {
   readonly label: string;
@@ -31,7 +32,7 @@ const HERO_FEATURES: readonly HeroFeature[] = [
       'features.hero.0.detail.2',
       'features.hero.0.detail.3',
     ],
-    screenshot: '/screenshots/session-conversation.png',
+    screenshot: assetUrl('/screenshots/session-conversation.png'),
     screenshotAltKey: 'screenshot.alt.sessionConversation',
   },
   {
@@ -44,7 +45,7 @@ const HERO_FEATURES: readonly HeroFeature[] = [
       'features.hero.1.detail.2',
       'features.hero.1.detail.3',
     ],
-    screenshot: '/screenshots/conflicts-list.png',
+    screenshot: assetUrl('/screenshots/conflicts-list.png'),
     screenshotAltKey: 'screenshot.alt.conflictsList',
   },
   {
@@ -57,7 +58,7 @@ const HERO_FEATURES: readonly HeroFeature[] = [
       'features.hero.2.detail.2',
       'features.hero.2.detail.3',
     ],
-    screenshot: '/screenshots/prd-analysis.png',
+    screenshot: assetUrl('/screenshots/prd-analysis.png'),
     screenshotAltKey: 'screenshot.alt.prdAnalysis',
   },
 ];
@@ -67,42 +68,42 @@ const SUB_FEATURES: readonly SubFeature[] = [
     titleKey: 'features.sub.0.title',
     descriptionKey: 'features.sub.0.description',
     icon: '📊',
-    screenshot: '/screenshots/dashboard-stats.png',
+    screenshot: assetUrl('/screenshots/dashboard-stats.png'),
     screenshotAltKey: 'screenshot.alt.dashboard',
   },
   {
     titleKey: 'features.sub.1.title',
     descriptionKey: 'features.sub.1.description',
     icon: '🔍',
-    screenshot: '/screenshots/search-overlay.png',
+    screenshot: assetUrl('/screenshots/search-overlay.png'),
     screenshotAltKey: 'screenshot.alt.searchOverlay',
   },
   {
     titleKey: 'features.sub.2.title',
     descriptionKey: 'features.sub.2.description',
     icon: '👥',
-    screenshot: '/screenshots/settings-team.png',
+    screenshot: assetUrl('/screenshots/settings-team.png'),
     screenshotAltKey: 'screenshot.alt.settingsTeam',
   },
   {
     titleKey: 'features.sub.3.title',
     descriptionKey: 'features.sub.3.description',
     icon: '⚡',
-    screenshot: '/screenshots/token-usage-chart.png',
+    screenshot: assetUrl('/screenshots/token-usage-chart.png'),
     screenshotAltKey: 'screenshot.alt.tokenUsageChart',
   },
   {
     titleKey: 'features.sub.4.title',
     descriptionKey: 'features.sub.4.description',
     icon: '📋',
-    screenshot: '/screenshots/session-detail.png',
+    screenshot: assetUrl('/screenshots/session-detail.png'),
     screenshotAltKey: 'screenshot.alt.sessionDetail',
   },
   {
     titleKey: 'features.sub.5.title',
     descriptionKey: 'features.sub.5.description',
     icon: '🎯',
-    screenshot: '/screenshots/ai-evaluation.png',
+    screenshot: assetUrl('/screenshots/ai-evaluation.png'),
     screenshotAltKey: 'screenshot.alt.aiEvaluation',
   },
 ];
