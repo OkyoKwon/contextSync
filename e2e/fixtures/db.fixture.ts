@@ -2,7 +2,9 @@ import { test as base } from '@playwright/test';
 import { Kysely, PostgresDialect, sql } from 'kysely';
 import pg from 'pg';
 
-const TEST_DB_URL = 'postgresql://postgres:postgres@localhost:5432/contextsync_test';
+const TEST_DB_URL =
+  process.env['TEST_DATABASE_URL'] ??
+  'postgresql://postgres:postgres@localhost:5432/contextsync_test';
 
 const APP_TABLES = [
   'ai_evaluation_evidence',

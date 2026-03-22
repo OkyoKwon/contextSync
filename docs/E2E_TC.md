@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **126 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **138 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -402,6 +402,40 @@
 | 124 | SETUP-005 | docker-compose.yml defines postgres with healthcheck | docker-compose.yml에 postgres 서비스 및 healthcheck 정의 확인 | postgres:16-alpine, healthcheck, pg_isready 포함         |
 | 125 | SETUP-006 | Auth system works end-to-end after setup             | 인증 시스템 정상 동작 확인 (login → 프로젝트 생성)            | token 발급, project.id 존재                              |
 | 126 | SETUP-007 | Full-text search vectors are configured              | search_vector 컬럼 존재 확인                                  | sessions.search_vector, messages.search_vector 컬럼 존재 |
+
+---
+
+## 21. Clean Environment
+
+> Docker postgres부터 시작하여 DB 생성 → 마이그레이션 → 시드 → API/Web 기동 → 온보딩까지, "from zero" 전체 경로를 검증.
+>
+> Config: `e2e/playwright.clean-env.config.ts` | Port: API 3098, Web 5198, DB 5433
+
+### 21-1. Fresh Setup
+
+**File:** `e2e/tests/clean-env/fresh-setup.spec.ts` (8 TC)
+
+| #   | TC ID     | Test Name                                 | Description                                         | Assertions                                          |
+| --- | --------- | ----------------------------------------- | --------------------------------------------------- | --------------------------------------------------- |
+| 127 | CLEAN-001 | All 25 migrations apply to fresh database | 빈 DB에서 마이그레이션 전체 적용 확인               | count === 25, last === '025_simplify_collaboration' |
+| 128 | CLEAN-002 | All application tables are created        | information_schema에서 15개 테이블 전부 존재 확인   | 모든 테이블 존재                                    |
+| 129 | CLEAN-003 | Search vector columns exist               | sessions.search_vector, messages.search_vector 확인 | 두 컬럼 모두 존재                                   |
+| 130 | CLEAN-004 | API health check responds                 | `GET /api/health` → 200                             | status === 200                                      |
+| 131 | CLEAN-005 | Web frontend loads                        | `GET /` → 200, text/html                            | status === 200, content-type: text/html             |
+| 132 | CLEAN-006 | Auth flow works on fresh database         | login → token → GET /me 성공                        | token, user.id 존재, /me 응답 일치                  |
+| 133 | CLEAN-007 | Full CRUD works after fresh setup         | 프로젝트 생성 → 세션 import → 조회 → 삭제           | 각 단계 성공, 삭제 후 404                           |
+| 134 | CLEAN-008 | Seed script runs without errors           | seed 스크립트 실행 → 시드 데이터 DB 조회            | exit code 0, users/projects count > 0               |
+
+### 21-2. Onboarding
+
+**File:** `e2e/tests/clean-env/onboarding.spec.ts` (4 TC)
+
+| #   | TC ID     | Test Name                                                   | Description                                     | Assertions                 |
+| --- | --------- | ----------------------------------------------------------- | ----------------------------------------------- | -------------------------- |
+| 135 | CLEAN-009 | New user login redirects to onboarding                      | 새 유저 로그인 → URL `/onboarding` 포함         | URL contains '/onboarding' |
+| 136 | CLEAN-010 | Onboarding creates first project and redirects to dashboard | 온보딩에서 프로젝트 생성 → `/dashboard` 도달    | URL contains '/dashboard'  |
+| 137 | CLEAN-011 | Second login skips onboarding                               | 프로젝트 보유 유저 재로그인 → `/dashboard` 직행 | URL contains '/dashboard'  |
+| 138 | CLEAN-012 | Onboarding skip works                                       | 새 유저 → 온보딩 Skip → `/dashboard` 도달       | URL contains '/dashboard'  |
 
 ---
 

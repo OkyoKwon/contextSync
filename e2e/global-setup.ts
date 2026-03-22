@@ -1,6 +1,8 @@
 import pg from 'pg';
 
-const TEST_DB_URL = 'postgresql://postgres:postgres@localhost:5432/contextsync_test';
+const TEST_DB_URL =
+  process.env['TEST_DATABASE_URL'] ??
+  'postgresql://postgres:postgres@localhost:5432/contextsync_test';
 
 const APP_TABLES = [
   'ai_evaluation_evidence',
@@ -24,10 +26,11 @@ async function globalSetup(): Promise<void> {
   console.log('[global-setup] Ensuring test database is clean...');
 
   // Wait for the API server to be ready and have run migrations
+  const apiBase = process.env['TEST_API_BASE'] ?? 'http://localhost:3099/api';
   const maxAttempts = 30;
   for (let i = 0; i < maxAttempts; i++) {
     try {
-      const response = await fetch('http://localhost:3099/api/health');
+      const response = await fetch(`${apiBase}/health`);
       if (response.ok) break;
     } catch {
       // API not ready yet

@@ -8,6 +8,7 @@ const TEST_WEB_PORT = 5199;
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: ['**/clean-env/**'],
   globalSetup: './global-setup.ts',
   globalTeardown: './global-teardown.ts',
   fullyParallel: true,

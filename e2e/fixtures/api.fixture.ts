@@ -2,7 +2,7 @@ import { test as dbTest } from './db.fixture.js';
 import { readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 
-const API_BASE = 'http://localhost:3099/api';
+const API_BASE = process.env['TEST_API_BASE'] ?? 'http://localhost:3099/api';
 
 interface LoginResult {
   readonly token: string;

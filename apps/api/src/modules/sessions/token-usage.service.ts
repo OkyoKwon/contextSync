@@ -5,23 +5,9 @@ import type {
   ModelUsageBreakdown,
   DailyTokenUsage,
 } from '@context-sync/shared';
-import { MODEL_PRICING, DEFAULT_PRICE_PER_MILLION } from '@context-sync/shared';
 import { assertProjectAccess } from '../projects/project.service.js';
 import * as tokenUsageRepo from './token-usage.repository.js';
-
-function periodToDays(period: TokenUsagePeriod): number {
-  const map: Record<TokenUsagePeriod, number> = { '7d': 7, '30d': 30, '90d': 90 };
-  return map[period];
-}
-
-function normalizeModelName(raw: string): string {
-  return raw.replace(/-\d{8}$/, '');
-}
-
-function estimateCost(tokens: number, model: string): number {
-  const price = MODEL_PRICING[model] ?? DEFAULT_PRICE_PER_MILLION;
-  return (tokens / 1_000_000) * price;
-}
+import { periodToDays, normalizeModelName, estimateCost } from './token-usage.helpers.js';
 
 export async function getTokenUsageStats(
   db: Db,
