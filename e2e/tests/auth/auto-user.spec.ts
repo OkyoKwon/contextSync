@@ -20,15 +20,14 @@ test.describe('Auto User', () => {
     expect(project.name).toBe('Auto User Project');
   });
 
-  test('auto user is blocked from creating invitations', async ({ apiClient }) => {
+  test('auto user is blocked from generating join codes', async ({ apiClient }) => {
     const { token } = await apiClient.autoLogin();
     const project = await apiClient.createProject(token, { name: 'Test Project' });
 
-    const inviteeData = buildUser();
     const response = await apiClient.fetchRaw(
       'POST',
-      `/projects/${project.id}/invitations`,
-      { email: inviteeData.email, role: 'member' },
+      `/projects/${project.id}/join-code`,
+      {},
       token,
     );
 

@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **121 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **115 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -40,7 +40,7 @@
 | --- | -------- | ------------------------------------------------ | --------------------------------------------------- | -------------------------------------- |
 | 9   | AUTO-001 | Auto login creates user with is_auto=true        | Auto-login creates an auto user                     | Email contains `@local`, name verified |
 | 10  | AUTO-002 | Auto user can create project                     | Auto user can create projects                       | project.id exists                      |
-| 11  | AUTO-003 | Auto user is blocked from creating invitations   | Auto user blocked from creating invitations (403)   | status === 403, error message verified |
+| 11  | AUTO-003 | Auto user is blocked from generating join codes  | Auto user blocked from generating join codes (403)  | status === 403, error message verified |
 | 12  | AUTO-004 | Auto user is blocked from removing collaborators | Auto user blocked from removing collaborators (403) | status === 403, error message verified |
 
 ### 2-3. Auto User Upgrade
@@ -50,7 +50,7 @@
 | #   | TC ID    | Test Name                                   | Description                                         | Assertions                                  |
 | --- | -------- | ------------------------------------------- | --------------------------------------------------- | ------------------------------------------- |
 | 13  | UPGR-001 | Upgrade auto user with new email            | Upgrade auto user with new email                    | Email/name changed after upgrade            |
-| 14  | UPGR-002 | Upgraded user can create invitations        | Upgraded user can create invitations                | invitation.id exists                        |
+| 14  | UPGR-002 | Upgraded user can generate join codes       | Upgraded user can generate join codes               | joinCode exists                             |
 | 15  | UPGR-003 | Upgrade with existing email merges data     | Upgrading with existing user's email merges data    | Returns existing user ID, owns all projects |
 | 16  | UPGR-004 | Upgrade already-upgraded user returns error | Re-upgrading an already upgraded user returns error | status === 400                              |
 
@@ -219,21 +219,19 @@
 | 69  | PROJ-004 | Delete project via API                         | Delete project via API                      | Not found in list after deletion |
 | 70  | PROJ-005 | Edit project on settings page                  | Edit project on settings page               | Updated name shown               |
 
-### 8-2. Project Collaboration
+### 8-2. Project Collaboration (Join Code)
 
-**File:** `e2e/tests/projects/project-collaboration.spec.ts` (6 TC)
+**File:** `e2e/tests/projects/project-collaboration.spec.ts` (5 TC)
 
-> **Prerequisite:** COLLAB-001~005 insert remote DB active status via `activateRemoteDb()` at test start.
-> Without a remote DB, the invitation API returns 403 (verified in COLLAB-006).
+> Join Code 기반 협업 시스템. Owner가 Join Code를 생성하면 팀원이 코드를 입력하여 프로젝트에 참여.
 
-| #   | TC ID      | Test Name                            | Description                                      | Assertions                                 |
-| --- | ---------- | ------------------------------------ | ------------------------------------------------ | ------------------------------------------ |
-| 71  | COLLAB-001 | Create invitation                    | Create invitation (remote DB active)             | invitation.id exists, email matches        |
-| 72  | COLLAB-002 | List project invitations             | List project invitations                         | Created invitation exists                  |
-| 73  | COLLAB-003 | Invitee can see pending invitation   | Invitee can see pending invitation               | myInvitations.length >= 1                  |
-| 74  | COLLAB-004 | Accept invitation adds collaborator  | Accepting invitation adds collaborator           | collaborators.length >= 1                  |
-| 75  | COLLAB-005 | Cancel invitation removes it         | Cancelling invitation removes it from list       | Cancelled invitation not found             |
-| 76  | COLLAB-006 | Invitation blocked without remote DB | Invitation attempt without remote DB returns 403 | status === 403, error contains 'Remote DB' |
+| #   | TC ID      | Test Name                         | Description                                          | Assertions                                   |
+| --- | ---------- | --------------------------------- | ---------------------------------------------------- | -------------------------------------------- |
+| 71  | COLLAB-001 | Generate join code                | Owner generates a 6-character join code for project  | joinCode exists, length === 6                |
+| 72  | COLLAB-002 | Join project by code              | New user joins project using join code               | joined project ID matches, collaborators ≥ 1 |
+| 73  | COLLAB-003 | Regenerate join code              | Owner regenerates join code (old code invalidated)   | New code differs from original               |
+| 74  | COLLAB-004 | Delete join code disables joining | Deleting join code prevents new members from joining | Attempt with old code returns 404            |
+| 75  | COLLAB-005 | Invalid join code returns 404     | Non-existent join code returns 404                   | status === 404                               |
 
 ---
 
@@ -245,9 +243,9 @@
 
 | #   | TC ID    | Test Name                          | Description                        | Assertions                                                       |
 | --- | -------- | ---------------------------------- | ---------------------------------- | ---------------------------------------------------------------- |
-| 77  | SESS-001 | Imported sessions exist via API    | Imported sessions verified via API | Titles include 'Auth Feature Implementation', 'Auth Refactoring' |
-| 78  | SESS-002 | Session detail page shows title    | Session detail page shows title    | Page contains session title text                                 |
-| 79  | SESS-003 | Delete session removes it from API | Deleted session removed from API   | Deleted session ID not found                                     |
+| 76  | SESS-001 | Imported sessions exist via API    | Imported sessions verified via API | Titles include 'Auth Feature Implementation', 'Auth Refactoring' |
+| 77  | SESS-002 | Session detail page shows title    | Session detail page shows title    | Page contains session title text                                 |
+| 78  | SESS-003 | Delete session removes it from API | Deleted session removed from API   | Deleted session ID not found                                     |
 
 ### 9-2. Session Import
 
@@ -255,10 +253,10 @@
 
 | #   | TC ID   | Test Name                          | Description                        | Assertions                            |
 | --- | ------- | ---------------------------------- | ---------------------------------- | ------------------------------------- |
-| 80  | IMP-001 | Import JSON session via API        | Import JSON session file via API   | session.id exists, messageCount === 4 |
-| 81  | IMP-002 | Import JSONL session via API       | Import JSONL session file via API  | session.id exists, messageCount === 2 |
-| 82  | IMP-003 | Import session via UI upload modal | Import session via UI upload modal | Flow completes without errors         |
-| 83  | IMP-004 | Reject missing file upload         | Import without file fails          | success === false                     |
+| 79  | IMP-001 | Import JSON session via API        | Import JSON session file via API   | session.id exists, messageCount === 4 |
+| 80  | IMP-002 | Import JSONL session via API       | Import JSONL session file via API  | session.id exists, messageCount === 2 |
+| 81  | IMP-003 | Import session via UI upload modal | Import session via UI upload modal | Flow completes without errors         |
+| 82  | IMP-004 | Reject missing file upload         | Import without file fails          | success === false                     |
 
 ---
 
@@ -268,9 +266,9 @@
 
 | #   | TC ID    | Test Name                                  | Description                           | Assertions                 |
 | --- | -------- | ------------------------------------------ | ------------------------------------- | -------------------------- |
-| 84  | SRCH-001 | Search API returns matching results        | Search for 'auth' returns results     | results.length > 0         |
-| 85  | SRCH-002 | Search with nonexistent term returns empty | Nonexistent search term returns empty | results.length === 0       |
-| 86  | SRCH-003 | Search type filter works                   | Type filter (session/message) applied | Each result's type matches |
+| 83  | SRCH-001 | Search API returns matching results        | Search for 'auth' returns results     | results.length > 0         |
+| 84  | SRCH-002 | Search with nonexistent term returns empty | Nonexistent search term returns empty | results.length === 0       |
+| 85  | SRCH-003 | Search type filter works                   | Type filter (session/message) applied | Each result's type matches |
 
 ---
 
@@ -280,10 +278,10 @@
 
 | #   | TC ID   | Test Name                                 | Description                               | Assertions                       |
 | --- | ------- | ----------------------------------------- | ----------------------------------------- | -------------------------------- |
-| 87  | PRD-001 | Upload PRD document via API               | Upload PRD document via API               | id exists, title === 'Test PRD'  |
-| 88  | PRD-002 | List PRD documents                        | List PRD documents                        | documents.length >= 1            |
-| 89  | PRD-003 | Delete PRD document                       | Delete PRD document                       | Not found in list after deletion |
-| 90  | PRD-004 | Analysis fails gracefully without API key | Analysis fails gracefully without API key | status >= 200                    |
+| 86  | PRD-001 | Upload PRD document via API               | Upload PRD document via API               | id exists, title === 'Test PRD'  |
+| 87  | PRD-002 | List PRD documents                        | List PRD documents                        | documents.length >= 1            |
+| 88  | PRD-003 | Delete PRD document                       | Delete PRD document                       | Not found in list after deletion |
+| 89  | PRD-004 | Analysis fails gracefully without API key | Analysis fails gracefully without API key | status >= 200                    |
 
 ---
 
@@ -293,25 +291,24 @@
 
 | #   | TC ID    | Test Name                       | Description                     | Assertions                                            |
 | --- | -------- | ------------------------------- | ------------------------------- | ----------------------------------------------------- |
-| 91  | PLAN-001 | Plans page renders              | Plans page renders              | URL → `/plans`, root element visible                  |
-| 92  | PLAN-002 | List plans via API              | List plans via API              | Array.isArray(plans) === true                         |
-| 93  | PLAN-003 | Empty state shown when no plans | Empty state shown when no plans | Contains 'plan', 'no plan', 'empty', or 'get started' |
+| 90  | PLAN-001 | Plans page renders              | Plans page renders              | URL → `/plans`, root element visible                  |
+| 91  | PLAN-002 | List plans via API              | List plans via API              | Array.isArray(plans) === true                         |
+| 92  | PLAN-003 | Empty state shown when no plans | Empty state shown when no plans | Contains 'plan', 'no plan', 'empty', or 'get started' |
 
 ---
 
 ## 13. Settings
 
-**File:** `e2e/tests/settings/settings.spec.ts` (7 TC)
+**File:** `e2e/tests/settings/settings.spec.ts` (6 TC)
 
-| #   | TC ID   | Test Name                                        | Description                                      | Assertions                               |
-| --- | ------- | ------------------------------------------------ | ------------------------------------------------ | ---------------------------------------- |
-| 94  | SET-001 | Project info is displayed                        | Project info displayed on settings page          | 'Project Info' text visible              |
-| 95  | SET-002 | Edit project name                                | Edit project name on settings page               | Updated name shown                       |
-| 96  | SET-003 | Delete project section exists                    | Delete project section exists                    | 'Delete Project' or 'Delete' visible     |
-| 97  | SET-004 | Collaborators section exists                     | Collaborators section exists                     | 'Collaborators' heading visible          |
-| 98  | SET-005 | Remote Database section exists                   | Remote Database section exists                   | 'Remote Database' heading visible        |
-| 99  | SET-006 | Connect Remote Database button visible for owner | Connect Remote Database button visible for owner | 'Connect Remote Database' button visible |
-| 100 | SET-007 | Collaborator invite disabled without remote DB   | Invite input disabled without remote DB          | 'Connect a remote database' message      |
+| #   | TC ID   | Test Name                                   | Description                                 | Assertions                           |
+| --- | ------- | ------------------------------------------- | ------------------------------------------- | ------------------------------------ |
+| 93  | SET-001 | Project info is displayed                   | Project info displayed on settings page     | 'Project Info' text visible          |
+| 94  | SET-002 | Edit project name                           | Edit project name on settings page          | Updated name shown                   |
+| 95  | SET-003 | Delete project section exists               | Delete project section exists               | 'Delete Project' or 'Delete' visible |
+| 96  | SET-004 | Collaborators section exists                | Collaborators section exists                | 'Collaborators' heading visible      |
+| 97  | SET-005 | Collaboration section exists                | Collaboration (Join Code) section exists    | 'Collaboration' heading visible      |
+| 98  | SET-006 | Generate Join Code button visible for owner | Generate Join Code button visible for owner | 'Generate Join Code' button visible  |
 
 ---
 
@@ -321,9 +318,9 @@
 
 | #   | TC ID    | Test Name                                           | Description                                         | Assertions                                   |
 | --- | -------- | --------------------------------------------------- | --------------------------------------------------- | -------------------------------------------- |
-| 101 | EVAL-001 | Evaluation page renders                             | AI evaluation page renders                          | URL → `/ai-evaluation`, root element visible |
-| 102 | EVAL-002 | Evaluation trigger fails gracefully without API key | Evaluation trigger fails gracefully without API key | success === false                            |
-| 103 | EVAL-003 | Empty evaluation history                            | Empty evaluation history query                      | data.length === 0                            |
+| 99  | EVAL-001 | Evaluation page renders                             | AI evaluation page renders                          | URL → `/ai-evaluation`, root element visible |
+| 100 | EVAL-002 | Evaluation trigger fails gracefully without API key | Evaluation trigger fails gracefully without API key | success === false                            |
+| 101 | EVAL-003 | Empty evaluation history                            | Empty evaluation history query                      | data.length === 0                            |
 
 ---
 
@@ -333,10 +330,10 @@
 
 | #   | TC ID    | Test Name                               | Description                      | Assertions                            |
 | --- | -------- | --------------------------------------- | -------------------------------- | ------------------------------------- |
-| 104 | PROF-001 | GET /me returns current user            | Fetch authenticated user profile | user.id, email, name match login data |
-| 105 | PROF-002 | GET /me returns 401 without token       | Unauthenticated request rejected | status === 401                        |
-| 106 | PROF-003 | POST /refresh returns new token         | Refresh JWT token                | token is truthy, typeof === 'string'  |
-| 107 | PROF-004 | POST /refresh returns 401 without token | Unauthenticated refresh rejected | status === 401                        |
+| 102 | PROF-001 | GET /me returns current user            | Fetch authenticated user profile | user.id, email, name match login data |
+| 103 | PROF-002 | GET /me returns 401 without token       | Unauthenticated request rejected | status === 401                        |
+| 104 | PROF-003 | POST /refresh returns new token         | Refresh JWT token                | token is truthy, typeof === 'string'  |
+| 105 | PROF-004 | POST /refresh returns 401 without token | Unauthenticated refresh rejected | status === 401                        |
 
 ---
 
@@ -346,10 +343,10 @@
 
 | #   | TC ID    | Test Name                            | Description                  | Assertions                       |
 | --- | -------- | ------------------------------------ | ---------------------------- | -------------------------------- |
-| 108 | AKEY-001 | Set API key via PUT /me/api-key      | Save Anthropic API key       | status === 200, success === true |
-| 109 | AKEY-002 | GET /me reflects hasApiKey after set | Profile shows API key status | user.hasAnthropicApiKey === true |
-| 110 | AKEY-003 | DELETE /me/api-key removes key       | Remove API key               | status === 200, success === true |
-| 111 | AKEY-004 | PUT /me/api-key rejects empty key    | Empty/invalid key rejected   | status === 400                   |
+| 106 | AKEY-001 | Set API key via PUT /me/api-key      | Save Anthropic API key       | status === 200, success === true |
+| 107 | AKEY-002 | GET /me reflects hasApiKey after set | Profile shows API key status | user.hasAnthropicApiKey === true |
+| 108 | AKEY-003 | DELETE /me/api-key removes key       | Remove API key               | status === 200, success === true |
+| 109 | AKEY-004 | PUT /me/api-key rejects empty key    | Empty/invalid key rejected   | status === 400                   |
 
 ---
 
@@ -359,9 +356,9 @@
 
 | #   | TC ID    | Test Name                                   | Description                     | Assertions                                  |
 | --- | -------- | ------------------------------------------- | ------------------------------- | ------------------------------------------- |
-| 112 | SEXP-001 | Export sessions as markdown                 | Export project sessions         | status === 200, body contains session title |
-| 113 | SEXP-002 | Export empty project returns valid response | No sessions to export           | status === 200                              |
-| 114 | SEXP-003 | Export requires authentication              | Unauthenticated export rejected | status === 401                              |
+| 110 | SEXP-001 | Export sessions as markdown                 | Export project sessions         | status === 200, body contains session title |
+| 111 | SEXP-002 | Export empty project returns valid response | No sessions to export           | status === 200                              |
+| 112 | SEXP-003 | Export requires authentication              | Unauthenticated export rejected | status === 401                              |
 
 ---
 
@@ -371,10 +368,10 @@
 
 | #   | TC ID    | Test Name                         | Description                          | Assertions                                    |
 | --- | -------- | --------------------------------- | ------------------------------------ | --------------------------------------------- |
-| 115 | TKUS-001 | Token usage endpoint returns data | Get token usage for project          | status === 200, success === true, data exists |
-| 116 | TKUS-002 | Token usage with period filter    | Filter by 7d/30d/90d                 | Each period returns valid response            |
-| 117 | TKUS-003 | Token usage after session import  | Import session, check usage reflects | response data exists                          |
-| 118 | TKUS-004 | Recalculate tokens endpoint       | POST recalculate-tokens              | status === 200, success === true              |
+| 113 | TKUS-001 | Token usage endpoint returns data | Get token usage for project          | status === 200, success === true, data exists |
+| 114 | TKUS-002 | Token usage with period filter    | Filter by 7d/30d/90d                 | Each period returns valid response            |
+| 115 | TKUS-003 | Token usage after session import  | Import session, check usage reflects | response data exists                          |
+| 116 | TKUS-004 | Recalculate tokens endpoint       | POST recalculate-tokens              | status === 200, success === true              |
 
 ---
 
@@ -384,9 +381,9 @@
 
 | #   | TC ID    | Test Name                                | Description                                      | Assertions                    |
 | --- | -------- | ---------------------------------------- | ------------------------------------------------ | ----------------------------- |
-| 119 | LSES-001 | List local sessions endpoint responds    | GET /sessions/local returns response             | status === 200, data is array |
-| 120 | LSES-002 | Browse local directory endpoint responds | GET /sessions/local/browse returns response      | status === 200                |
-| 121 | LSES-003 | Local directories endpoint responds      | GET /sessions/local/directories returns response | status === 200, data is array |
+| 117 | LSES-001 | List local sessions endpoint responds    | GET /sessions/local returns response             | status === 200, data is array |
+| 118 | LSES-002 | Browse local directory endpoint responds | GET /sessions/local/browse returns response      | status === 200                |
+| 119 | LSES-003 | Local directories endpoint responds      | GET /sessions/local/directories returns response | status === 200, data is array |
 
 ---
 
@@ -402,11 +399,11 @@
 
 ### Helpers
 
-| Helper                  | Description                                                          |
-| ----------------------- | -------------------------------------------------------------------- |
-| `test-data.ts`          | `buildUser()`, `buildProject()` — generate unique test data          |
-| `wait-for.ts`           | `waitForAppReady()` — wait for app loading to complete               |
-| `invitation-helpers.ts` | `addCollaborator()`, `getInvitationToken()` — direct DB manipulation |
+| Helper                  | Description                                                 |
+| ----------------------- | ----------------------------------------------------------- |
+| `test-data.ts`          | `buildUser()`, `buildProject()` — generate unique test data |
+| `wait-for.ts`           | `waitForAppReady()` — wait for app loading to complete      |
+| `invitation-helpers.ts` | `addCollaborator()` — direct DB manipulation for tests      |
 
 ### Session Fixtures
 
