@@ -22,9 +22,7 @@ export function OnboardingPage() {
     <div className="flex min-h-screen items-center justify-center bg-page p-4">
       <div className="w-full max-w-lg space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-text-primary">
-            Welcome to ContextSync!
-          </h1>
+          <h1 className="text-2xl font-bold text-text-primary">Welcome to ContextSync!</h1>
           <p className="mt-1 text-sm text-text-tertiary">
             Create your first project to get started.
           </p>
@@ -64,7 +62,7 @@ function CreateFirstProject() {
       if (result.data) {
         setCurrentProject(result.data.id);
         queryClient.invalidateQueries({ queryKey: ['projects'] });
-        navigate('/dashboard');
+        navigate('/project');
       }
     },
   });
@@ -109,10 +107,7 @@ function CreateFirstProject() {
               >
                 Skip for now
               </button>
-              <Button
-                onClick={handleNext}
-                disabled={!name || createMutation.isPending}
-              >
+              <Button onClick={handleNext} disabled={!name || createMutation.isPending}>
                 {hasDirectories ? 'Next' : 'Create Project'}
               </Button>
             </div>
@@ -126,10 +121,7 @@ function CreateFirstProject() {
               <Button variant="ghost" onClick={() => setStep(1)}>
                 Back
               </Button>
-              <Button
-                onClick={() => createMutation.mutate()}
-                disabled={createMutation.isPending}
-              >
+              <Button onClick={() => createMutation.mutate()} disabled={createMutation.isPending}>
                 Create Project
               </Button>
             </div>
@@ -137,9 +129,7 @@ function CreateFirstProject() {
         )}
 
         {createMutation.isError && (
-          <p className="text-sm text-red-500">
-            Failed to create project. Please try again.
-          </p>
+          <p className="text-sm text-red-500">Failed to create project. Please try again.</p>
         )}
       </div>
     </Card>
