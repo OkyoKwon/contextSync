@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useT } from '../../i18n/use-translation';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { appLink } from '../../lib/app-url';
+import { isExternalApp } from '../../lib/app-url';
 
 function GitHubIcon() {
   return (
@@ -48,12 +48,14 @@ export function LandingNav() {
             {t('nav.docs')}
           </a>
           <LanguageSwitcher />
-          <a
-            href={appLink('/login')}
-            className="rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
-          >
-            {t('nav.login')}
-          </a>
+          {!isExternalApp() && (
+            <a
+              href="/login"
+              className="rounded-md border border-border-default px-4 py-1.5 font-mono text-xs text-text-secondary transition-colors hover:bg-surface-hover"
+            >
+              {t('nav.login')}
+            </a>
+          )}
         </div>
       </div>
     </nav>

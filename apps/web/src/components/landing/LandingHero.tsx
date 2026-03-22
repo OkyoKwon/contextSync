@@ -4,7 +4,7 @@ import { CONTEXT_SYNC_ASCII, CONTEXT_SYNC_ASCII_COMPACT } from '../auth/login-as
 import { useT } from '../../i18n/use-translation';
 import { authApi } from '../../api/auth.api';
 import { useAuthStore } from '../../stores/auth.store';
-import { appLink, isExternalApp } from '../../lib/app-url';
+import { isExternalApp } from '../../lib/app-url';
 
 function ChevronDownIcon() {
   return (
@@ -78,36 +78,42 @@ export function LandingHero() {
           <div className="flex flex-wrap items-center justify-center gap-4">
             {isExternalApp() ? (
               <a
-                href={appLink('/')}
+                href="https://github.com/OkyoKwon/contextSync"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
               >
-                {t('hero.cta.start')}
+                {t('hero.cta.viewOnGithub')}
               </a>
             ) : (
-              <button
-                type="button"
-                onClick={handleAutoLogin}
-                disabled={isLoading}
-                className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isLoading ? '...' : t('hero.cta.start')}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={handleAutoLogin}
+                  disabled={isLoading}
+                  className="flex cursor-pointer items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isLoading ? '...' : t('hero.cta.start')}
+                </button>
+                <a
+                  href="https://github.com/OkyoKwon/contextSync"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
+                >
+                  {t('hero.cta.viewOnGithub')}
+                </a>
+              </>
             )}
-            <a
-              href="https://github.com/OkyoKwon/contextSync"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
-            >
-              {t('hero.cta.viewOnGithub')}
-            </a>
           </div>
-          <a
-            href={appLink('/login')}
-            className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
-          >
-            {t('hero.cta.loginExisting')}
-          </a>
+          {!isExternalApp() && (
+            <a
+              href="/login"
+              className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
+            >
+              {t('hero.cta.loginExisting')}
+            </a>
+          )}
           {error && <p className="text-xs text-red-400">{error}</p>}
         </div>
       </div>
