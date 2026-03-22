@@ -1,5 +1,6 @@
 import { test, expect } from '../../fixtures/auth.fixture.js';
 import { buildUser } from '../../helpers/test-data.js';
+import { activateRemoteDb } from '../../helpers/invitation-helpers.js';
 
 test.describe('Auto User Upgrade', () => {
   test('upgrade auto user with new email', async ({ apiClient }) => {
@@ -17,9 +18,12 @@ test.describe('Auto User Upgrade', () => {
     expect(result.user.name).toBe(upgradeData.name);
   });
 
-  test('upgraded user can create invitations', async ({ apiClient }) => {
+  test('upgraded user can create invitations', async ({ apiClient, db }) => {
     const { token: autoToken, user: autoUser } = await apiClient.autoLogin();
     const project = await apiClient.createProject(autoToken, { name: 'Upgrade Test Project' });
+
+    // Remote DB must be active before invitations can be created
+    await activateRemoteDb(db, project.id);
 
     // Upgrade the auto user
     const upgradeData = buildUser();

@@ -3,6 +3,8 @@ import pg from 'pg';
 const TEST_DB_URL = 'postgresql://postgres:postgres@localhost:5432/contextsync_test';
 
 const APP_TABLES = [
+  'data_migration_jobs',
+  'project_db_configs',
   'ai_evaluation_evidence',
   'ai_evaluation_dimensions',
   'ai_evaluations',

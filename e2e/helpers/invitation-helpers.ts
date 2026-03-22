@@ -2,6 +2,19 @@ import type { Kysely } from 'kysely';
 import { sql } from 'kysely';
 
 /**
+ * Insert an active remote DB config for a project directly via SQL.
+ * This is required before creating invitations or adding collaborators
+ * through the API, since the remote DB check was introduced.
+ */
+export async function activateRemoteDb(db: Kysely<unknown>, projectId: string): Promise<void> {
+  await sql`
+    INSERT INTO project_db_configs (project_id, connection_url, provider, ssl_enabled, status, schema_version)
+    VALUES (${projectId}, 'encrypted-test-url', 'self-hosted', false, 'active', 9)
+    ON CONFLICT (project_id) DO NOTHING
+  `.execute(db);
+}
+
+/**
  * Add a user as a project collaborator directly via SQL.
  * This bypasses the invitation flow which is useful for tests
  * that need collaborators but aren't testing the invitation flow itself.

@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **총 99개 테스트 케이스** | Playwright + Custom Fixtures (auth, api, db)
+> **총 102개 테스트 케이스** | Playwright + Custom Fixtures (auth, api, db)
 >
 > 테스트 경로: `e2e/tests/`
 
@@ -221,15 +221,19 @@
 
 ### 8-2. Project Collaboration
 
-**파일:** `e2e/tests/projects/project-collaboration.spec.ts` (5 TC)
+**파일:** `e2e/tests/projects/project-collaboration.spec.ts` (6 TC)
 
-| #   | TC ID      | 테스트명                            | 설명                                | 검증 항목                      |
-| --- | ---------- | ----------------------------------- | ----------------------------------- | ------------------------------ |
-| 71  | COLLAB-001 | Create invitation                   | 초대 생성                           | invitation.id 존재, email 일치 |
-| 72  | COLLAB-002 | List project invitations            | 프로젝트 초대 목록 조회             | 생성한 초대 존재               |
-| 73  | COLLAB-003 | Invitee can see pending invitation  | 초대받은 유저가 대기 중인 초대 확인 | myInvitations.length >= 1      |
-| 74  | COLLAB-004 | Accept invitation adds collaborator | 초대 수락 시 협업자 추가            | collaborators.length >= 1      |
-| 75  | COLLAB-005 | Cancel invitation removes it        | 초대 취소 시 목록에서 제거          | 취소된 초대 미발견             |
+> **전제조건:** COLLAB-001~005는 테스트 시작 시 `activateRemoteDb()`로 리모트 DB 활성 상태를 삽입합니다.
+> 리모트 DB가 없으면 초대 API가 403을 반환하기 때문입니다 (COLLAB-006에서 검증).
+
+| #   | TC ID      | 테스트명                             | 설명                                | 검증 항목                                |
+| --- | ---------- | ------------------------------------ | ----------------------------------- | ---------------------------------------- |
+| 71  | COLLAB-001 | Create invitation                    | 초대 생성 (리모트 DB 활성 상태)     | invitation.id 존재, email 일치           |
+| 72  | COLLAB-002 | List project invitations             | 프로젝트 초대 목록 조회             | 생성한 초대 존재                         |
+| 73  | COLLAB-003 | Invitee can see pending invitation   | 초대받은 유저가 대기 중인 초대 확인 | myInvitations.length >= 1                |
+| 74  | COLLAB-004 | Accept invitation adds collaborator  | 초대 수락 시 협업자 추가            | collaborators.length >= 1                |
+| 75  | COLLAB-005 | Cancel invitation removes it         | 초대 취소 시 목록에서 제거          | 취소된 초대 미발견                       |
+| 76  | COLLAB-006 | Invitation blocked without remote DB | 리모트 DB 없이 초대 시도 시 403     | status === 403, error에 'Remote DB' 포함 |
 
 ---
 
@@ -241,9 +245,9 @@
 
 | #   | TC ID    | 테스트명                           | 설명                         | 검증 항목                                                       |
 | --- | -------- | ---------------------------------- | ---------------------------- | --------------------------------------------------------------- |
-| 76  | SESS-001 | Imported sessions exist via API    | 임포트된 세션 API에서 확인   | titles에 'Auth Feature Implementation', 'Auth Refactoring' 포함 |
-| 77  | SESS-002 | Session detail page shows title    | 세션 상세 페이지에 제목 표시 | 페이지에 세션 제목 텍스트 포함                                  |
-| 78  | SESS-003 | Delete session removes it from API | 세션 삭제 후 API에서 미발견  | 삭제된 세션 ID 미발견                                           |
+| 77  | SESS-001 | Imported sessions exist via API    | 임포트된 세션 API에서 확인   | titles에 'Auth Feature Implementation', 'Auth Refactoring' 포함 |
+| 78  | SESS-002 | Session detail page shows title    | 세션 상세 페이지에 제목 표시 | 페이지에 세션 제목 텍스트 포함                                  |
+| 79  | SESS-003 | Delete session removes it from API | 세션 삭제 후 API에서 미발견  | 삭제된 세션 ID 미발견                                           |
 
 ### 9-2. Session Import
 
@@ -251,10 +255,10 @@
 
 | #   | TC ID   | 테스트명                           | 설명                         | 검증 항목                           |
 | --- | ------- | ---------------------------------- | ---------------------------- | ----------------------------------- |
-| 79  | IMP-001 | Import JSON session via API        | JSON 세션 파일 API 임포트    | session.id 존재, messageCount === 4 |
-| 80  | IMP-002 | Import JSONL session via API       | JSONL 세션 파일 API 임포트   | session.id 존재, messageCount === 2 |
-| 81  | IMP-003 | Import session via UI upload modal | UI 업로드 모달로 세션 임포트 | 에러 없이 흐름 완료                 |
-| 82  | IMP-004 | Reject missing file upload         | 파일 없이 임포트 시 실패     | success === false                   |
+| 80  | IMP-001 | Import JSON session via API        | JSON 세션 파일 API 임포트    | session.id 존재, messageCount === 4 |
+| 81  | IMP-002 | Import JSONL session via API       | JSONL 세션 파일 API 임포트   | session.id 존재, messageCount === 2 |
+| 82  | IMP-003 | Import session via UI upload modal | UI 업로드 모달로 세션 임포트 | 에러 없이 흐름 완료                 |
+| 83  | IMP-004 | Reject missing file upload         | 파일 없이 임포트 시 실패     | success === false                   |
 
 ---
 
@@ -264,9 +268,9 @@
 
 | #   | TC ID    | 테스트명                                   | 설명                             | 검증 항목            |
 | --- | -------- | ------------------------------------------ | -------------------------------- | -------------------- |
-| 83  | SRCH-001 | Search API returns matching results        | 'auth' 검색 시 결과 반환         | results.length > 0   |
-| 84  | SRCH-002 | Search with nonexistent term returns empty | 존재하지 않는 검색어 → 빈 결과   | results.length === 0 |
-| 85  | SRCH-003 | Search type filter works                   | type 필터 (session/message) 적용 | 각 결과의 type 일치  |
+| 84  | SRCH-001 | Search API returns matching results        | 'auth' 검색 시 결과 반환         | results.length > 0   |
+| 85  | SRCH-002 | Search with nonexistent term returns empty | 존재하지 않는 검색어 → 빈 결과   | results.length === 0 |
+| 86  | SRCH-003 | Search type filter works                   | type 필터 (session/message) 적용 | 각 결과의 type 일치  |
 
 ---
 
@@ -276,10 +280,10 @@
 
 | #   | TC ID   | 테스트명                                  | 설명                              | 검증 항목                     |
 | --- | ------- | ----------------------------------------- | --------------------------------- | ----------------------------- |
-| 86  | PRD-001 | Upload PRD document via API               | PRD 문서 API 업로드               | id 존재, title === 'Test PRD' |
-| 87  | PRD-002 | List PRD documents                        | PRD 문서 목록 조회                | documents.length >= 1         |
-| 88  | PRD-003 | Delete PRD document                       | PRD 문서 삭제                     | 삭제 후 목록에서 미발견       |
-| 89  | PRD-004 | Analysis fails gracefully without API key | API 키 없이 분석 시 graceful 실패 | status >= 200                 |
+| 87  | PRD-001 | Upload PRD document via API               | PRD 문서 API 업로드               | id 존재, title === 'Test PRD' |
+| 88  | PRD-002 | List PRD documents                        | PRD 문서 목록 조회                | documents.length >= 1         |
+| 89  | PRD-003 | Delete PRD document                       | PRD 문서 삭제                     | 삭제 후 목록에서 미발견       |
+| 90  | PRD-004 | Analysis fails gracefully without API key | API 키 없이 분석 시 graceful 실패 | status >= 200                 |
 
 ---
 
@@ -289,22 +293,25 @@
 
 | #   | TC ID    | 테스트명                        | 설명                      | 검증 항목                                              |
 | --- | -------- | ------------------------------- | ------------------------- | ------------------------------------------------------ |
-| 90  | PLAN-001 | Plans page renders              | Plans 페이지 렌더링       | URL → `/plans`, root 엘리먼트 visible                  |
-| 91  | PLAN-002 | List plans via API              | API로 플랜 목록 조회      | Array.isArray(plans) === true                          |
-| 92  | PLAN-003 | Empty state shown when no plans | 플랜 없을 때 빈 상태 표시 | 'plan', 'no plan', 'empty', 'get started' 중 하나 포함 |
+| 91  | PLAN-001 | Plans page renders              | Plans 페이지 렌더링       | URL → `/plans`, root 엘리먼트 visible                  |
+| 92  | PLAN-002 | List plans via API              | API로 플랜 목록 조회      | Array.isArray(plans) === true                          |
+| 93  | PLAN-003 | Empty state shown when no plans | 플랜 없을 때 빈 상태 표시 | 'plan', 'no plan', 'empty', 'get started' 중 하나 포함 |
 
 ---
 
 ## 13. Settings
 
-**파일:** `e2e/tests/settings/settings.spec.ts` (4 TC)
+**파일:** `e2e/tests/settings/settings.spec.ts` (7 TC)
 
-| #   | TC ID   | 테스트명                      | 설명                               | 검증 항목                              |
-| --- | ------- | ----------------------------- | ---------------------------------- | -------------------------------------- |
-| 93  | SET-001 | Project info is displayed     | 설정 페이지에 프로젝트 정보 표시   | 'Project Info' 텍스트 visible          |
-| 94  | SET-002 | Edit project name             | 설정 페이지에서 프로젝트 이름 수정 | 변경된 이름 표시                       |
-| 95  | SET-003 | Delete project section exists | 프로젝트 삭제 섹션 존재            | 'Delete Project' 또는 'Delete' visible |
-| 96  | SET-004 | Collaborators section exists  | 협업자 섹션 존재                   | 'Collaborators' heading visible        |
+| #   | TC ID   | 테스트명                                         | 설명                               | 검증 항목                               |
+| --- | ------- | ------------------------------------------------ | ---------------------------------- | --------------------------------------- |
+| 94  | SET-001 | Project info is displayed                        | 설정 페이지에 프로젝트 정보 표시   | 'Project Info' 텍스트 visible           |
+| 95  | SET-002 | Edit project name                                | 설정 페이지에서 프로젝트 이름 수정 | 변경된 이름 표시                        |
+| 96  | SET-003 | Delete project section exists                    | 프로젝트 삭제 섹션 존재            | 'Delete Project' 또는 'Delete' visible  |
+| 97  | SET-004 | Collaborators section exists                     | 협업자 섹션 존재                   | 'Collaborators' heading visible         |
+| 98  | SET-005 | Remote Database section exists                   | 리모트 DB 섹션 존재                | 'Remote Database' heading visible       |
+| 99  | SET-006 | Connect Remote Database button visible for owner | 오너에게 리모트 DB 연결 버튼 표시  | 'Connect Remote Database' 버튼 visible  |
+| 100 | SET-007 | Collaborator invite disabled without remote DB   | 리모트 DB 없으면 초대 input 비활성 | 'Connect a remote database' 안내 메시지 |
 
 ---
 
@@ -314,9 +321,9 @@
 
 | #   | TC ID    | 테스트명                                            | 설명                                     | 검증 항목                                     |
 | --- | -------- | --------------------------------------------------- | ---------------------------------------- | --------------------------------------------- |
-| 97  | EVAL-001 | Evaluation page renders                             | AI 평가 페이지 렌더링                    | URL → `/ai-evaluation`, root 엘리먼트 visible |
-| 98  | EVAL-002 | Evaluation trigger fails gracefully without API key | API 키 없이 평가 트리거 시 graceful 실패 | success === false                             |
-| 99  | EVAL-003 | Empty evaluation history                            | 빈 평가 히스토리 조회                    | data.length === 0                             |
+| 100 | EVAL-001 | Evaluation page renders                             | AI 평가 페이지 렌더링                    | URL → `/ai-evaluation`, root 엘리먼트 visible |
+| 101 | EVAL-002 | Evaluation trigger fails gracefully without API key | API 키 없이 평가 트리거 시 graceful 실패 | success === false                             |
+| 102 | EVAL-003 | Empty evaluation history                            | 빈 평가 히스토리 조회                    | data.length === 0                             |
 
 ---
 

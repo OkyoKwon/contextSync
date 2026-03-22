@@ -1,9 +1,15 @@
 import { test, expect } from '../../fixtures/auth.fixture.js';
 import { buildUser } from '../../helpers/test-data.js';
-import { addCollaborator, getInvitationToken } from '../../helpers/invitation-helpers.js';
+import {
+  activateRemoteDb,
+  addCollaborator,
+  getInvitationToken,
+} from '../../helpers/invitation-helpers.js';
 
 test.describe('Project Collaboration', () => {
-  test('create invitation', async ({ apiClient, testUser, testProjectId }) => {
+  test('create invitation', async ({ apiClient, db, testUser, testProjectId }) => {
+    await activateRemoteDb(db, testProjectId);
+
     const inviteeData = buildUser();
     const invitation = await apiClient.post<{ id: string; email: string }>(
       `/projects/${testProjectId}/invitations`,
@@ -15,7 +21,9 @@ test.describe('Project Collaboration', () => {
     expect(invitation.email).toBe(inviteeData.email);
   });
 
-  test('list project invitations', async ({ apiClient, testUser, testProjectId }) => {
+  test('list project invitations', async ({ apiClient, db, testUser, testProjectId }) => {
+    await activateRemoteDb(db, testProjectId);
+
     const inviteeData = buildUser();
     await apiClient.post(
       `/projects/${testProjectId}/invitations`,
@@ -32,7 +40,9 @@ test.describe('Project Collaboration', () => {
     expect(found).toBeTruthy();
   });
 
-  test('invitee can see pending invitation', async ({ apiClient, testUser, testProjectId }) => {
+  test('invitee can see pending invitation', async ({ apiClient, db, testUser, testProjectId }) => {
+    await activateRemoteDb(db, testProjectId);
+
     const inviteeData = buildUser();
     await apiClient.post(
       `/projects/${testProjectId}/invitations`,
@@ -56,6 +66,8 @@ test.describe('Project Collaboration', () => {
     testUser,
     testProjectId,
   }) => {
+    await activateRemoteDb(db, testProjectId);
+
     const inviteeData = buildUser();
     const invitation = await apiClient.post<{ id: string }>(
       `/projects/${testProjectId}/invitations`,
@@ -94,7 +106,9 @@ test.describe('Project Collaboration', () => {
     }
   });
 
-  test('cancel invitation removes it', async ({ apiClient, testUser, testProjectId }) => {
+  test('cancel invitation removes it', async ({ apiClient, db, testUser, testProjectId }) => {
+    await activateRemoteDb(db, testProjectId);
+
     const inviteeData = buildUser();
     const invitation = await apiClient.post<{ id: string }>(
       `/projects/${testProjectId}/invitations`,
@@ -111,5 +125,18 @@ test.describe('Project Collaboration', () => {
 
     const found = invitations.find((inv) => inv.id === invitation.id);
     expect(found).toBeUndefined();
+  });
+
+  test('invitation blocked without remote DB', async ({ apiClient, testUser, testProjectId }) => {
+    const inviteeData = buildUser();
+    const response = await apiClient.fetchRaw(
+      'POST',
+      `/projects/${testProjectId}/invitations`,
+      { email: inviteeData.email, role: 'member' },
+      testUser.token,
+    );
+
+    expect(response.status).toBe(403);
+    expect(response.body.error).toContain('Remote DB');
   });
 });
