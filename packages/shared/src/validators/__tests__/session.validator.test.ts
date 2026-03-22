@@ -35,9 +35,9 @@ describe('validateSessionImport', () => {
     expect(result.data?.source).toBe('claude_code');
     expect(result.data?.branch).toBe('main');
     expect(result.data?.tags).toEqual(['tag1', 'tag2']);
-    expect(result.data?.messages[0].contentType).toBe('prompt');
-    expect(result.data?.messages[0].tokensUsed).toBe(100);
-    expect(result.data?.messages[0].modelUsed).toBe('claude-sonnet-4');
+    expect(result.data?.messages[0]!.contentType).toBe('prompt');
+    expect(result.data?.messages[0]!.tokensUsed).toBe(100);
+    expect(result.data?.messages[0]!.modelUsed).toBe('claude-sonnet-4');
   });
 
   it('should reject null input', () => {

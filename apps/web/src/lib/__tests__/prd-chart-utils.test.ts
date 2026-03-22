@@ -49,7 +49,7 @@ describe('computeChartPoints', () => {
 
   it('filters non-completed entries', () => {
     const entries = [
-      makeEntry({ status: 'processing' }),
+      makeEntry({ status: 'pending' }),
       makeEntry({ id: '2', status: 'completed', overallRate: 50 }),
     ];
     const points = computeChartPoints(entries, makeDimensions());

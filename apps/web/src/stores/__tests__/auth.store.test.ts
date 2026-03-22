@@ -27,8 +27,15 @@ let useAuthStore: typeof import('../auth.store').useAuthStore;
 
 const mockUser: User = {
   id: 'user-1',
+  githubId: null,
   email: 'test@example.com',
   name: 'Test User',
+  avatarUrl: null,
+  role: 'owner',
+  isAuto: false,
+  claudePlan: 'free',
+  hasAnthropicApiKey: false,
+  hasSupabaseToken: false,
   createdAt: '2025-01-01T00:00:00Z',
   updatedAt: '2025-01-01T00:00:00Z',
 };

@@ -42,13 +42,10 @@ import {
   updateProject,
   deleteProject,
   getCollaborators,
-  addCollaborator,
-  removeCollaborator,
   setMyDirectory,
   assertProjectAccess,
   getUserRoleInProject,
   generateProjectJoinCode,
-  regenerateJoinCode,
   deleteJoinCode,
   joinByCode,
 } from '../project.service.js';
@@ -74,7 +71,6 @@ const mockFindCollabsByProjectId = collabRepo.findCollaboratorsByProjectId as Re
   typeof vi.fn
 >;
 const mockAddCollaborator = collabRepo.addCollaborator as ReturnType<typeof vi.fn>;
-const mockRemoveCollaborator = collabRepo.removeCollaborator as ReturnType<typeof vi.fn>;
 const mockIsCollaborator = collabRepo.isCollaborator as ReturnType<typeof vi.fn>;
 const mockUpdateCollabDir = collabRepo.updateCollaboratorDirectory as ReturnType<typeof vi.fn>;
 const mockAssertPermission = assertPermission as ReturnType<typeof vi.fn>;

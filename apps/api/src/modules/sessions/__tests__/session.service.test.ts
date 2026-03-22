@@ -91,7 +91,7 @@ describe('getSessionsByProject', () => {
   });
 
   it('should pass filter to repository', async () => {
-    const filter = { status: 'active', page: 2, limit: 10 };
+    const filter = { status: 'active' as const, page: 2, limit: 10 };
     mockFindSessionsByProjectId.mockResolvedValue({ sessions: [], total: 0 });
 
     await getSessionsByProject(db, 'proj-1', 'user-1', filter);

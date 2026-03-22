@@ -33,8 +33,8 @@ describe('PROFICIENCY_TIER_RANGES', () => {
   it('should have no gaps or overlaps between tiers', () => {
     const tiers = ['novice', 'developing', 'proficient', 'advanced', 'expert'] as const;
     for (let i = 1; i < tiers.length; i++) {
-      const prevMax = PROFICIENCY_TIER_RANGES[tiers[i - 1]].max;
-      const currMin = PROFICIENCY_TIER_RANGES[tiers[i]].min;
+      const prevMax = PROFICIENCY_TIER_RANGES[tiers[i - 1]!].max;
+      const currMin = PROFICIENCY_TIER_RANGES[tiers[i]!].min;
       expect(currMin, `${tiers[i]} min should be ${tiers[i - 1]} max + 1`).toBe(prevMax + 1);
     }
   });

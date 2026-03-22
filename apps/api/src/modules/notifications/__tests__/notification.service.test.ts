@@ -10,8 +10,8 @@ vi.mock('../channels/slack.channel.js', () => ({
   buildConflictSlackMessage: vi.fn(() => ({ text: 'conflict alert' })),
 }));
 
-import { createEmailChannel, buildConflictEmailHtml } from '../channels/email.channel.js';
-import { createSlackChannel, buildConflictSlackMessage } from '../channels/slack.channel.js';
+import { createEmailChannel } from '../channels/email.channel.js';
+import { createSlackChannel } from '../channels/slack.channel.js';
 import {
   notifyConflict,
   getUserNotificationSettings,
