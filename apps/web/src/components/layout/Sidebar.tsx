@@ -57,6 +57,7 @@ export function Sidebar() {
           badge: pendingInvitationCount,
         },
         { to: '/project', label: 'Conversations', icon: ConversationsIcon },
+        { to: '/plans', label: 'Plans', icon: PlansIcon },
         ...(isTeam
           ? [
               {
@@ -74,7 +75,6 @@ export function Sidebar() {
       items: [
         { to: '/prd-analysis', label: 'PRD Tracker', icon: PrdAnalysisIcon },
         { to: '/ai-evaluation', label: 'AI Evaluation', icon: AiEvaluationIcon },
-        { to: '/plans', label: 'Plans', icon: PlansIcon },
       ],
     },
     {
