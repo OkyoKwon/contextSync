@@ -231,7 +231,7 @@ export function DbSetupStep({
                   <p className="font-medium">Connection successful</p>
                   <p className="mt-1 text-xs opacity-80">
                     Latency: {testResult.latencyMs}ms
-                    {testResult.version && ` | ${testResult.version.split('(')[0].trim()}`}
+                    {testResult.version && ` | ${testResult.version.split('(')[0]?.trim()}`}
                   </p>
                 </div>
               ) : (

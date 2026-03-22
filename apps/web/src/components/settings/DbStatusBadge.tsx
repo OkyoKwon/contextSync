@@ -3,12 +3,12 @@ import { Badge } from '../ui/Badge';
 
 const STATUS_MAP: Record<
   DbConfigStatus,
-  { label: string; variant: 'success' | 'warning' | 'error' | 'info' }
+  { label: string; variant: 'success' | 'warning' | 'critical' | 'info' }
 > = {
   pending: { label: 'Pending', variant: 'warning' },
   migrating: { label: 'Migrating', variant: 'info' },
   active: { label: 'Connected', variant: 'success' },
-  failed: { label: 'Failed', variant: 'error' },
+  failed: { label: 'Failed', variant: 'critical' },
 };
 
 interface DbStatusBadgeProps {
