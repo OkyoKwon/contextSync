@@ -1,6 +1,12 @@
 import { useT } from '../../i18n/use-translation';
 import { Card } from '../ui/Card';
 
+const HIGHLIGHT_COLORS = [
+  { bg: 'bg-blue-500/10', text: 'text-blue-400' },
+  { bg: 'bg-amber-500/10', text: 'text-amber-400' },
+  { bg: 'bg-blue-500/10', text: 'text-blue-400' },
+] as const;
+
 const highlightIcons = [SyncIcon, ShieldIcon, SearchIcon] as const;
 
 export function DocsHero() {
@@ -14,10 +20,13 @@ export function DocsHero() {
       <div className="mt-10 grid gap-4 sm:grid-cols-3">
         {([0, 1, 2] as const).map((i) => {
           const Icon = highlightIcons[i];
+          const color = HIGHLIGHT_COLORS[i];
           return (
             <Card key={i} padding="md" className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
-                <Icon />
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${color.bg}`}
+              >
+                <Icon className={color.text} />
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-text-primary">
@@ -34,7 +43,7 @@ export function DocsHero() {
 
       <a
         href="#getting-started"
-        className="mt-8 inline-flex items-center gap-2 rounded-lg bg-blue-500/10 px-5 py-2.5 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
+        className="mt-8 inline-flex items-center gap-2 rounded-lg bg-btn-primary-bg px-5 py-2.5 text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
       >
         {t('docs.hero.cta')}
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -50,9 +59,9 @@ export function DocsHero() {
   );
 }
 
-function SyncIcon() {
+function SyncIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -63,9 +72,9 @@ function SyncIcon() {
   );
 }
 
-function ShieldIcon() {
+function ShieldIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -76,9 +85,9 @@ function ShieldIcon() {
   );
 }
 
-function SearchIcon() {
+function SearchIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -4,6 +4,7 @@ import { Toaster } from 'sonner';
 import { AppRoutes } from './routes';
 import { LoginModal } from './components/auth/LoginModal';
 import { UpgradeModal } from './components/auth/UpgradeModal';
+import { ApiKeyGuardModal } from './components/shared/ApiKeyGuardModal';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useThemeSync } from './hooks/use-theme';
 import { useLocaleSync } from './hooks/use-locale-sync';
@@ -30,6 +31,7 @@ export function App() {
           <AppRoutes />
           <LoginModal />
           <UpgradeModal />
+          <ApiKeyGuardModal />
         </BrowserRouter>
         <Toaster
           theme={theme}

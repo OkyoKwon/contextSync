@@ -8,6 +8,8 @@ import {
   useEvaluationHistory,
 } from '../hooks/use-ai-evaluation';
 import { useRequireProject } from '../hooks/use-require-project';
+import { useAuthStore } from '../stores/auth.store';
+import { useApiKeyGuard } from '../hooks/use-api-key-guard';
 import { TeamEvaluationSummary } from '../components/ai-evaluation/TeamEvaluationSummary';
 import { EvaluationDashboard } from '../components/ai-evaluation/EvaluationDashboard';
 import { EvaluationHistory } from '../components/ai-evaluation/EvaluationHistory';
@@ -20,6 +22,8 @@ import { Spinner } from '../components/ui/Spinner';
 
 export function AiEvaluationPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
+  const hasKey = useAuthStore((s) => s.user?.hasAnthropicApiKey ?? false);
+  const openApiKeyGuard = useApiKeyGuard((s) => s.openApiKeyGuard);
   const { data: summaryData, isLoading: isSummaryLoading } = useTeamEvaluationSummary();
   const startEvaluation = useStartEvaluation();
 
@@ -89,7 +93,17 @@ export function AiEvaluationPage() {
             Evaluate team members' AI utilization skills
           </p>
         </div>
-        <Button onClick={() => setShowTriggerDialog(true)}>Run Evaluation</Button>
+        <Button
+          onClick={() => {
+            if (hasKey) {
+              setShowTriggerDialog(true);
+            } else {
+              openApiKeyGuard(() => setShowTriggerDialog(true));
+            }
+          }}
+        >
+          Run Evaluation
+        </Button>
       </div>
 
       <ApiKeyMissingBanner />

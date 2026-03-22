@@ -12,7 +12,7 @@ export function FaqSection() {
   };
 
   return (
-    <section id="faq" className="scroll-mt-24 pb-16">
+    <section id="faq" className="scroll-mt-24 border-t border-border-default pb-16 pt-16">
       <h2 className="text-2xl font-bold text-text-primary">{t('docs.faq.title')}</h2>
 
       <div className="mt-8 divide-y divide-border-default rounded-xl border border-border-default">
@@ -27,7 +27,10 @@ export function FaqSection() {
                 onClick={() => toggle(i)}
                 className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-surface-hover"
               >
-                <span className="text-sm font-medium text-text-primary">
+                <span className="flex items-center gap-3 text-sm font-medium text-text-primary">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-hover text-xs font-bold text-text-tertiary">
+                    {i + 1}
+                  </span>
                   {t(`docs.faq.${idx}.q`)}
                 </span>
                 <svg

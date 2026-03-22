@@ -8,6 +8,8 @@ import {
   usePrdAnalysisHistory,
 } from '../hooks/use-prd-analysis';
 import { useRequireProject } from '../hooks/use-require-project';
+import { useAuthStore } from '../stores/auth.store';
+import { useApiKeyGuard } from '../hooks/use-api-key-guard';
 import { PrdDocumentSection } from '../components/prd-analysis/PrdDocumentSection';
 import { PrdStickyDocumentBar } from '../components/prd-analysis/PrdStickyDocumentBar';
 import { PrdDashboard } from '../components/prd-analysis/PrdDashboard';
@@ -21,6 +23,8 @@ import { Spinner } from '../components/ui/Spinner';
 
 export function PrdAnalysisPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
+  const hasKey = useAuthStore((s) => s.user?.hasAnthropicApiKey ?? false);
+  const openApiKeyGuard = useApiKeyGuard((s) => s.openApiKeyGuard);
   const startAnalysisMutation = useStartAnalysis();
   const { data: latestData, isLoading: isLoadingLatest } = useLatestPrdAnalysis();
   const { data: documentsData } = usePrdDocuments();
@@ -48,13 +52,21 @@ export function PrdAnalysisPage() {
   const previousRequirements = previousDetailData?.data?.requirements ?? null;
 
   const handleStartAnalysis = (documentId: string) => {
-    startAnalysisMutation.mutate(documentId, {
-      onSuccess: () => {
-        showToast.success('Analysis completed');
-        setSelectedAnalysisId(null);
-      },
-      onError: (err) => showToast.error(err.message),
-    });
+    const runAnalysis = () => {
+      startAnalysisMutation.mutate(documentId, {
+        onSuccess: () => {
+          showToast.success('Analysis completed');
+          setSelectedAnalysisId(null);
+        },
+        onError: (err) => showToast.error(err.message),
+      });
+    };
+
+    if (hasKey) {
+      runAnalysis();
+    } else {
+      openApiKeyGuard(runAnalysis);
+    }
   };
 
   if (isProjectLoading) {

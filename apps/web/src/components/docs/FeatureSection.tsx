@@ -4,6 +4,17 @@ import { Card } from '../ui/Card';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
 import type { TranslationKey } from '../../i18n/types';
 
+const FEATURE_COLORS = [
+  { bg: 'bg-blue-500/10', text: 'text-blue-400' },
+  { bg: 'bg-amber-500/10', text: 'text-amber-400' },
+  { bg: 'bg-green-500/10', text: 'text-green-400' },
+  { bg: 'bg-purple-500/10', text: 'text-purple-400' },
+  { bg: 'bg-cyan-500/10', text: 'text-cyan-400' },
+  { bg: 'bg-blue-500/10', text: 'text-blue-400' },
+  { bg: 'bg-indigo-500/10', text: 'text-indigo-400' },
+  { bg: 'bg-emerald-500/10', text: 'text-emerald-400' },
+] as const;
+
 const featureIcons = [
   SyncFeatureIcon,
   ConflictFeatureIcon,
@@ -48,7 +59,7 @@ export function FeatureSection() {
   };
 
   return (
-    <section id="features" className="scroll-mt-24 pb-16">
+    <section id="features" className="scroll-mt-24 border-t border-border-default pb-16 pt-16">
       <h2 className="text-2xl font-bold text-text-primary">{t('docs.features.title')}</h2>
 
       <div className="mt-8 space-y-4">
@@ -58,6 +69,7 @@ export function FeatureSection() {
           const idx = i as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
           const screenshot = FEATURE_SCREENSHOTS[i];
           const altKey = FEATURE_SCREENSHOT_ALT_KEYS[i];
+          const color = FEATURE_COLORS[i]!;
 
           return (
             <Card key={i} padding="none" className="overflow-hidden">
@@ -66,8 +78,10 @@ export function FeatureSection() {
                 onClick={() => toggle(i)}
                 className="flex w-full items-start gap-4 p-5 text-left transition-colors hover:bg-surface-hover"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
-                  <Icon />
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${color.bg}`}
+                >
+                  <Icon className={color.text} />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-base font-semibold text-text-primary">
@@ -117,9 +131,9 @@ export function FeatureSection() {
   );
 }
 
-function SyncFeatureIcon() {
+function SyncFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -130,9 +144,9 @@ function SyncFeatureIcon() {
   );
 }
 
-function ConflictFeatureIcon() {
+function ConflictFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -143,9 +157,9 @@ function ConflictFeatureIcon() {
   );
 }
 
-function DashboardFeatureIcon() {
+function DashboardFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -156,9 +170,9 @@ function DashboardFeatureIcon() {
   );
 }
 
-function PrdFeatureIcon() {
+function PrdFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -170,9 +184,9 @@ function PrdFeatureIcon() {
   );
 }
 
-function PlansFeatureIcon() {
+function PlansFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -183,9 +197,9 @@ function PlansFeatureIcon() {
   );
 }
 
-function SearchFeatureIcon() {
+function SearchFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -196,9 +210,9 @@ function SearchFeatureIcon() {
   );
 }
 
-function TeamFeatureIcon() {
+function TeamFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -209,9 +223,9 @@ function TeamFeatureIcon() {
   );
 }
 
-function AiEvaluationFeatureIcon() {
+function AiEvaluationFeatureIcon({ className = 'text-blue-400' }: { readonly className?: string }) {
   return (
-    <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className={`h-5 w-5 ${className}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
