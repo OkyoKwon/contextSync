@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AppRoutes } from './routes';
 import { LoginModal } from './components/auth/LoginModal';
+import { UpgradeModal } from './components/auth/UpgradeModal';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useThemeSync } from './hooks/use-theme';
 import { useLocaleSync } from './hooks/use-locale-sync';
@@ -28,6 +29,7 @@ export function App() {
         <BrowserRouter>
           <AppRoutes />
           <LoginModal />
+          <UpgradeModal />
         </BrowserRouter>
         <Toaster
           theme={theme}

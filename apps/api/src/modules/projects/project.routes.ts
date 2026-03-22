@@ -80,6 +80,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
 
   app.delete<{ Params: { projectId: string; userId: string } }>(
     '/projects/:projectId/collaborators/:userId',
+    { preHandler: [app.authenticateIdentified] },
     async (request, reply) => {
       await projectService.removeCollaborator(
         app.db,

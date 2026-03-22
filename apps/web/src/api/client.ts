@@ -1,6 +1,7 @@
 import type { ApiResponse } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
 import { useLoginModal } from '../hooks/use-login-modal';
+import { useUpgradeModal } from '../hooks/use-upgrade-modal';
 
 const BASE_URL = '/api';
 
@@ -21,7 +22,7 @@ async function tryRefreshToken(): Promise<boolean> {
       const response = await fetch(`${BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -48,10 +49,7 @@ async function tryRefreshToken(): Promise<boolean> {
   return refreshPromise;
 }
 
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<ApiResponse<T>> {
+async function request<T>(path: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const token = useAuthStore.getState().token;
 
   const headers: Record<string, string> = {
@@ -98,6 +96,15 @@ async function request<T>(
     throw new Error('Session expired. Please log in again.');
   }
 
+  if (response.status === 403) {
+    const errorBody = await response.json().catch(() => null);
+    const message = errorBody?.error ?? `Forbidden (${response.status})`;
+    if (typeof message === 'string' && message.includes('account upgrade')) {
+      useUpgradeModal.getState().openUpgradeModal();
+    }
+    throw new Error(message);
+  }
+
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     const message = errorBody?.error ?? `Request failed (${response.status})`;
@@ -134,8 +141,7 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  delete: <T>(path: string) =>
-    request<T>(path, { method: 'DELETE' }),
+  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 
   upload: <T>(path: string, file: File) => {
     const formData = new FormData();

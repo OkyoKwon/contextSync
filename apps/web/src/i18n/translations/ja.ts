@@ -12,17 +12,24 @@ export const ja: TranslationKeys = {
 
   // Problem Statement
   'problem.sectionLabel': '// Why ContextSync',
-  'problem.terminal.prompt1': 'claude "authモジュールをリファクタリングして"',
-  'problem.terminal.output1': '→ src/auth/middleware.ts を変更中...',
-  'problem.terminal.output2': '→ src/auth/session.ts を変更中...',
-  'problem.terminal.prompt2': 'claude "セッション管理ロジックを改善して"',
-  'problem.terminal.output3': '→ src/auth/session.ts を変更中...',
-  'problem.terminal.output4': '→ src/auth/token.ts を変更中...',
-  'problem.terminal.conflict': '⚠ CONFLICT: src/auth/session.ts — 2人が同時作業中',
-  'problem.terminal.resolved': '✓ コンフリクト事前検知完了 — dev-A, dev-Bに通知送信',
-  'problem.conclusion': 'ソロでもチームでも、',
-  'problem.conclusionHighlight': 'コンテキスト同期は必須',
-  'problem.conclusionEnd': 'です',
+  'problem.solo.label': 'Solo Developer',
+  'problem.solo.prompt1': 'claude "先週の決済モジュールの続きをやって"',
+  'problem.solo.output1': '→ セッションコンテキストが見つかりません... 最初から開始',
+  'problem.solo.output2': '→ どのファイルを修正した？アプローチは？',
+  'problem.solo.prompt2': 'contextsync restore --last "payment module"',
+  'problem.solo.output3': '✓ セッション復元完了 — 47メッセージ、12ファイル、フルコンテキストロード',
+  'problem.team.label': 'Team Collaboration',
+  'problem.team.prompt1': 'claude "authモジュールをリファクタリングして"',
+  'problem.team.output1': '→ src/auth/middleware.ts を変更中...',
+  'problem.team.output2': '→ src/auth/session.ts を変更中...',
+  'problem.team.prompt2': 'claude "セッション管理ロジックを改善して"',
+  'problem.team.output3': '→ src/auth/session.ts を変更中...',
+  'problem.team.output4': '→ src/auth/token.ts を変更中...',
+  'problem.team.conflict': '⚠ CONFLICT: src/auth/session.ts — 2人が同時作業中',
+  'problem.team.resolved': '✓ コンフリクト事前検知完了 — dev-A, dev-Bに通知送信',
+  'problem.conclusion': 'ソロのコンテキスト復元からチームのコンフリクト防止まで、',
+  'problem.conclusionHighlight': 'ContextSyncがすべてのセッションをつなぎます',
+  'problem.conclusionEnd': '',
 
   // Features
   'features.sectionLabel': '// Features',
@@ -192,6 +199,16 @@ export const ja: TranslationKeys = {
   'deployModes.2.detail.0': 'リモートDBを指定してpnpm devを実行',
   'deployModes.2.detail.1': 'コンフリクト検知＆通知をフルサポート',
   'deployModes.2.detail.2': '共有セッション、検索、ダッシュボード',
+
+  // Hero (auto login)
+  'hero.cta.start': 'すぐ始める',
+  'hero.cta.loginExisting': 'ログイン',
+
+  // Upgrade
+  'upgrade.modal.title': 'アカウント設定',
+  'upgrade.modal.description': 'チーム機能を使うには名前とメールを入力してください',
+  'upgrade.modal.submit': '設定完了',
+  'upgrade.banner': 'チーム機能を使うにはアカウントを設定してください',
 
   // Login
   'login.backToHome': '\u2190 ホームへ',

@@ -5,6 +5,7 @@ import { useCollaborators } from '../../hooks/use-collaborators';
 import { useProjectInvitations, useCancelInvitation } from '../../hooks/use-invitations';
 import { projectsApi } from '../../api/projects.api';
 import { invitationsApi } from '../../api/invitations.api';
+import { useUpgradeModal } from '../../hooks/use-upgrade-modal';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -23,7 +24,10 @@ export function CollaboratorList({ projectId, canManage }: CollaboratorListProps
   const { data: invitationsData } = useProjectInvitations(canManage ? projectId : null);
   const pendingInvitations = invitationsData?.data ?? [];
   const queryClient = useQueryClient();
-  const currentUserId = useAuthStore((s) => s.user?.id);
+  const currentUser = useAuthStore((s) => s.user);
+  const currentUserId = currentUser?.id;
+  const isAutoUser = currentUser?.isAuto ?? false;
+  const openUpgradeModal = useUpgradeModal((s) => s.openUpgradeModal);
 
   const [email, setEmail] = useState('');
 
@@ -139,7 +143,13 @@ export function CollaboratorList({ projectId, canManage }: CollaboratorListProps
             }}
           />
           <Button
-            onClick={() => inviteMutation.mutate()}
+            onClick={() => {
+              if (isAutoUser) {
+                openUpgradeModal(() => inviteMutation.mutate());
+                return;
+              }
+              inviteMutation.mutate();
+            }}
             disabled={!email || inviteMutation.isPending}
           >
             Invite

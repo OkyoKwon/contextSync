@@ -14,14 +14,21 @@ export interface TranslationKeys {
 
   // Problem Statement
   readonly 'problem.sectionLabel': string;
-  readonly 'problem.terminal.prompt1': string;
-  readonly 'problem.terminal.output1': string;
-  readonly 'problem.terminal.output2': string;
-  readonly 'problem.terminal.prompt2': string;
-  readonly 'problem.terminal.output3': string;
-  readonly 'problem.terminal.output4': string;
-  readonly 'problem.terminal.conflict': string;
-  readonly 'problem.terminal.resolved': string;
+  readonly 'problem.solo.label': string;
+  readonly 'problem.solo.prompt1': string;
+  readonly 'problem.solo.output1': string;
+  readonly 'problem.solo.output2': string;
+  readonly 'problem.solo.prompt2': string;
+  readonly 'problem.solo.output3': string;
+  readonly 'problem.team.label': string;
+  readonly 'problem.team.prompt1': string;
+  readonly 'problem.team.output1': string;
+  readonly 'problem.team.output2': string;
+  readonly 'problem.team.prompt2': string;
+  readonly 'problem.team.output3': string;
+  readonly 'problem.team.output4': string;
+  readonly 'problem.team.conflict': string;
+  readonly 'problem.team.resolved': string;
   readonly 'problem.conclusion': string;
   readonly 'problem.conclusionHighlight': string;
   readonly 'problem.conclusionEnd': string;
@@ -163,6 +170,16 @@ export interface TranslationKeys {
   readonly 'deployModes.2.detail.0': string;
   readonly 'deployModes.2.detail.1': string;
   readonly 'deployModes.2.detail.2': string;
+
+  // Hero (auto login)
+  readonly 'hero.cta.start': string;
+  readonly 'hero.cta.loginExisting': string;
+
+  // Upgrade
+  readonly 'upgrade.modal.title': string;
+  readonly 'upgrade.modal.description': string;
+  readonly 'upgrade.modal.submit': string;
+  readonly 'upgrade.banner': string;
 
   // Login
   readonly 'login.backToHome': string;

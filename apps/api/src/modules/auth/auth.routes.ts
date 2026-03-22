@@ -1,6 +1,11 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { loginSchema } from './auth.schema.js';
-import { findOrCreateByEmail, findUserById } from './auth.service.js';
+import { loginSchema, upgradeSchema } from './auth.schema.js';
+import {
+  findOrCreateByEmail,
+  findUserById,
+  createAutoUser,
+  upgradeAutoUser,
+} from './auth.service.js';
 import { ok, fail } from '../../lib/api-response.js';
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
@@ -12,6 +17,17 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const user = await findOrCreateByEmail(app.db, parsed.data);
+
+    const token = app.jwt.sign(
+      { userId: user.id, email: user.email },
+      { expiresIn: app.env.JWT_EXPIRES_IN },
+    );
+
+    return reply.send(ok({ token, user }));
+  });
+
+  app.post('/auto', async (_request, reply) => {
+    const user = await createAutoUser(app.db);
 
     const token = app.jwt.sign(
       { userId: user.id, email: user.email },
@@ -35,5 +51,22 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       { expiresIn: app.env.JWT_EXPIRES_IN },
     );
     return reply.send(ok({ token }));
+  });
+
+  app.post('/upgrade', { preHandler: [app.authenticate] }, async (request, reply) => {
+    const parsed = upgradeSchema.safeParse(request.body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join(', ');
+      return reply.status(400).send(fail(message));
+    }
+
+    const user = await upgradeAutoUser(app.db, parsed.data);
+
+    const token = app.jwt.sign(
+      { userId: user.id, email: user.email },
+      { expiresIn: app.env.JWT_EXPIRES_IN },
+    );
+
+    return reply.send(ok({ token, user }));
   });
 };

@@ -26,6 +26,7 @@ export interface UsersTable {
   name: string;
   avatar_url: string | null;
   role: Generated<string>;
+  is_auto: Generated<boolean>;
   notification_settings: Generated<string>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;

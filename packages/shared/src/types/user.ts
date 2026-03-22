@@ -5,6 +5,7 @@ export interface User {
   readonly name: string;
   readonly avatarUrl: string | null;
   readonly role: UserRole;
+  readonly isAuto: boolean;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

@@ -6,23 +6,30 @@ export const en: TranslationKeys = {
 
   // Hero
   'hero.title': 'The Hub for AI Session Context',
-  'hero.subtitle': 'Manage your Claude Code sessions — solo or with your\u00A0team',
+  'hero.subtitle': 'Manage your Claude Code sessions — solo or with your team',
   'hero.cta.login': 'Get Started',
   'hero.cta.features': 'Explore Features',
 
   // Problem Statement
   'problem.sectionLabel': '// Why ContextSync',
-  'problem.terminal.prompt1': 'claude "refactor the auth module"',
-  'problem.terminal.output1': '→ Modifying src/auth/middleware.ts...',
-  'problem.terminal.output2': '→ Modifying src/auth/session.ts...',
-  'problem.terminal.prompt2': 'claude "improve session management logic"',
-  'problem.terminal.output3': '→ Modifying src/auth/session.ts...',
-  'problem.terminal.output4': '→ Modifying src/auth/token.ts...',
-  'problem.terminal.conflict': '⚠ CONFLICT: src/auth/session.ts — 2 devs working simultaneously',
-  'problem.terminal.resolved': '✓ Conflict pre-detected — notifications sent to dev-A, dev-B',
-  'problem.conclusion': 'Whether solo or in a team, ',
-  'problem.conclusionHighlight': 'context sync is essential',
-  'problem.conclusionEnd': '',
+  'problem.solo.label': 'Solo Developer',
+  'problem.solo.prompt1': 'claude "continue the payment module from last week"',
+  'problem.solo.output1': '→ No session context found... starting from scratch',
+  'problem.solo.output2': '→ Which files were modified? What was the approach?',
+  'problem.solo.prompt2': 'contextsync restore --last "payment module"',
+  'problem.solo.output3': '✓ Session restored — 47 messages, 12 files, full context loaded',
+  'problem.team.label': 'Team Collaboration',
+  'problem.team.prompt1': 'claude "refactor the auth module"',
+  'problem.team.output1': '→ Modifying src/auth/middleware.ts...',
+  'problem.team.output2': '→ Modifying src/auth/session.ts...',
+  'problem.team.prompt2': 'claude "improve session management logic"',
+  'problem.team.output3': '→ Modifying src/auth/session.ts...',
+  'problem.team.output4': '→ Modifying src/auth/token.ts...',
+  'problem.team.conflict': '⚠ CONFLICT: src/auth/session.ts — 2 devs working simultaneously',
+  'problem.team.resolved': '✓ Conflict pre-detected — notifications sent to dev-A, dev-B',
+  'problem.conclusion': 'From solo context recovery to team conflict prevention, ',
+  'problem.conclusionHighlight': 'ContextSync keeps every session connected',
+  'problem.conclusionEnd': '.',
 
   // Features
   'features.sectionLabel': '// Features',
@@ -195,6 +202,16 @@ export const en: TranslationKeys = {
   'deployModes.2.detail.0': 'Point to the remote DB and run pnpm dev',
   'deployModes.2.detail.1': 'Full conflict detection & notifications',
   'deployModes.2.detail.2': 'Shared sessions, search, and dashboards',
+
+  // Hero (auto login)
+  'hero.cta.start': 'Get Started',
+  'hero.cta.loginExisting': 'Log in',
+
+  // Upgrade
+  'upgrade.modal.title': 'Set Up Account',
+  'upgrade.modal.description': 'Enter your name and email to use team features',
+  'upgrade.modal.submit': 'Complete Setup',
+  'upgrade.banner': 'Set up your account to use team features',
 
   // Login
   'login.backToHome': '\u2190 Back to home',

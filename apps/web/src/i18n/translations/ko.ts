@@ -12,17 +12,24 @@ export const ko: TranslationKeys = {
 
   // Problem Statement
   'problem.sectionLabel': '// Why ContextSync',
-  'problem.terminal.prompt1': 'claude "auth 모듈 리팩토링해줘"',
-  'problem.terminal.output1': '→ src/auth/middleware.ts 수정 중...',
-  'problem.terminal.output2': '→ src/auth/session.ts 수정 중...',
-  'problem.terminal.prompt2': 'claude "세션 관리 로직 개선해줘"',
-  'problem.terminal.output3': '→ src/auth/session.ts 수정 중...',
-  'problem.terminal.output4': '→ src/auth/token.ts 수정 중...',
-  'problem.terminal.conflict': '⚠ CONFLICT: src/auth/session.ts — 2명이 동시 작업 중',
-  'problem.terminal.resolved': '✓ 충돌 사전 감지 완료 — dev-A, dev-B에게 알림 전송',
-  'problem.conclusion': '혼자든 팀이든, ',
-  'problem.conclusionHighlight': '컨텍스트 동기화는 필수',
-  'problem.conclusionEnd': '입니다',
+  'problem.solo.label': 'Solo Developer',
+  'problem.solo.prompt1': 'claude "지난주 결제 모듈 이어서 작업해줘"',
+  'problem.solo.output1': '→ 세션 컨텍스트를 찾을 수 없습니다... 처음부터 시작',
+  'problem.solo.output2': '→ 어떤 파일을 수정했지? 접근 방식은?',
+  'problem.solo.prompt2': 'contextsync restore --last "payment module"',
+  'problem.solo.output3': '✓ 세션 복원 완료 — 47개 메시지, 12개 파일, 전체 컨텍스트 로드',
+  'problem.team.label': 'Team Collaboration',
+  'problem.team.prompt1': 'claude "auth 모듈 리팩토링해줘"',
+  'problem.team.output1': '→ src/auth/middleware.ts 수정 중...',
+  'problem.team.output2': '→ src/auth/session.ts 수정 중...',
+  'problem.team.prompt2': 'claude "세션 관리 로직 개선해줘"',
+  'problem.team.output3': '→ src/auth/session.ts 수정 중...',
+  'problem.team.output4': '→ src/auth/token.ts 수정 중...',
+  'problem.team.conflict': '⚠ CONFLICT: src/auth/session.ts — 2명이 동시 작업 중',
+  'problem.team.resolved': '✓ 충돌 사전 감지 완료 — dev-A, dev-B에게 알림 전송',
+  'problem.conclusion': '개인의 컨텍스트 복원부터 팀 충돌 방지까지, ',
+  'problem.conclusionHighlight': 'ContextSync가 모든 세션을 연결합니다',
+  'problem.conclusionEnd': '',
 
   // Features
   'features.sectionLabel': '// Features',
@@ -191,6 +198,16 @@ export const ko: TranslationKeys = {
   'deployModes.2.detail.0': '원격 DB를 가리키고 pnpm dev 실행',
   'deployModes.2.detail.1': '충돌 감지 및 알림 완전 지원',
   'deployModes.2.detail.2': '공유 세션, 검색, 대시보드',
+
+  // Hero (auto login)
+  'hero.cta.start': '바로 시작하기',
+  'hero.cta.loginExisting': '로그인',
+
+  // Upgrade
+  'upgrade.modal.title': '계정 설정',
+  'upgrade.modal.description': '팀 기능을 사용하려면 이름과 이메일을 입력하세요',
+  'upgrade.modal.submit': '계정 설정 완료',
+  'upgrade.banner': '팀 기능을 사용하려면 계정을 설정하세요',
 
   // Login
   'login.backToHome': '\u2190 홈으로',

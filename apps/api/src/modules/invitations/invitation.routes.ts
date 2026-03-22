@@ -23,9 +23,10 @@ export const invitationRoutes: FastifyPluginAsync = async (app) => {
   app.register(async (authenticated) => {
     authenticated.addHook('preHandler', authenticated.authenticate);
 
-    // Create invitation for a project
+    // Create invitation for a project (requires identified account)
     authenticated.post<{ Params: { projectId: string }; Body: unknown }>(
       '/projects/:projectId/invitations',
+      { preHandler: [authenticated.authenticateIdentified] },
       async (request, reply) => {
         const input = createInvitationSchema.parse(request.body);
         const invitation = await invitationService.createInvitation(
