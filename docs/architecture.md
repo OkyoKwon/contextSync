@@ -95,6 +95,7 @@ Module route registration order:
 12. Admin → `/api`
 13. DB Config → `/api`
 14. Supabase Onboarding → `/api`
+15. Setup → `/api`
 
 `db` (Kysely), `env` (Env), and `poolManager` (DbPoolManager) objects are decorated onto the FastifyInstance.
 
@@ -117,7 +118,7 @@ Client → Routes (Zod validation) → Service (authorization) → Repository (K
 Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (object mapping) ← DB
 ```
 
-### 14 Modules
+### 15 Modules
 
 | Module                | Route Prefix                                        | Purpose                                                             |
 | --------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
@@ -135,6 +136,7 @@ Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (o
 | `admin`               | `/api/admin`                                        | DB health, migration management, team config (team-host only)       |
 | `db-config`           | `/api/projects/:id/db-config`                       | External DB configuration (Supabase connection, data migration)     |
 | `supabase-onboarding` | `/api/supabase-onboarding`                          | Supabase onboarding flow (project creation, guided setup)           |
+| `setup`               | `/api/setup`                                        | Database connection status, remote DB test/switch, migration run    |
 
 ### Service Conventions
 
@@ -298,24 +300,23 @@ sequenceDiagram
 ### Routing (React Router 7)
 
 ```
+/                               → AppEntryRedirect (auto-login → /dashboard or /onboarding)
 /login                          → LoginPage
-/docs                           → DocsPage (public)
-/onboarding                     → OnboardingPage
-/invitations/accept?token=...   → InvitationAcceptPage (public, stores token for post-login)
-/invitations/expired            → InvitationExpiredPage (public)
+/onboarding                     → OnboardingPage (redirects to /project on success)
 / (Protected + AppLayout)
   ├── /dashboard                → DashboardPage
-  ├── /project                  → ProjectPage (session list)
+  ├── /project                  → ProjectPage (session list, aka Conversations)
   ├── /project/sessions/:id     → SessionDetailPage
   ├── /conflicts                → ConflictsPage
   ├── /prd-analysis             → PrdAnalysisPage
   ├── /ai-evaluation            → AiEvaluationPage
   ├── /plans                    → PlansPage
   ├── /admin                    → AdminPage (team-host mode, owner/admin only)
-  └── /settings                 → SettingsPage
+  ├── /settings                 → SettingsPage (sidebar tab navigation)
+  └── /settings?tab=<tab>       → general | team | integrations | danger-zone
 ```
 
-Protected Route: checks token + onboarding status.
+Protected Route: checks token + onboarding status. Legacy routes (`/sessions`, `/local-sessions`) redirect to `/project`.
 
 ### State Management
 
@@ -330,6 +331,8 @@ Protected Route: checks token + onboarding status.
 
 - `useAuthStore` — `token`, `user`, `currentProjectId`, `setAuth()`, `setCurrentProject()`, `logout()`
 - `useThemeStore` — `theme`, `toggleTheme()`
+- `useUiStore` — `sidebarCollapsed`, `toggleSidebar()`
+- `useLocaleStore` — `locale`, `setLocale()` (en/ko/ja)
 
 **React Query Conventions:**
 
@@ -357,14 +360,15 @@ api.upload<T>(path, file)        // POST FormData (file upload)
 ```
 components/
   ui/           # Generic UI (Button, Card, Input, Modal, ...)
-  auth/         # Login, OAuth callback
-  layout/       # AppLayout, Header, Sidebar, ProjectSelector
+  auth/         # Login, AppEntryRedirect, UpgradeModal
+  layout/       # AppLayout, Header, Sidebar, ProjectSelector, JoinProjectDialog
   projects/     # Project creation/editing
   sessions/     # Session list, detail, import
   conflicts/    # Conflict list, detail
   search/       # Search bar, results
   prd-analysis/ # PRD upload, analysis results, requirements
-  dashboard/    # Dashboard widgets
+  dashboard/    # Dashboard widgets, EmptyDashboard
+  settings/     # SettingsLayout, GeneralTab, TeamTab, IntegrationsTab, DangerZoneTab
 ```
 
 ---

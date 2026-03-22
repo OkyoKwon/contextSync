@@ -85,7 +85,7 @@ Colors used for badges, status indicators, etc. Pattern: `{color}-500/15` backgr
 └──────────────────────────────────────────────┘
 ```
 
-- **Sidebar:** `w-60` (240px) expanded, `w-16` (64px) collapsed, `bg-surface`, right border
+- **Sidebar:** `w-60` (240px) expanded, `w-16` (64px) collapsed, `bg-surface`, right border. Includes `ProjectSelector`, `CreateProjectModal`, and `JoinProjectDialog` for project management.
 - **Header:** `h-14` (56px), `bg-surface`, bottom border, `px-6`
 - **Content:** `flex-1 overflow-y-auto p-6`
 
@@ -504,5 +504,32 @@ Native HTML attributes forwarded via `...props` pattern:
 - **Hover transitions:** `transition-colors` (most interactive elements)
 - **ARIA:** Modal (`role="dialog"`, `aria-modal`), Tooltip (`role="tooltip"`), buttons (`aria-label`)
 - **Keyboard:** Modal closes on ESC
-- **Keyboard Shortcuts:** `Cmd+K` (search/command palette), `Cmd+1` (Dashboard), `Cmd+2` (Project), `Cmd+3` (Conflicts), `Cmd+4` (PRD Analysis), `Cmd+5` (Settings)
+- **Keyboard Shortcuts:** `Cmd+K` (search/command palette)
 - **Z-Index:** Modal/Tooltip `z-50`
+
+---
+
+## 9. Settings Page Architecture
+
+Settings page uses a sidebar tab navigation layout (`SettingsLayout`).
+
+### Tab Configuration (`settings-tabs.ts`)
+
+| Tab ID         | Label        | Content Component |
+| -------------- | ------------ | ----------------- |
+| `general`      | General      | `GeneralTab`      |
+| `team`         | Team         | `TeamTab`         |
+| `integrations` | Integrations | `IntegrationsTab` |
+| `danger-zone`  | Danger Zone  | `DangerZoneTab`   |
+
+Default tab: `general`. Tab selection persisted via `?tab=` query parameter.
+
+### Settings Components (`components/settings/`)
+
+- **`SettingsLayout.tsx`** — Main layout with sidebar tab list + content area
+- **`GeneralTab.tsx`** — Project name/description editing, Claude plan, API key management
+- **`TeamTab.tsx`** — Collaborator list, join code management (`JoinCodeShare`), team setup CTA
+- **`IntegrationsTab.tsx`** — Supabase onboarding, remote DB setup
+- **`DangerZoneTab.tsx`** — Project deletion
+- **`JoinCodeShare.tsx`** — Join code display, copy, regenerate, delete
+- **`TeamSetupCta.tsx`** — CTA for inviting team members

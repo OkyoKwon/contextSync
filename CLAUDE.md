@@ -52,7 +52,7 @@ apps/
       database/     client.ts (Kysely), types.ts, migrations/
       plugins/      auth, cors, error-handler
       lib/          api-response.ts (ok, fail, paginated)
-      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, invitations, ai-evaluation, admin, db-config, supabase-onboarding
+      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, invitations, ai-evaluation, admin, db-config, supabase-onboarding, setup
   web/          # React 19 SPA (Vite 6)
     src/
       api/          API client
