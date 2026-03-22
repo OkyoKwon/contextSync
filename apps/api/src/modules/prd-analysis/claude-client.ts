@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { CodebaseSummary } from './codebase-scanner.js';
+import { callWithRetry } from '../../lib/claude-utils.js';
 
 export interface ParsedRequirement {
   readonly requirementText: string;
@@ -78,7 +79,7 @@ ${codebaseContext}
 
 Analyze the PRD against this codebase and return the JSON result.`;
 
-  const response = await callWithRetry(client, model, userMessage);
+  const response = await callWithRetry(client, model, SYSTEM_PROMPT, userMessage);
 
   const text = response.content
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
@@ -93,39 +94,6 @@ Analyze the PRD against this codebase and return the JSON result.`;
     outputTokens: response.usage.output_tokens,
     modelUsed: model,
   };
-}
-
-async function callWithRetry(
-  client: Anthropic,
-  model: string,
-  userMessage: string,
-  retries = 1,
-): Promise<Anthropic.Message> {
-  try {
-    return await client.messages.create({
-      model,
-      max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
-    });
-  } catch (error) {
-    if (retries > 0 && isRetryableError(error)) {
-      await delay(2000);
-      return callWithRetry(client, model, userMessage, retries - 1);
-    }
-    throw error;
-  }
-}
-
-function isRetryableError(error: unknown): boolean {
-  if (error instanceof Anthropic.APIError) {
-    return error.status >= 500 || error.status === 429;
-  }
-  return false;
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function buildCodebaseContext(summary: CodebaseSummary): string {
@@ -166,15 +134,14 @@ function parseAnalysisResponse(text: string): {
       status: validateStatus(String(r['status'] ?? 'not_started')),
       confidence: Math.min(100, Math.max(0, Number(r['confidence'] ?? 0))),
       evidence: r['evidence'] ? String(r['evidence']) : null,
-      filePaths: Array.isArray(r['filePaths'])
-        ? (r['filePaths'] as unknown[]).map(String)
-        : [],
+      filePaths: Array.isArray(r['filePaths']) ? (r['filePaths'] as unknown[]).map(String) : [],
     };
   });
 
-  const overallRate = typeof result.overallRate === 'number'
-    ? Math.min(100, Math.max(0, result.overallRate))
-    : calculateOverallRate(requirements);
+  const overallRate =
+    typeof result.overallRate === 'number'
+      ? Math.min(100, Math.max(0, result.overallRate))
+      : calculateOverallRate(requirements);
 
   return { requirements, overallRate };
 }

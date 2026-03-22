@@ -12,7 +12,7 @@ import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 import { logActivity } from '../activity/activity.service.js';
 import * as sessionRepo from './session.repository.js';
-import { countLocalSessionsByDate } from './local-session.service.js';
+import { countLocalSessionsByDate } from '../local-sessions/local-session.service.js';
 
 export async function getSessionsByProject(
   db: Db,

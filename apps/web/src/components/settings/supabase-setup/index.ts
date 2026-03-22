@@ -1,0 +1,1 @@
+export { SupabaseAutoSetup } from './SupabaseAutoSetup';

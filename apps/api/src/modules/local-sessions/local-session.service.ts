@@ -8,9 +8,6 @@ import type {
   LocalSessionInfo,
   LocalSessionDetail,
   LocalSessionMessage,
-  SyncSessionResult,
-  SyncSingleResult,
-  RecalculateTokenResult,
   ProjectConversation,
   UnifiedMessage,
   BrowseDirectoryEntry,
@@ -19,23 +16,22 @@ import {
   parseClaudeCodeSession,
   parseClaudeCodeSessionWithTimestamps,
   detectPendingApproval,
-} from './parsers/claude-code-session.parser.js';
-import { importParsedSession } from './session-import.service.js';
-import { assertProjectAccess } from '../projects/project.service.js';
+} from '../sessions/parsers/claude-code-session.parser.js';
+import { getProjectSessionFiles } from './local-session.sync.js';
 
 const CLAUDE_PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 
 // Sessions modified within this threshold are considered "active"
 const ACTIVE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
 
-interface SessionFile {
+export interface SessionFile {
   readonly dir: string;
   readonly fileName: string;
   readonly fullPath: string;
   readonly lastModifiedMs: number;
 }
 
-async function findSessionFiles(): Promise<readonly SessionFile[]> {
+export async function findSessionFiles(): Promise<readonly SessionFile[]> {
   const results: SessionFile[] = [];
 
   try {
@@ -79,6 +75,10 @@ function decodeProjectPath(dirName: string): string {
   return '/' + dirName.slice(1).replace(/-/g, '/');
 }
 
+function encodeProjectPath(absolutePath: string): string {
+  return absolutePath.replace(/\//g, '-');
+}
+
 export async function listLocalDirectories(): Promise<readonly LocalDirectory[]> {
   const sessionFiles = await findSessionFiles();
 
@@ -109,39 +109,6 @@ export async function listLocalDirectories(): Promise<readonly LocalDirectory[]>
   directories.sort((a, b) => (b.lastActivityAt > a.lastActivityAt ? 1 : -1));
 
   return directories;
-}
-
-async function getProjectSessionFiles(db: Db, projectId: string): Promise<readonly SessionFile[]> {
-  const project = await db
-    .selectFrom('projects')
-    .select(['local_directory', 'owner_id'])
-    .where('id', '=', projectId)
-    .executeTakeFirst();
-
-  const directoriesToScan: string[] = [];
-  if (project?.local_directory) {
-    directoriesToScan.push(project.local_directory);
-  }
-
-  const collabRows = await db
-    .selectFrom('project_collaborators')
-    .select(['local_directory'])
-    .where('project_id', '=', projectId)
-    .where('local_directory', 'is not', null)
-    .execute();
-
-  for (const row of collabRows) {
-    if (row.local_directory) {
-      directoriesToScan.push(row.local_directory);
-    }
-  }
-
-  if (directoriesToScan.length === 0) return [];
-
-  const encodedDirs = new Set(directoriesToScan.map(encodeProjectPath));
-
-  const allSessionFiles = await findSessionFiles();
-  return allSessionFiles.filter((f) => encodedDirs.has(f.dir));
 }
 
 export async function listLocalSessions(
@@ -203,7 +170,6 @@ export async function listLocalSessions(
   }
 
   // Build groups, sorted by most recent activity
-  // When activeOnly or file count exceeds cap, limit displayed sessions but keep accurate totals
   const groups: LocalProjectGroup[] = [...groupMap.entries()].map(([projectPath, sessions]) => {
     const sorted = [...sessions].sort((a, b) => (b.lastModifiedAt > a.lastModifiedAt ? 1 : -1));
     const totalMessages = sorted.reduce((sum, s) => sum + s.messageCount, 0);
@@ -320,10 +286,6 @@ export async function countLocalSessionsByDate(
   return { todaySessions, weekSessions };
 }
 
-function encodeProjectPath(absolutePath: string): string {
-  return absolutePath.replace(/\//g, '-');
-}
-
 export async function getProjectConversation(
   projectPath: string,
   cursor?: string,
@@ -380,124 +342,6 @@ export async function getProjectConversation(
     hasMore,
     nextCursor,
   };
-}
-
-export async function syncSessions(
-  db: Db,
-  projectId: string,
-  userId: string,
-  sessionIds: readonly string[],
-): Promise<SyncSessionResult> {
-  const sessionFiles = await findSessionFiles();
-  const fileMap = new Map(sessionFiles.map((f) => [f.fileName.replace('.jsonl', ''), f]));
-
-  const results: SyncSingleResult[] = [];
-  let syncedCount = 0;
-
-  for (const sessionId of sessionIds) {
-    try {
-      const file = fileMap.get(sessionId);
-      if (!file) {
-        results.push({ sessionId, success: false, error: 'Session file not found' });
-        continue;
-      }
-
-      const content = await readFile(file.fullPath, 'utf-8');
-      const { parsed, filePaths } = parseClaudeCodeSession(content);
-
-      const importResult = await importParsedSession(db, projectId, userId, parsed, filePaths);
-
-      // Record sync tracking
-      await db
-        .insertInto('synced_sessions')
-        .values({
-          project_id: projectId,
-          session_id: importResult.session.id,
-          external_session_id: sessionId,
-          source_path: file.fullPath,
-        })
-        .onConflict((oc) => oc.columns(['project_id', 'external_session_id']).doNothing())
-        .execute();
-
-      results.push({
-        sessionId,
-        success: true,
-        messageCount: importResult.messageCount,
-        detectedConflicts: importResult.detectedConflicts,
-      });
-      syncedCount++;
-    } catch (err) {
-      results.push({
-        sessionId,
-        success: false,
-        error: err instanceof Error ? err.message : 'Unknown error',
-      });
-    }
-  }
-
-  return { syncedCount, results };
-}
-
-export async function recalculateTokenUsage(
-  db: Db,
-  projectId: string,
-  userId: string,
-): Promise<RecalculateTokenResult> {
-  await assertProjectAccess(db, projectId, userId);
-
-  // Find all synced sessions with their source JSONL paths
-  const syncedRows = await db
-    .selectFrom('synced_sessions')
-    .select(['session_id', 'external_session_id', 'source_path'])
-    .where('project_id', '=', projectId)
-    .execute();
-
-  if (syncedRows.length === 0) {
-    return { updatedSessions: 0, updatedMessages: 0, skipped: 0, errors: [] };
-  }
-
-  let updatedSessions = 0;
-  let updatedMessages = 0;
-  let skipped = 0;
-  const errors: string[] = [];
-
-  for (const row of syncedRows) {
-    try {
-      const content = await readFile(row.source_path, 'utf-8');
-      const { parsed } = parseClaudeCodeSession(content);
-
-      // Re-parsed data may have more messages (tool-use turns) than old parse.
-      // Delete all messages and re-insert from scratch.
-      await db.deleteFrom('messages').where('session_id', '=', row.session_id).execute();
-
-      const values = parsed.messages.map((msg, index) => ({
-        session_id: row.session_id,
-        role: msg.role,
-        content: msg.content,
-        content_type: msg.contentType ?? 'prompt',
-        tokens_used: msg.tokensUsed ?? null,
-        model_used: msg.modelUsed ?? null,
-        sort_order: index,
-      }));
-
-      if (values.length > 0) {
-        await db.insertInto('messages').values(values).execute();
-      }
-
-      updatedSessions++;
-      updatedMessages += values.length;
-    } catch (err) {
-      if (err instanceof Error && err.message.includes('ENOENT')) {
-        skipped++;
-      } else {
-        errors.push(
-          `${row.external_session_id}: ${err instanceof Error ? err.message : 'Unknown error'}`,
-        );
-      }
-    }
-  }
-
-  return { updatedSessions, updatedMessages, skipped, errors };
 }
 
 const DANGEROUS_PATH_SEGMENTS = ['..', '\0'];

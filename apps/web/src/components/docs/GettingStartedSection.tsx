@@ -7,7 +7,7 @@ import {
   SyncSessionIllustration,
   DashboardIllustration,
   InviteTeamIllustration,
-} from './DocsIllustrations';
+} from './illustrations';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
 import type { TranslationKey } from '../../i18n/types';
 import { assetUrl } from '@/lib/asset-url';

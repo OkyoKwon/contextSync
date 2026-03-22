@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { EvaluationDimension, EvidenceSentiment } from '@context-sync/shared';
 import { EVALUATION_DIMENSIONS } from '@context-sync/shared';
+import { callWithRetry } from '../../lib/claude-utils.js';
 
 const MAX_PROMPT_CHAR_LENGTH = 2000;
 const MAX_TOTAL_CHARS = 80_000;
@@ -150,7 +151,7 @@ export async function analyzeEvaluation(
   const sampled = sampleMessages(messages);
   const userMessage = buildUserMessage(sampled, sessionCount, messages.length);
 
-  const response = await callWithRetry(client, model, userMessage);
+  const response = await callWithRetry(client, model, SYSTEM_PROMPT, userMessage);
 
   const text = response.content
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
@@ -187,39 +188,6 @@ function buildUserMessage(
 ${promptEntries}
 
 Analyze these prompts and return the JSON evaluation result.`;
-}
-
-async function callWithRetry(
-  client: Anthropic,
-  model: string,
-  userMessage: string,
-  retries = 1,
-): Promise<Anthropic.Message> {
-  try {
-    return await client.messages.create({
-      model,
-      max_tokens: 8192,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: 'user', content: userMessage }],
-    });
-  } catch (error) {
-    if (retries > 0 && isRetryableError(error)) {
-      await delay(2000);
-      return callWithRetry(client, model, userMessage, retries - 1);
-    }
-    throw error;
-  }
-}
-
-function isRetryableError(error: unknown): boolean {
-  if (error instanceof Anthropic.APIError) {
-    return error.status >= 500 || error.status === 429;
-  }
-  return false;
-}
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function parseEvaluationResponse(
