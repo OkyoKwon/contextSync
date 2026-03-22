@@ -2,6 +2,7 @@ import { useT } from '../../i18n/use-translation';
 import { BrowserFrame } from '../ui/BrowserFrame';
 import { ScreenshotImage } from '../ui/ScreenshotImage';
 import { assetUrl } from '@/lib/asset-url';
+import { CONTEXT_SYNC_ASCII, CONTEXT_SYNC_ASCII_COMPACT } from '../auth/login-ascii';
 
 function ChevronDownIcon() {
   return (
@@ -29,31 +30,27 @@ export function LandingHero() {
   return (
     <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-16">
       <div className="flex flex-col items-center gap-8 font-mono">
-        <h1 className="text-4xl font-bold text-text-primary md:text-6xl">ContextSync</h1>
+        <pre className="hidden text-[0.45rem] leading-[1.15] text-text-primary sm:block">
+          {CONTEXT_SYNC_ASCII}
+        </pre>
+        <pre className="block text-[0.55rem] leading-[1.15] text-text-primary sm:hidden">
+          {CONTEXT_SYNC_ASCII_COMPACT}
+        </pre>
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <p className="text-lg font-medium text-text-primary md:text-xl">{t('hero.title')}</p>
-          <p className="text-sm text-text-tertiary">{t('hero.subtitle')}</p>
+          <h1 className="text-lg font-medium text-text-primary md:text-xl">{t('hero.title')}</h1>
+          <p className="whitespace-nowrap text-sm text-text-tertiary">{t('hero.subtitle')}</p>
         </div>
 
         <div className="flex flex-col items-center gap-4">
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <button
-              type="button"
-              onClick={() => scrollToSection('quickstart')}
-              className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
-            >
-              {t('hero.cta.getStarted')}
-            </button>
-            <a
-              href="https://github.com/OkyoKwon/contextSync"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-md border border-border-default px-6 py-3 font-mono text-sm text-text-secondary transition-colors hover:bg-surface-hover"
-            >
-              {t('hero.cta.viewOnGithub')}
-            </a>
-          </div>
+          <a
+            href="https://github.com/OkyoKwon/contextSync"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-md bg-btn-primary-bg px-6 py-3 font-mono text-sm font-medium text-btn-primary-text transition-colors hover:bg-btn-primary-hover"
+          >
+            {t('hero.cta.viewOnGithub')}
+          </a>
         </div>
       </div>
 
