@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **총 102개 테스트 케이스** | Playwright + Custom Fixtures (auth, api, db)
+> **총 103개 테스트 케이스** | Playwright + Custom Fixtures (auth, api, db)
 >
 > 테스트 경로: `e2e/tests/`
 
@@ -321,9 +321,9 @@
 
 | #   | TC ID    | 테스트명                                            | 설명                                     | 검증 항목                                     |
 | --- | -------- | --------------------------------------------------- | ---------------------------------------- | --------------------------------------------- |
-| 100 | EVAL-001 | Evaluation page renders                             | AI 평가 페이지 렌더링                    | URL → `/ai-evaluation`, root 엘리먼트 visible |
-| 101 | EVAL-002 | Evaluation trigger fails gracefully without API key | API 키 없이 평가 트리거 시 graceful 실패 | success === false                             |
-| 102 | EVAL-003 | Empty evaluation history                            | 빈 평가 히스토리 조회                    | data.length === 0                             |
+| 101 | EVAL-001 | Evaluation page renders                             | AI 평가 페이지 렌더링                    | URL → `/ai-evaluation`, root 엘리먼트 visible |
+| 102 | EVAL-002 | Evaluation trigger fails gracefully without API key | API 키 없이 평가 트리거 시 graceful 실패 | success === false                             |
+| 103 | EVAL-003 | Empty evaluation history                            | 빈 평가 히스토리 조회                    | data.length === 0                             |
 
 ---
 

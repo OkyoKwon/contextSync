@@ -46,7 +46,7 @@ apps/
       database/     client.ts (Kysely), types.ts, migrations/
       plugins/      auth, cors, error-handler
       lib/          api-response.ts (ok, fail, paginated)
-      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, users, admin
+      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, invitations, ai-evaluation, admin, db-config, supabase-onboarding
   web/          # React 19 SPA (Vite 6)
     src/
       api/          API 클라이언트
@@ -59,7 +59,7 @@ packages/
   shared/       # 공유 타입, 상수, Zod 밸리데이터
     src/
       types/        api.ts, user.ts, project.ts, session.ts, conflict.ts, ...
-      constants/    roles, session-status, conflict-severity, model-pricing
+      constants/    roles, session-status, conflict-severity, model-pricing, ai-evaluation, anthropic-models, claude-plan, invitation-status, prd-analysis
       validators/   session.validator.ts, project.validator.ts
 ```
 
@@ -106,7 +106,7 @@ interface ApiResponse<T> {
 ### Database
 
 - **Kysely** query builder (full ORM 아님), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–019)
+- **Migrations:** `apps/api/src/database/migrations/` (001–024)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **스키마 타입:** `apps/api/src/database/types.ts`
 
@@ -144,9 +144,9 @@ export async function createProject(
 
 필수: `DATABASE_URL`
 
-기본값 있음: `JWT_SECRET` (개발용 기본값 내장, 프로덕션에서는 반드시 override), `FRONTEND_URL`
+기본값 있음: `JWT_SECRET` (개발용 기본값 내장, 프로덕션에서는 반드시 override), `FRONTEND_URL`, `JWT_EXPIRES_IN` (`'7d'`), `ANTHROPIC_MODEL` (`'claude-sonnet-4-20250514'`), `EMAIL_FROM` (`'noreply@contextsync.dev'`), `DEPLOYMENT_MODE` (`'personal'`), `DATABASE_SSL` (`'false'`), `RUN_MIGRATIONS` (`'true'`), `DATABASE_PROVIDER` (`'self-hosted'`)
 
-선택: `ANTHROPIC_API_KEY` (PRD 분석), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`, `DATABASE_PROVIDER` (`self-hosted` | `supabase`, 기본 `self-hosted`)
+선택: `ANTHROPIC_API_KEY` (PRD 분석 / AI 평가), `SLACK_WEBHOOK_URL`, `RESEND_API_KEY`, `DATABASE_SSL_CA`
 
 ### Frontend State
 

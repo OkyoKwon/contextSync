@@ -88,8 +88,15 @@ Module route registration order:
 5. Search → `/api`
 6. Notifications → `/api`
 7. PRD Analysis → `/api`
+8. Activity → `/api`
+9. Plans → `/api`
+10. Invitations → `/api`
+11. AI Evaluation → `/api`
+12. Admin → `/api`
+13. DB Config → `/api`
+14. Supabase Onboarding → `/api`
 
-`db` (Kysely) and `env` (Env) objects are decorated onto the FastifyInstance.
+`db` (Kysely), `env` (Env), and `poolManager` (DbPoolManager) objects are decorated onto the FastifyInstance.
 
 ### Module Pattern (4-file structure)
 
@@ -110,20 +117,24 @@ Client → Routes (Zod validation) → Service (authorization) → Repository (K
 Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (object mapping) ← DB
 ```
 
-### 10 Modules
+### 14 Modules
 
-| Module          | Route Prefix                                        | Purpose                                                             |
-| --------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
-| `auth`          | `/api/auth`                                         | Email/name local auth, JWT issuance/refresh                         |
-| `projects`      | `/api/projects`                                     | Project CRUD, collaborator management                               |
-| `sessions`      | `/api/projects/:id/sessions`                        | Session management, import/export, local sync, token usage          |
-| `conflicts`     | `/api/projects/:id/conflicts`                       | Conflict detection, status management (detected→reviewing→resolved) |
-| `search`        | `/api/projects/:id/search`                          | PostgreSQL tsvector full-text search                                |
-| `notifications` | `/api/projects/:id/notifications`                   | Email/Slack notifications                                           |
-| `prd-analysis`  | `/api/projects/:id/prd`                             | PRD upload, Claude API analysis, requirement tracking               |
-| `invitations`   | `/api/invitations`, `/api/projects/:id/invitations` | Project invitation with token/link, accept/decline workflow         |
-| `users`         | `/api/users`                                        | User profiles                                                       |
-| `admin`         | `/api/admin`                                        | DB health, migration management, team config (team-host only)       |
+| Module                | Route Prefix                                        | Purpose                                                             |
+| --------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
+| `auth`                | `/api/auth`                                         | Email/name local auth, JWT issuance/refresh                         |
+| `projects`            | `/api/projects`                                     | Project CRUD, collaborator management                               |
+| `sessions`            | `/api/projects/:id/sessions`                        | Session management, import/export, local sync, token usage          |
+| `conflicts`           | `/api/projects/:id/conflicts`                       | Conflict detection, status management (detected→reviewing→resolved) |
+| `search`              | `/api/projects/:id/search`                          | PostgreSQL tsvector full-text search                                |
+| `notifications`       | `/api/projects/:id/notifications`                   | Email/Slack notifications                                           |
+| `prd-analysis`        | `/api/projects/:id/prd`                             | PRD upload, Claude API analysis, requirement tracking               |
+| `activity`            | `/api/projects/:id/activity`                        | Project activity log (session/conflict/collaboration events)        |
+| `plans`               | `/api/projects/:id/plans`                           | Plan management (CRUD)                                              |
+| `invitations`         | `/api/invitations`, `/api/projects/:id/invitations` | Project invitation with token/link, accept/decline workflow         |
+| `ai-evaluation`       | `/api/projects/:id/ai-evaluation`                   | AI utilization evaluation (per-user proficiency analysis)           |
+| `admin`               | `/api/admin`                                        | DB health, migration management, team config (team-host only)       |
+| `db-config`           | `/api/projects/:id/db-config`                       | External DB configuration (Supabase connection, data migration)     |
+| `supabase-onboarding` | `/api/supabase-onboarding`                          | Supabase onboarding flow (project creation, guided setup)           |
 
 ### Service Conventions
 
@@ -182,22 +193,28 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 - Pool: max 20 connections, 30s idle timeout, 5s connect timeout
 - Types: `Db = Kysely<Database>` (`apps/api/src/database/types.ts`)
 
-### Tables (12)
+### Tables (18)
 
-| Table                   | Purpose                   | Key Columns                                                                |
-| ----------------------- | ------------------------- | -------------------------------------------------------------------------- |
-| `users`                 | User profiles             | github_id (nullable), email, name, avatar_url                              |
-| `projects`              | Project metadata          | owner_id, name, description, repo_url, local_directory                     |
-| `project_collaborators` | Role-based access         | project_id, user_id, role (owner/admin/member)                             |
-| `sessions`              | Claude Code sessions      | title, source, status, file_paths[], module_names[], tags[], search_vector |
-| `messages`              | Session messages          | role, content, content_type, tokens_used, model_used, search_vector        |
-| `conflicts`             | Detected conflicts        | conflict_type, severity, status, overlapping_paths[], diff_data            |
-| `prompt_templates`      | Reusable prompts          | category, tags[], usage_count, version                                     |
-| `synced_sessions`       | External session tracking | external_session_id, source_path                                           |
-| `prd_documents`         | PRD document uploads      | title, content, file_name                                                  |
-| `prd_analyses`          | PRD analysis results      | status, overall_rate, achievement analysis                                 |
-| `prd_requirements`      | Individual requirements   | category, status, confidence, evidence, file_paths[]                       |
-| `project_invitations`   | Invitation token/workflow | project_id, inviter_id, email, token, role, status, expires_at             |
+| Table                      | Purpose                    | Key Columns                                                                |
+| -------------------------- | -------------------------- | -------------------------------------------------------------------------- |
+| `users`                    | User profiles              | github_id (nullable), email, name, avatar_url, is_auto, claude_plan        |
+| `projects`                 | Project metadata           | owner_id, name, description, repo_url, local_directory                     |
+| `project_collaborators`    | Role-based access          | project_id, user_id, role (owner/admin/member), local_directory            |
+| `project_invitations`      | Invitation token/workflow  | project_id, inviter_id, email, token, role, status, expires_at             |
+| `sessions`                 | Claude Code sessions       | title, source, status, file_paths[], module_names[], tags[], search_vector |
+| `messages`                 | Session messages           | role, content, content_type, tokens_used, model_used, search_vector        |
+| `conflicts`                | Detected conflicts         | conflict_type, severity, status, overlapping_paths[], reviewer_id          |
+| `prompt_templates`         | Reusable prompts           | category, tags[], usage_count, version                                     |
+| `synced_sessions`          | External session tracking  | external_session_id, source_path                                           |
+| `prd_documents`            | PRD document uploads       | title, content, file_name                                                  |
+| `prd_analyses`             | PRD analysis results       | status, overall_rate, model_used, token usage                              |
+| `prd_requirements`         | Individual requirements    | category, status, confidence, evidence, file_paths[]                       |
+| `activity_log`             | Project activity log       | project_id, user_id, action, entity_type, entity_id, metadata              |
+| `ai_evaluations`           | AI utilization evaluations | project_id, target_user_id, overall_score, proficiency_tier                |
+| `ai_evaluation_dimensions` | Evaluation dimensions      | evaluation_id, dimension, score, confidence, strengths[], weaknesses[]     |
+| `ai_evaluation_evidence`   | Evaluation evidence        | dimension_id, message_id, session_id, excerpt, sentiment                   |
+| `project_db_configs`       | External DB configuration  | project_id, provider, connection_url, ssl_enabled, status                  |
+| `data_migration_jobs`      | Data migration jobs        | project_id, direction, status, total/migrated sessions/messages            |
 
 ### Full-Text Search
 
@@ -205,25 +222,36 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 - `messages.search_vector` (tsvector) — message content search
 - PostgreSQL FTS with `plainto_tsquery`
 
-### Migrations (19)
+### Migrations (24)
 
 `apps/api/src/database/migrations/`
 
-| #   | File                               | Description                         |
-| --- | ---------------------------------- | ----------------------------------- |
-| 001 | `create_users`                     | Users table                         |
-| 002 | `create_teams`                     | Teams (deprecated, replaced in 012) |
-| 003 | `create_projects`                  | Projects                            |
-| 004 | `create_sessions`                  | Sessions                            |
-| 005 | `create_messages`                  | Messages                            |
-| 006 | `create_conflicts`                 | Conflicts                           |
-| 007 | `create_prompt_templates`          | Prompt templates                    |
-| 008 | `add_search_indexes`               | tsvector full-text search           |
-| 009 | `add_sync_tracking`                | Sync tracking                       |
-| 010 | `add_personal_projects`            | Personal projects                   |
-| 011 | `add_project_local_directory`      | Local directory field               |
-| 012 | `replace_teams_with_collaborators` | Role-based collaborators            |
-| 013 | `create_prd_analysis`              | PRD analysis tables                 |
+| #   | File                               | Description                          |
+| --- | ---------------------------------- | ------------------------------------ |
+| 001 | `create_users`                     | Users table                          |
+| 002 | `create_teams`                     | Teams (deprecated, replaced in 012)  |
+| 003 | `create_projects`                  | Projects                             |
+| 004 | `create_sessions`                  | Sessions                             |
+| 005 | `create_messages`                  | Messages                             |
+| 006 | `create_conflicts`                 | Conflicts                            |
+| 007 | `create_prompt_templates`          | Prompt templates                     |
+| 008 | `add_search_indexes`               | tsvector full-text search            |
+| 009 | `add_sync_tracking`                | Sync tracking                        |
+| 010 | `add_personal_projects`            | Personal projects                    |
+| 011 | `add_project_local_directory`      | Local directory field                |
+| 012 | `replace_teams_with_collaborators` | Role-based collaborators             |
+| 013 | `create_prd_analysis`              | PRD analysis tables                  |
+| 014 | `create_activity_log`              | Activity log table                   |
+| 015 | `add_conflict_reviewer`            | Reviewer fields on conflicts         |
+| 016 | `add_collaborator_local_directory` | Local directory for collaborators    |
+| 017 | `create_project_invitations`       | Project invitation workflow          |
+| 018 | `create_ai_evaluations`            | AI evaluation tables (3 tables)      |
+| 019 | `make_github_id_nullable`          | Allow null github_id for local auth  |
+| 020 | `add_is_auto_to_users`             | Auto-user flag                       |
+| 021 | `add_claude_plan_to_users`         | Claude plan tier field               |
+| 022 | `create_db_config_tables`          | External DB config + migration jobs  |
+| 023 | `add_anthropic_api_key_to_users`   | Per-user Anthropic API key           |
+| 024 | `add_supabase_token_to_users`      | Supabase access token for onboarding |
 
 ---
 
@@ -281,6 +309,7 @@ sequenceDiagram
   ├── /project/sessions/:id     → SessionDetailPage
   ├── /conflicts                → ConflictsPage
   ├── /prd-analysis             → PrdAnalysisPage
+  ├── /ai-evaluation            → AiEvaluationPage
   ├── /plans                    → PlansPage
   ├── /admin                    → AdminPage (team-host mode, owner/admin only)
   └── /settings                 → SettingsPage
@@ -344,23 +373,28 @@ components/
 
 Imported as `@context-sync/shared` by both API and Web.
 
-### Types (10 files)
+### Types (16 files)
 
-| File              | Key Types                                                                      |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `api.ts`          | `ApiResponse<T>`, `PaginationMeta`, `PaginationQuery`                          |
-| `user.ts`         | `User`, `UserRole`, `NotificationSettings`                                     |
-| `project.ts`      | `Project`, `CreateProjectInput`, `UpdateProjectInput`                          |
-| `session.ts`      | `Session`, `Message`, `SessionWithMessages`, `DashboardStats`, `TimelineEntry` |
-| `conflict.ts`     | `Conflict`, `ConflictType`, `ConflictSeverity`, `ConflictStatus`               |
-| `prd-analysis.ts` | `PrdDocument`, `PrdAnalysis`, `PrdRequirement`, `PrdAnalysisWithRequirements`  |
-| `token-usage.ts`  | `ModelUsageBreakdown`, `TokenUsageStats`, `DailyTokenUsage`                    |
-| `collaborator.ts` | `Collaborator`, `AddCollaboratorInput`                                         |
-| `invitation.ts`   | `Invitation`, `InvitationStatus`, `CreateInvitationInput`                      |
-| `sync.ts`         | Sync-related types                                                             |
-| `admin.ts`        | `AdminStatus`, `AdminConfig`, `MigrationInfo`, `MigrationRunResult`            |
+| File                     | Key Types                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------ |
+| `api.ts`                 | `ApiResponse<T>`, `PaginationMeta`, `PaginationQuery`                          |
+| `user.ts`                | `User`, `UserRole`, `NotificationSettings`                                     |
+| `project.ts`             | `Project`, `CreateProjectInput`, `UpdateProjectInput`                          |
+| `session.ts`             | `Session`, `Message`, `SessionWithMessages`, `DashboardStats`, `TimelineEntry` |
+| `conflict.ts`            | `Conflict`, `ConflictType`, `ConflictSeverity`, `ConflictStatus`               |
+| `prd-analysis.ts`        | `PrdDocument`, `PrdAnalysis`, `PrdRequirement`, `PrdAnalysisWithRequirements`  |
+| `token-usage.ts`         | `ModelUsageBreakdown`, `TokenUsageStats`, `DailyTokenUsage`                    |
+| `collaborator.ts`        | `Collaborator`, `AddCollaboratorInput`                                         |
+| `invitation.ts`          | `Invitation`, `InvitationStatus`, `CreateInvitationInput`                      |
+| `sync.ts`                | Sync-related types                                                             |
+| `admin.ts`               | `AdminStatus`, `AdminConfig`, `MigrationInfo`, `MigrationRunResult`            |
+| `activity.ts`            | `ActivityLog`, `ActivityAction`, `ActivityEntityType`                          |
+| `ai-evaluation.ts`       | `AiEvaluation`, `EvaluationDimension`, `EvaluationEvidence`                    |
+| `db-config.ts`           | `ProjectDbConfig`, `DataMigrationJob`                                          |
+| `plan.ts`                | `Plan`, plan-related types                                                     |
+| `supabase-onboarding.ts` | Supabase onboarding flow types                                                 |
 
-### Constants (6 files)
+### Constants (9 files)
 
 | File                   | Contents                                        |
 | ---------------------- | ----------------------------------------------- |
@@ -370,6 +404,9 @@ Imported as `@context-sync/shared` by both API and Web.
 | `model-pricing.ts`     | Per-model token pricing                         |
 | `prd-analysis.ts`      | `SUPPORTED_PRD_EXTENSIONS`, `MAX_PRD_FILE_SIZE` |
 | `invitation-status.ts` | `INVITATION_STATUSES`, `INVITATION_EXPIRY_DAYS` |
+| `ai-evaluation.ts`     | Evaluation dimensions, proficiency tiers        |
+| `anthropic-models.ts`  | Anthropic model definitions and metadata        |
+| `claude-plan.ts`       | Claude plan tiers (free, pro, team, enterprise) |
 
 ### Validators (2 files)
 

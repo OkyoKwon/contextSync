@@ -1,6 +1,6 @@
 # Design System
 
-ContextSync frontend design system. Based on Tailwind CSS 4 + CSS custom properties, dark-first theme, JetBrains Mono monospace font.
+ContextSync frontend design system. Based on Tailwind CSS 4 + CSS custom properties, dark-first theme. Primary body font is Inter (`font-sans`), code/monospace uses JetBrains Mono (`font-mono`).
 
 ---
 
@@ -43,8 +43,9 @@ Colors used for badges, status indicators, etc. Pattern: `{color}-500/15` backgr
 
 ## 2. Typography
 
-- **Font:** JetBrains Mono (Google Fonts, weights: 400, 500, 600, 700)
-- **Applied:** `font-mono` class set on AppLayout root → applied globally
+- **Body font:** Inter (`font-sans`) — primary UI font (weights: 400, 500, 600, 700)
+- **Mono font:** JetBrains Mono (`font-mono`) — code blocks, technical content (weights: 400, 500, 600, 700)
+- **CSS vars:** `--font-sans: "Inter", ...`, `--font-mono: "JetBrains Mono", ...`
 - **Size scale:** `text-xs` → `text-sm` → `text-base` → `text-lg` → `text-xl`
 - **Common combinations:**
   - Body: `text-sm text-text-secondary`
@@ -71,7 +72,7 @@ Colors used for badges, status indicators, etc. Pattern: `{color}-500/15` backgr
 └──────────────────────────────────────────────┘
 ```
 
-- **Sidebar:** `w-60` (240px), `bg-surface`, right border
+- **Sidebar:** `w-60` (240px) expanded, `w-16` (64px) collapsed, `bg-surface`, right border
 - **Header:** `h-14` (56px), `bg-surface`, bottom border, `px-6`
 - **Content:** `flex-1 overflow-y-auto p-6`
 
@@ -234,7 +235,7 @@ SVG based, `animate-spin`, uses `currentColor`.
 
 Exported from `icons.tsx`. Base `Icon` component provides `size` prop (default 20px).
 
-**Available icons:** `CalendarIcon`, `TrendingUpIcon`, `WarningIcon`, `UsersIcon`, `CheckCircleIcon`, `ZapIcon`, `DollarIcon`, `CpuIcon`, `FolderIcon`, `InfoIcon`, `FileIcon`
+**Available icons:** `CalendarIcon`, `TrendingUpIcon`, `WarningIcon`, `UsersIcon`, `CheckCircleIcon`, `ZapIcon`, `DollarIcon`, `CpuIcon`, `FolderIcon`, `InfoIcon`, `FileIcon`, `CrownIcon`
 
 All use 24x24 viewBox, stroke-based (Feather style), `currentColor`.
 
@@ -259,6 +260,94 @@ interface ErrorDisplayProps {
 ```
 
 API error display component. `red-500/30` border, `red-500/10` background, optional retry button.
+
+### ProgressBar
+
+```typescript
+interface ProgressBarProps {
+  readonly value: number;
+  readonly max?: number; // default: 100
+  readonly label?: string;
+  readonly showPercentage?: boolean; // default: true
+}
+```
+
+Horizontal progress bar with optional label and percentage display. `h-2 rounded-full bg-accent-primary` fill with transition animation.
+
+### StepWizard
+
+```typescript
+interface Step {
+  readonly id: string;
+  readonly label: string;
+}
+
+interface StepWizardProps {
+  readonly steps: readonly Step[];
+  readonly currentStepId: string;
+}
+```
+
+Multi-step wizard indicator. Shows numbered circles with connector lines. Active step: `bg-accent-primary text-white`, completed: checkmark icon with `bg-accent-primary/20`, pending: `bg-bg-tertiary`.
+
+### EmptyState
+
+```typescript
+interface EmptyStateProps {
+  readonly icon?: ReactNode;
+  readonly title: string;
+  readonly description?: string;
+  readonly action?: ReactNode;
+  readonly className?: string;
+}
+```
+
+Centered empty state display with optional icon, title, description, and action slot. `py-20`, `text-lg font-semibold` title.
+
+### Skeleton
+
+```typescript
+interface SkeletonProps {
+  readonly className?: string;
+}
+```
+
+Loading placeholder. `animate-pulse rounded bg-surface-hover`. Size controlled via `className` passthrough (e.g., `h-4 w-32`).
+
+### BrowserFrame
+
+```typescript
+interface BrowserFrameProps {
+  readonly children: ReactNode;
+  readonly className?: string;
+}
+```
+
+Browser chrome UI wrapper with macOS-style traffic light dots (red/yellow/green). `rounded-xl border border-border-default bg-surface`.
+
+### ScreenshotImage
+
+```typescript
+interface ScreenshotImageProps {
+  readonly src: string;
+  readonly alt: string;
+  readonly fit?: 'cover' | 'contain'; // default: 'cover'
+  readonly className?: string;
+}
+```
+
+Lazy-loaded image (`loading="lazy" decoding="async"`). `rounded-lg`, fit controlled by `object-cover` | `object-contain`.
+
+### MarkdownRenderer
+
+```typescript
+interface MarkdownRendererProps {
+  readonly content: string;
+  readonly className?: string;
+}
+```
+
+Theme-aware Markdown renderer using `react-markdown` + `remark-gfm`. Applies `prose prose-sm max-w-none`, auto-applies `prose-invert` in dark mode.
 
 ---
 
@@ -375,4 +464,5 @@ Native HTML attributes forwarded via `...props` pattern:
 - **Hover transitions:** `transition-colors` (most interactive elements)
 - **ARIA:** Modal (`role="dialog"`, `aria-modal`), Tooltip (`role="tooltip"`), buttons (`aria-label`)
 - **Keyboard:** Modal closes on ESC
+- **Keyboard Shortcuts:** `Cmd+K` (search/command palette), `Cmd+1` (Dashboard), `Cmd+2` (Project), `Cmd+3` (Conflicts), `Cmd+4` (PRD Analysis), `Cmd+5` (Settings)
 - **Z-Index:** Modal/Tooltip `z-50`
