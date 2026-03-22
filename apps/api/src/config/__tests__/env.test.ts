@@ -50,35 +50,6 @@ describe('env', () => {
     }
   });
 
-  describe('DEPLOYMENT_MODE', () => {
-    it('should default to personal', () => {
-      withEnv({ DEPLOYMENT_MODE: undefined }, () => {
-        const env = loadEnv();
-        expect(env.DEPLOYMENT_MODE).toBe('personal');
-      });
-    });
-
-    it('should accept team-host', () => {
-      withEnv({ DEPLOYMENT_MODE: 'team-host' }, () => {
-        const env = loadEnv();
-        expect(env.DEPLOYMENT_MODE).toBe('team-host');
-      });
-    });
-
-    it('should accept team-member', () => {
-      withEnv({ DEPLOYMENT_MODE: 'team-member' }, () => {
-        const env = loadEnv();
-        expect(env.DEPLOYMENT_MODE).toBe('team-member');
-      });
-    });
-
-    it('should reject invalid values', () => {
-      withEnv({ DEPLOYMENT_MODE: 'invalid' }, () => {
-        expect(() => loadEnv()).toThrow('Environment validation failed');
-      });
-    });
-  });
-
   describe('DATABASE_SSL', () => {
     it('should default to false', () => {
       withEnv({ DATABASE_SSL: undefined }, () => {

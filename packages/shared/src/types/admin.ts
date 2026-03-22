@@ -33,13 +33,7 @@ export interface MigrationRunResult {
   readonly errors: readonly string[];
 }
 
-export type DatabaseProvider = 'self-hosted' | 'supabase';
-export type DeploymentMode = 'personal' | 'team-host' | 'team-member';
-
 export interface AdminConfig {
-  readonly deploymentMode: DeploymentMode;
-  readonly databaseProvider: DatabaseProvider;
   readonly sslEnabled: boolean;
   readonly connectionString: string;
-  readonly supabaseDashboardUrl: string | null;
 }

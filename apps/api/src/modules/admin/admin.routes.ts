@@ -7,7 +7,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
   app.get('/admin/status', async (request, reply) => {
     const user = await getUserWithRole(app.db, request.user.userId);
-    adminService.assertTeamHostAdmin(app.env, user.role);
+    adminService.assertAdmin(user.role);
 
     const status = await adminService.getAdminStatus(app.db);
     return reply.send(ok(status));
@@ -15,7 +15,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
   app.post('/admin/migrations/run', async (request, reply) => {
     const user = await getUserWithRole(app.db, request.user.userId);
-    adminService.assertTeamHostOwner(app.env, user.role);
+    adminService.assertOwnerRole(user.role);
 
     const result = await adminService.runMigrations(app.db);
     return reply.send(ok(result));
@@ -23,7 +23,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
   app.get('/admin/config', async (request, reply) => {
     const user = await getUserWithRole(app.db, request.user.userId);
-    adminService.assertTeamHostAdmin(app.env, user.role);
+    adminService.assertAdmin(user.role);
 
     const config = adminService.getAdminConfig(app.env);
     return reply.send(ok(config));

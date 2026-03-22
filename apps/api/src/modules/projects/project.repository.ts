@@ -44,6 +44,7 @@ export async function findProjectsWithTeamInfo(
       'projects.description',
       'projects.repo_url',
       'projects.local_directory',
+      'projects.join_code',
       'projects.created_at',
       'projects.updated_at',
       sql<number>`COALESCE(collab_counts.cnt, 0)`.as('collaborator_count'),
@@ -54,10 +55,7 @@ export async function findProjectsWithTeamInfo(
         eb(
           'projects.id',
           'in',
-          eb
-            .selectFrom('project_collaborators')
-            .select('project_id')
-            .where('user_id', '=', userId),
+          eb.selectFrom('project_collaborators').select('project_id').where('user_id', '=', userId),
         ),
       ]),
     )
@@ -89,6 +87,7 @@ export async function findProjectByIdWithTeamInfo(
       'projects.description',
       'projects.repo_url',
       'projects.local_directory',
+      'projects.join_code',
       'projects.created_at',
       'projects.updated_at',
       sql<number>`COALESCE(collab_counts.cnt, 0)`.as('collaborator_count'),
@@ -129,6 +128,29 @@ export async function deleteProject(db: Db, id: string): Promise<void> {
   await db.deleteFrom('projects').where('id', '=', id).execute();
 }
 
+export async function findProjectByJoinCode(db: Db, code: string): Promise<Project | null> {
+  const row = await db
+    .selectFrom('projects')
+    .selectAll()
+    .where('join_code', '=', code)
+    .executeTakeFirst();
+  return row ? toProject(row) : null;
+}
+
+export async function updateJoinCode(
+  db: Db,
+  projectId: string,
+  joinCode: string | null,
+): Promise<Project> {
+  const row = await db
+    .updateTable('projects')
+    .set({ join_code: joinCode, updated_at: new Date() })
+    .where('id', '=', projectId)
+    .returningAll()
+    .executeTakeFirstOrThrow();
+  return toProject(row);
+}
+
 function toProject(row: {
   id: string;
   owner_id: string;
@@ -136,6 +158,7 @@ function toProject(row: {
   description: string | null;
   repo_url: string | null;
   local_directory: string | null;
+  join_code: string | null;
   created_at: Date;
   updated_at: Date;
 }): Project {
@@ -146,6 +169,7 @@ function toProject(row: {
     description: row.description,
     repoUrl: row.repo_url,
     localDirectory: row.local_directory,
+    joinCode: row.join_code,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -158,6 +182,7 @@ function toProjectWithTeamInfo(row: {
   description: string | null;
   repo_url: string | null;
   local_directory: string | null;
+  join_code: string | null;
   created_at: Date;
   updated_at: Date;
   collaborator_count: number;
@@ -170,6 +195,7 @@ function toProjectWithTeamInfo(row: {
     description: row.description,
     repoUrl: row.repo_url,
     localDirectory: row.local_directory,
+    joinCode: row.join_code,
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
     collaboratorCount: count,

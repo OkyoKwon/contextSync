@@ -20,4 +20,9 @@ export const projectsApi = {
     api.delete<void>(`/projects/${projectId}/collaborators/${userId}`),
   setMyDirectory: (projectId: string, localDirectory: string | null) =>
     api.patch<void>(`/projects/${projectId}/my-directory`, { localDirectory }),
+  generateJoinCode: (projectId: string) => api.post<Project>(`/projects/${projectId}/join-code`),
+  regenerateJoinCode: (projectId: string) =>
+    api.post<Project>(`/projects/${projectId}/join-code/regenerate`),
+  deleteJoinCode: (projectId: string) => api.delete<void>(`/projects/${projectId}/join-code`),
+  joinByCode: (code: string) => api.post<Project>('/projects/join', { code }),
 };

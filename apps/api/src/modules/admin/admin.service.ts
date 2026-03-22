@@ -14,21 +14,15 @@ import type {
 } from '@context-sync/shared';
 import { ForbiddenError } from '../../plugins/error-handler.plugin.js';
 
-export function assertTeamHostAdmin(env: Env, userRole: string): void {
-  if (env.DEPLOYMENT_MODE !== 'team-host') {
-    throw new ForbiddenError('Admin endpoints are only available in team-host mode');
-  }
+export function assertAdmin(userRole: string): void {
   if (userRole !== 'owner' && userRole !== 'admin') {
     throw new ForbiddenError('Admin access requires owner or admin role');
   }
 }
 
-export function assertTeamHostOwner(env: Env, userRole: string): void {
-  if (env.DEPLOYMENT_MODE !== 'team-host') {
-    throw new ForbiddenError('Admin endpoints are only available in team-host mode');
-  }
+export function assertOwnerRole(userRole: string): void {
   if (userRole !== 'owner') {
-    throw new ForbiddenError('Migration execution requires owner role');
+    throw new ForbiddenError('This action requires owner role');
   }
 }
 
@@ -143,14 +137,10 @@ export async function runMigrations(db: Db): Promise<MigrationRunResult> {
 
 export function getAdminConfig(env: Env): AdminConfig {
   const connectionString = maskConnectionString(env.DATABASE_URL);
-  const isSupabase = env.DATABASE_PROVIDER === 'supabase';
 
   return {
-    deploymentMode: env.DEPLOYMENT_MODE,
-    databaseProvider: env.DATABASE_PROVIDER,
     sslEnabled: env.DATABASE_SSL,
     connectionString,
-    supabaseDashboardUrl: isSupabase ? extractSupabaseDashboardUrl(env.DATABASE_URL) : null,
   };
 }
 
@@ -163,20 +153,5 @@ function maskConnectionString(url: string): string {
     return parsed.toString();
   } catch {
     return '****';
-  }
-}
-
-function extractSupabaseDashboardUrl(databaseUrl: string): string | null {
-  try {
-    const parsed = new URL(databaseUrl);
-    const host = parsed.hostname;
-    // Supabase hosts are like: db.<project-ref>.supabase.co
-    const match = host.match(/^db\.([a-z]+)\.supabase\.co$/);
-    if (match) {
-      return `https://supabase.com/dashboard/project/${match[1]}`;
-    }
-    return null;
-  } catch {
-    return null;
   }
 }

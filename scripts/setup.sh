@@ -30,7 +30,6 @@ fi
 
 if [ "$DEFAULTS" = true ]; then
   # Non-interactive: personal mode with all defaults
-  DEPLOYMENT_MODE="personal"
   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/contextsync"
   DATABASE_SSL="false"
   RUN_MIGRATIONS="true"
@@ -70,7 +69,6 @@ PORT=3001
 HOST=0.0.0.0
 NODE_ENV=development
 
-DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
 DATABASE_URL=${DATABASE_URL}
 DATABASE_SSL=${DATABASE_SSL}
 RUN_MIGRATIONS=${RUN_MIGRATIONS}
@@ -98,37 +96,25 @@ EOF
 
 else
   # Interactive mode
-  echo "Select deployment mode:"
-  echo "  1) personal    — Solo use (local DB)"
-  echo "  2) team-host   — Host team DB (admin)"
-  echo "  3) team-member — Join team (remote DB)"
-  read -rp "Choice [1/2/3]: " mode_choice
-
-  case $mode_choice in
-    1) DEPLOYMENT_MODE="personal" ;;
-    2) DEPLOYMENT_MODE="team-host" ;;
-    3) DEPLOYMENT_MODE="team-member" ;;
-    *) echo "Invalid choice"; exit 1 ;;
-  esac
+  echo "Select setup mode:"
+  echo "  1) personal — Solo use (local DB)"
+  echo "  2) team     — Team use (cloud DB)"
+  read -rp "Choice [1/2]: " mode_choice
 
   DATABASE_SSL="false"
   RUN_MIGRATIONS="true"
 
-  if [ "$DEPLOYMENT_MODE" = "team-member" ]; then
-    read -rp "Central DB URL (e.g. postgresql://team_member:pass@host:5432/contextsync): " DATABASE_URL
-    DATABASE_SSL="true"
-    RUN_MIGRATIONS="false"
-  elif [ "$DEPLOYMENT_MODE" = "team-host" ]; then
-    read -rp "DB external port [5432]: " DB_PORT
-    DB_PORT=${DB_PORT:-5432}
-    read -rsp "DB admin password: " POSTGRES_PASSWORD
-    echo ""
-    DATABASE_URL="postgresql://postgres:${POSTGRES_PASSWORD}@localhost:${DB_PORT}/contextsync"
-    DATABASE_SSL="true"
-    RUN_MIGRATIONS="true"
-  else
-    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/contextsync"
-  fi
+  case $mode_choice in
+    1)
+      DATABASE_URL="postgresql://postgres:postgres@localhost:5432/contextsync"
+      ;;
+    2)
+      read -rp "Cloud DB URL (e.g. postgresql://user:pass@host:5432/dbname): " DATABASE_URL
+      DATABASE_SSL="true"
+      RUN_MIGRATIONS="true"
+      ;;
+    *) echo "Invalid choice"; exit 1 ;;
+  esac
 
   # Auto-generate JWT secret
   JWT_SECRET=$(openssl rand -base64 48)
@@ -139,7 +125,6 @@ PORT=3001
 HOST=0.0.0.0
 NODE_ENV=development
 
-DEPLOYMENT_MODE=${DEPLOYMENT_MODE}
 DATABASE_URL=${DATABASE_URL}
 DATABASE_SSL=${DATABASE_SSL}
 RUN_MIGRATIONS=${RUN_MIGRATIONS}
@@ -152,19 +137,14 @@ EOF
   echo "apps/api/.env created successfully"
   echo ""
 
-  if [ "$DEPLOYMENT_MODE" = "personal" ]; then
+  if [ "$mode_choice" = "1" ]; then
     echo "Next steps:"
     echo "  docker compose up -d"
     echo "  pnpm --filter @context-sync/api migrate"
     echo "  pnpm dev"
-  elif [ "$DEPLOYMENT_MODE" = "team-host" ]; then
-    echo "Next steps:"
-    echo "  1. Place SSL certs in docker/ssl/ (server.crt, server.key)"
-    echo "  2. docker compose --profile team-host up -d"
-    echo "  3. pnpm --filter @context-sync/api migrate"
-    echo "  4. pnpm dev"
   else
     echo "Next steps:"
+    echo "  pnpm --filter @context-sync/api migrate"
     echo "  pnpm dev"
   fi
 fi

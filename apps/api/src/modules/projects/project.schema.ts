@@ -17,3 +17,7 @@ export const updateProjectSchema = z.object({
 export const setMyDirectorySchema = z.object({
   localDirectory: z.string().max(1024).nullable(),
 });
+
+export const joinProjectSchema = z.object({
+  code: z.string().min(4).max(8),
+});

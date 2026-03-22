@@ -11,6 +11,7 @@ import * as projectRepo from './project.repository.js';
 import * as collabRepo from './collaborator.repository.js';
 import { logActivity } from '../activity/activity.service.js';
 import { assertPermission } from './permission.helper.js';
+import { generateJoinCode as generateCode } from '../../lib/join-code.js';
 
 export async function createProject(
   db: Db,
@@ -101,7 +102,6 @@ export async function addCollaborator(
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
   await assertPermission(db, projectId, userId, 'collaborator:manage');
-  await assertRemoteDbConfigured(db, projectId);
   await collabRepo.addCollaborator(db, projectId, targetUserId, role ?? 'member');
   logActivity(db, {
     projectId,
@@ -181,29 +181,72 @@ export async function getUserRoleInProject(
   return collab.role as 'admin' | 'member';
 }
 
+// --- Join Code ---
+
+export async function generateProjectJoinCode(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<Project> {
+  const project = await projectRepo.findProjectById(db, projectId);
+  if (!project) throw new NotFoundError('Project');
+  assertOwner(project, userId);
+  const code = generateCode();
+  return projectRepo.updateJoinCode(db, projectId, code);
+}
+
+export async function regenerateJoinCode(
+  db: Db,
+  projectId: string,
+  userId: string,
+): Promise<Project> {
+  const project = await projectRepo.findProjectById(db, projectId);
+  if (!project) throw new NotFoundError('Project');
+  assertOwner(project, userId);
+  const code = generateCode();
+  return projectRepo.updateJoinCode(db, projectId, code);
+}
+
+export async function deleteJoinCode(db: Db, projectId: string, userId: string): Promise<void> {
+  const project = await projectRepo.findProjectById(db, projectId);
+  if (!project) throw new NotFoundError('Project');
+  assertOwner(project, userId);
+  await projectRepo.updateJoinCode(db, projectId, null);
+}
+
+export async function joinByCode(db: Db, code: string, userId: string): Promise<Project> {
+  const project = await projectRepo.findProjectByJoinCode(db, code);
+  if (!project) throw new NotFoundError('Invalid join code');
+
+  if (project.ownerId === userId) {
+    throw new ForbiddenError('You are already the owner of this project');
+  }
+
+  const existing = await collabRepo.findCollaboratorByProjectAndUser(db, project.id, userId);
+  if (existing) {
+    throw new ForbiddenError('You are already a collaborator on this project');
+  }
+
+  await collabRepo.addCollaborator(db, project.id, userId, 'member');
+
+  logActivity(db, {
+    projectId: project.id,
+    userId,
+    action: 'collaborator_joined',
+    entityType: 'collaborator',
+    entityId: userId,
+    metadata: { method: 'join_code' },
+  });
+
+  return project;
+}
+
+// --- Helpers ---
+
 async function assertAccess(db: Db, project: Project, userId: string): Promise<void> {
   if (project.ownerId === userId) return;
   const hasAccess = await collabRepo.isCollaborator(db, project.id, userId);
   if (!hasAccess) throw new ForbiddenError('Not a project owner or collaborator');
-}
-
-export async function hasRemoteDb(db: Db, projectId: string): Promise<boolean> {
-  const config = await db
-    .selectFrom('project_db_configs')
-    .select('id')
-    .where('project_id', '=', projectId)
-    .where('status', '=', 'active')
-    .executeTakeFirst();
-  return !!config;
-}
-
-async function assertRemoteDbConfigured(db: Db, projectId: string): Promise<void> {
-  const hasRemote = await hasRemoteDb(db, projectId);
-  if (!hasRemote) {
-    throw new ForbiddenError(
-      'Remote DB must be configured before adding collaborators. Set up a remote database connection first.',
-    );
-  }
 }
 
 function assertOwner(project: Project, userId: string): void {

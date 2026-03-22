@@ -1,7 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { z } from 'zod';
 import { ok } from '../../lib/api-response.js';
-import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 import { searchInProject } from './search.service.js';
 
@@ -20,7 +19,7 @@ export const searchRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       await assertProjectAccess(app.db, request.params.projectId, request.user.userId);
 
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const { q, type, page, limit } = searchQuerySchema.parse(request.query);
       const result = await searchInProject(db, request.params.projectId, q, type, page, limit);
 

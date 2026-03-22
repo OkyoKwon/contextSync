@@ -15,8 +15,6 @@ import { Spinner } from '../components/ui/Spinner';
 import { DashboardSkeleton } from '../components/dashboard/DashboardSkeleton';
 import { getGreeting } from '../lib/date';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
-import { PendingInvitations } from '../components/dashboard/PendingInvitations';
-
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -108,8 +106,6 @@ export function DashboardPage() {
           )}
         </p>
       </div>
-
-      <PendingInvitations />
 
       {stats ? <DashboardStatsView stats={stats} isTeam={isTeam} /> : null}
 

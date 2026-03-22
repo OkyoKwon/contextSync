@@ -66,37 +66,25 @@ test.describe('Settings Page', () => {
     });
   });
 
-  test('remote database section exists', async ({ authenticatedPage }) => {
+  test('collaboration section exists', async ({ authenticatedPage }) => {
     await authenticatedPage.goto('/settings');
     await waitForAppReady(authenticatedPage);
 
     if (!authenticatedPage.url().includes('/settings')) return;
 
-    await expect(authenticatedPage.locator('h3:has-text("Remote Database")')).toBeVisible({
+    await expect(authenticatedPage.locator('h3:has-text("Collaboration")')).toBeVisible({
       timeout: 10_000,
     });
   });
 
-  test('connect remote database button visible for owner', async ({ authenticatedPage }) => {
+  test('generate join code button visible for owner', async ({ authenticatedPage }) => {
     await authenticatedPage.goto('/settings');
     await waitForAppReady(authenticatedPage);
 
     if (!authenticatedPage.url().includes('/settings')) return;
 
-    await expect(
-      authenticatedPage.locator('button:has-text("Connect Remote Database")'),
-    ).toBeVisible({ timeout: 10_000 });
-  });
-
-  test('collaborator invite disabled without remote DB', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/settings');
-    await waitForAppReady(authenticatedPage);
-
-    if (!authenticatedPage.url().includes('/settings')) return;
-
-    // Without remote DB, should show the guidance message instead of invite input
-    await expect(authenticatedPage.locator('text=Connect a remote database')).toBeVisible({
-      timeout: 15_000,
+    await expect(authenticatedPage.locator('button:has-text("Generate Join Code")')).toBeVisible({
+      timeout: 10_000,
     });
   });
 });

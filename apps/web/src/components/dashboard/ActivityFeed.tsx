@@ -10,11 +10,8 @@ const ACTION_LABELS: Record<ActivityAction, string> = {
   conflict_resolved: 'resolved a conflict',
   collaborator_added: 'added a collaborator',
   collaborator_removed: 'removed a collaborator',
+  collaborator_joined: 'joined via code',
   directory_updated: 'updated their directory',
-  invitation_sent: 'sent an invitation',
-  invitation_accepted: 'accepted an invitation',
-  invitation_declined: 'declined an invitation',
-  invitation_cancelled: 'cancelled an invitation',
 };
 
 function formatRelativeTime(dateStr: string): string {

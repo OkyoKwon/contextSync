@@ -1,6 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, fail, paginated, buildPaginationMeta } from '../../lib/api-response.js';
-import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import { getUserApiKey } from '../auth/auth.service.js';
 import * as prdService from './prd-analysis.service.js';
 import {
@@ -48,7 +47,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
 
       const parsedInput = uploadPrdSchema.parse({ title });
 
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const document = await prdService.uploadPrdDocument(
         db,
         request.params.projectId,
@@ -66,7 +65,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/prd/documents',
     async (request, reply) => {
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const documents = await prdService.listPrdDocuments(
         db,
         request.params.projectId,
@@ -99,7 +98,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
           );
       }
 
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const input = startAnalysisSchema.parse(request.body);
       const result = await prdService.startAnalysis(
         db,
@@ -117,7 +116,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/prd/analysis/latest',
     async (request, reply) => {
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const analysis = await prdService.getLatestAnalysis(
         db,
         request.params.projectId,
@@ -131,7 +130,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/prd/analysis/history',
     async (request, reply) => {
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const query = analysisHistoryQuerySchema.parse(request.query);
       const result = await prdService.getAnalysisHistory(
         db,

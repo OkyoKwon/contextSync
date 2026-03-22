@@ -1,44 +1,34 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import type { AutoSetupExistingInput, AutoSetupNewInput } from '@context-sync/shared';
 import { supabaseOnboardingApi } from '../api/supabase-onboarding.api';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../stores/auth.store';
 
-export function useSupabaseProjects(projectId: string | null, enabled: boolean = false) {
+export function useSupabaseProjects(enabled: boolean = false) {
   return useQuery({
-    queryKey: ['supabase', 'projects', projectId],
-    queryFn: () => supabaseOnboardingApi.listProjects(projectId!),
-    enabled: !!projectId && enabled,
+    queryKey: ['supabase', 'projects'],
+    queryFn: () => supabaseOnboardingApi.listProjects(),
+    enabled,
   });
 }
 
-export function useSupabaseOrganizations(projectId: string | null, enabled: boolean = false) {
+export function useSupabaseOrganizations(enabled: boolean = false) {
   return useQuery({
-    queryKey: ['supabase', 'organizations', projectId],
-    queryFn: () => supabaseOnboardingApi.listOrganizations(projectId!),
-    enabled: !!projectId && enabled,
+    queryKey: ['supabase', 'organizations'],
+    queryFn: () => supabaseOnboardingApi.listOrganizations(),
+    enabled,
   });
 }
 
-export function useSupabaseAutoSetup(projectId: string) {
-  const queryClient = useQueryClient();
+export function useSupabaseAutoSetup() {
   return useMutation({
-    mutationFn: (input: AutoSetupExistingInput) =>
-      supabaseOnboardingApi.autoSetup(projectId, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['db-config', projectId] });
-    },
+    mutationFn: (input: AutoSetupExistingInput) => supabaseOnboardingApi.autoSetup(input),
   });
 }
 
-export function useSupabaseCreateAndSetup(projectId: string) {
-  const queryClient = useQueryClient();
+export function useSupabaseCreateAndSetup() {
   return useMutation({
-    mutationFn: (input: AutoSetupNewInput) =>
-      supabaseOnboardingApi.createAndSetup(projectId, input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['db-config', projectId] });
-    },
+    mutationFn: (input: AutoSetupNewInput) => supabaseOnboardingApi.createAndSetup(input),
   });
 }
 

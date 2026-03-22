@@ -1,7 +1,8 @@
 import type { Db } from '../../database/client.js';
 import type { SupabaseProject, SupabaseOrganization } from '@context-sync/shared';
 import { getSupabaseToken } from '../auth/auth.service.js';
-import { saveConfig, testConnection } from '../db-config/db-config.service.js';
+import { testConnection } from '../../lib/test-connection.js';
+import { switchToRemote } from '../setup/setup.service.js';
 import { AppError } from '../../plugins/error-handler.plugin.js';
 import type { AutoSetupExistingInput, AutoSetupNewInput } from './supabase-onboarding.schema.js';
 
@@ -128,7 +129,6 @@ async function resolveSupabaseToken(db: Db, userId: string, jwtSecret: string): 
 export async function autoSetupExisting(
   db: Db,
   userId: string,
-  projectId: string,
   jwtSecret: string,
   input: AutoSetupExistingInput,
 ) {
@@ -143,7 +143,7 @@ export async function autoSetupExisting(
 
   const connectionUrl = buildConnectionUrl(target.ref, input.dbPassword, target.region);
 
-  // Test connection before saving
+  // Test connection before switching
   const testResult = await testConnection(connectionUrl, true);
   if (!testResult.success) {
     throw new AppError(
@@ -152,13 +152,12 @@ export async function autoSetupExisting(
     );
   }
 
-  return saveConfig(db, projectId, userId, connectionUrl, 'supabase', true, jwtSecret);
+  return switchToRemote(connectionUrl, true);
 }
 
 export async function createAndSetup(
   db: Db,
   userId: string,
-  projectId: string,
   jwtSecret: string,
   input: AutoSetupNewInput,
 ) {
@@ -178,7 +177,7 @@ export async function createAndSetup(
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     const testResult = await testConnection(connectionUrl, true);
     if (testResult.success) {
-      return saveConfig(db, projectId, userId, connectionUrl, 'supabase', true, jwtSecret);
+      return switchToRemote(connectionUrl, true);
     }
     lastError = testResult.error;
     if (attempt < MAX_RETRIES - 1) {

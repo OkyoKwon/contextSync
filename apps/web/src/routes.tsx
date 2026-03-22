@@ -33,12 +33,6 @@ const AiEvaluationPage = lazy(() =>
 );
 const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })));
 const DocsPage = lazy(() => import('./pages/DocsPage').then((m) => ({ default: m.DocsPage })));
-const InvitationAcceptPage = lazy(() =>
-  import('./pages/InvitationAcceptPage').then((m) => ({ default: m.InvitationAcceptPage })),
-);
-const InvitationExpiredPage = lazy(() =>
-  import('./pages/InvitationExpiredPage').then((m) => ({ default: m.InvitationExpiredPage })),
-);
 
 function PageFallback() {
   return (
@@ -71,8 +65,6 @@ export function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/docs" element={<DocsPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
-        <Route path="/invitations/accept" element={<InvitationAcceptPage />} />
-        <Route path="/invitations/expired" element={<InvitationExpiredPage />} />
         <Route
           element={
             <ProtectedRoute>

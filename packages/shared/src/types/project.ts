@@ -5,6 +5,7 @@ export interface Project {
   readonly description: string | null;
   readonly repoUrl: string | null;
   readonly localDirectory: string | null;
+  readonly joinCode: string | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }

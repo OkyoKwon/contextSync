@@ -1,6 +1,5 @@
 import { test, expect } from '../../fixtures/auth.fixture.js';
 import { buildUser } from '../../helpers/test-data.js';
-import { activateRemoteDb } from '../../helpers/invitation-helpers.js';
 
 test.describe('Auto User Upgrade', () => {
   test('upgrade auto user with new email', async ({ apiClient }) => {
@@ -18,12 +17,9 @@ test.describe('Auto User Upgrade', () => {
     expect(result.user.name).toBe(upgradeData.name);
   });
 
-  test('upgraded user can create invitations', async ({ apiClient, db }) => {
+  test('upgraded user can generate join codes', async ({ apiClient }) => {
     const { token: autoToken, user: autoUser } = await apiClient.autoLogin();
     const project = await apiClient.createProject(autoToken, { name: 'Upgrade Test Project' });
-
-    // Remote DB must be active before invitations can be created
-    await activateRemoteDb(db, project.id);
 
     // Upgrade the auto user
     const upgradeData = buildUser();
@@ -33,16 +29,14 @@ test.describe('Auto User Upgrade', () => {
       autoUserId: autoUser.id,
     });
 
-    // Now should be able to create invitation
-    const inviteeData = buildUser();
-    const invitation = await apiClient.post<{ id: string; email: string }>(
-      `/projects/${project.id}/invitations`,
-      { email: inviteeData.email, role: 'member' },
+    // Now should be able to generate join code
+    const updated = await apiClient.post<{ id: string; joinCode: string }>(
+      `/projects/${project.id}/join-code`,
+      {},
       upgradedToken,
     );
 
-    expect(invitation.id).toBeTruthy();
-    expect(invitation.email).toBe(inviteeData.email);
+    expect(updated.joinCode).toBeTruthy();
   });
 
   test('upgrade with existing email merges data', async ({ apiClient }) => {

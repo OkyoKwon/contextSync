@@ -82,7 +82,6 @@ export type {
   AutoSetupNewInput,
 } from './types/supabase-onboarding.js';
 export type { PlanSummary, PlanDetail, PlanProjectAssociation } from './types/plan.js';
-export type { Invitation, InvitationStatus, CreateInvitationInput } from './types/invitation.js';
 export type {
   AdminStatus,
   DatabaseHealth,
@@ -90,8 +89,6 @@ export type {
   SslStatus,
   MigrationInfo,
   MigrationRunResult,
-  DatabaseProvider,
-  DeploymentMode,
   AdminConfig,
 } from './types/admin.js';
 export type {
@@ -133,7 +130,6 @@ export {
   SUPPORTED_PRD_EXTENSIONS,
   MAX_PRD_FILE_SIZE,
 } from './constants/prd-analysis.js';
-export { INVITATION_STATUSES, INVITATION_EXPIRY_DAYS } from './constants/invitation-status.js';
 export {
   ANTHROPIC_MODELS,
   RECOMMENDED_MODEL,

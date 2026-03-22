@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { NavLink } from 'react-router';
 import { ProjectSelector } from './ProjectSelector';
 import { CreateProjectModal } from '../projects/CreateProjectModal';
+import { JoinProjectDialog } from '../projects/JoinProjectDialog';
 import { useConflicts } from '../../hooks/use-conflicts';
-import { useMyInvitations } from '../../hooks/use-invitations';
 import { useCurrentProject } from '../../hooks/use-current-project';
-import { useAdminConfig } from '../../hooks/use-admin';
 import { useUiStore } from '../../stores/ui.store';
 import { Tooltip } from '../ui/Tooltip';
 import {
@@ -35,14 +34,11 @@ interface NavSection {
 
 export function Sidebar() {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showJoinDialog, setShowJoinDialog] = useState(false);
   const { data: projectData } = useCurrentProject();
   const isTeam = projectData?.data?.isTeam ?? false;
   const { data: conflictsData } = useConflicts({ status: 'detected' }, { enabled: isTeam });
   const activeConflictCount = conflictsData?.data?.length ?? 0;
-  const { data: invitationsData } = useMyInvitations();
-  const pendingInvitationCount = invitationsData?.data?.length ?? 0;
-  const { data: adminConfig } = useAdminConfig();
-  const isAdmin = adminConfig?.data?.deploymentMode === 'team-host';
 
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
@@ -55,7 +51,6 @@ export function Sidebar() {
           to: '/dashboard',
           label: 'Dashboard',
           icon: DashboardIcon,
-          badge: pendingInvitationCount,
         },
         { to: '/project', label: 'Conversations', icon: ConversationsIcon },
         { to: '/plans', label: 'Plans', icon: PlansIcon },
@@ -81,7 +76,7 @@ export function Sidebar() {
     {
       label: 'System',
       items: [
-        ...(isAdmin ? [{ to: '/admin', label: 'Admin', icon: AdminIcon } as const] : []),
+        { to: '/admin', label: 'Admin', icon: AdminIcon },
         { to: '/settings', label: 'Settings', icon: SettingsIcon },
       ],
     },
@@ -102,20 +97,36 @@ export function Sidebar() {
             <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
               Projects
             </p>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex h-5 w-5 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
-              title="Create project"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v12m6-6H6"
-                />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowJoinDialog(true)}
+                className="flex h-5 w-5 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+                title="Join project"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex h-5 w-5 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
+                title="Create project"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v12m6-6H6"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <ProjectSelector />
         </div>
@@ -267,6 +278,7 @@ export function Sidebar() {
         )}
       </div>
       <CreateProjectModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} />
+      <JoinProjectDialog isOpen={showJoinDialog} onClose={() => setShowJoinDialog(false)} />
     </aside>
   );
 }

@@ -5,12 +5,11 @@ import { runMigrations } from './database/migrate.js';
 async function main() {
   const env = loadEnv();
 
-  if (env.RUN_MIGRATIONS && env.DEPLOYMENT_MODE !== 'team-member') {
+  if (env.RUN_MIGRATIONS) {
     console.log('Running auto-migrations...');
     try {
       await runMigrations({
         connectionString: env.DATABASE_URL,
-        deploymentMode: env.DEPLOYMENT_MODE,
         sslEnabled: env.DATABASE_SSL,
         sslCaPath: env.DATABASE_SSL_CA,
       });

@@ -13,7 +13,7 @@ test.describe('Admin Dashboard', () => {
   test('regular user cannot access admin API', async ({ apiClient, testUser }) => {
     const raw = await apiClient.fetchRaw('GET', '/admin/status', undefined, testUser.token);
 
-    // Should be 403 (DEPLOYMENT_MODE != team-host or not admin role)
+    // Should be 403 (not admin role)
     expect(raw.status).toBe(403);
   });
 

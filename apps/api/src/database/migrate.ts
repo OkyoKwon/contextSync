@@ -6,21 +6,12 @@ import pg from 'pg';
 
 export interface MigrationOptions {
   readonly connectionString: string;
-  readonly deploymentMode?: string;
   readonly sslEnabled?: boolean;
   readonly sslCaPath?: string;
 }
 
 export async function runMigrations(options: MigrationOptions): Promise<void> {
-  const { connectionString, deploymentMode, sslEnabled = false, sslCaPath } = options;
-
-  if (deploymentMode === 'team-member') {
-    console.warn(
-      'WARNING: Migrations are skipped in team-member mode. ' +
-        'The team host is responsible for running migrations.',
-    );
-    return;
-  }
+  const { connectionString, sslEnabled = false, sslCaPath } = options;
 
   const sslConfig = sslEnabled
     ? {
@@ -72,7 +63,6 @@ async function main() {
   try {
     await runMigrations({
       connectionString,
-      deploymentMode: process.env['DEPLOYMENT_MODE'] ?? 'personal',
       sslEnabled: process.env['DATABASE_SSL'] === 'true',
       sslCaPath: process.env['DATABASE_SSL_CA'],
     });

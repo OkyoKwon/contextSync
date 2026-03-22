@@ -1,6 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, paginated, buildPaginationMeta } from '../../lib/api-response.js';
-import { resolveProjectDb } from '../../lib/resolve-project-db.js';
 import * as conflictService from './conflict.service.js';
 import {
   conflictFilterSchema,
@@ -15,7 +14,7 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/conflicts',
     async (request, reply) => {
-      const db = await resolveProjectDb(app, request.params.projectId);
+      const db = app.db;
       const filter = conflictFilterSchema.parse(request.query);
       const result = await conflictService.getConflictsByProject(
         db,

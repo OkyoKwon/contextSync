@@ -1,142 +1,95 @@
 import { test, expect } from '../../fixtures/auth.fixture.js';
 import { buildUser } from '../../helpers/test-data.js';
-import {
-  activateRemoteDb,
-  addCollaborator,
-  getInvitationToken,
-} from '../../helpers/invitation-helpers.js';
 
 test.describe('Project Collaboration', () => {
-  test('create invitation', async ({ apiClient, db, testUser, testProjectId }) => {
-    await activateRemoteDb(db, testProjectId);
-
-    const inviteeData = buildUser();
-    const invitation = await apiClient.post<{ id: string; email: string }>(
-      `/projects/${testProjectId}/invitations`,
-      { email: inviteeData.email, role: 'member' },
+  test('generate join code', async ({ apiClient, testUser, testProjectId }) => {
+    const project = await apiClient.post<{ id: string; joinCode: string }>(
+      `/projects/${testProjectId}/join-code`,
+      {},
       testUser.token,
     );
 
-    expect(invitation.id).toBeTruthy();
-    expect(invitation.email).toBe(inviteeData.email);
+    expect(project.joinCode).toBeTruthy();
+    expect(project.joinCode.length).toBe(6);
   });
 
-  test('list project invitations', async ({ apiClient, db, testUser, testProjectId }) => {
-    await activateRemoteDb(db, testProjectId);
+  test('join project by code', async ({ apiClient, testUser, testProjectId }) => {
+    // Generate join code
+    const project = await apiClient.post<{ joinCode: string }>(
+      `/projects/${testProjectId}/join-code`,
+      {},
+      testUser.token,
+    );
 
+    // Create a new user and join
     const inviteeData = buildUser();
-    await apiClient.post(
-      `/projects/${testProjectId}/invitations`,
-      { email: inviteeData.email, role: 'member' },
-      testUser.token,
-    );
-
-    const invitations = await apiClient.get<readonly { id: string; email: string }[]>(
-      `/projects/${testProjectId}/invitations`,
-      testUser.token,
-    );
-
-    const found = invitations.find((inv) => inv.email === inviteeData.email);
-    expect(found).toBeTruthy();
-  });
-
-  test('invitee can see pending invitation', async ({ apiClient, db, testUser, testProjectId }) => {
-    await activateRemoteDb(db, testProjectId);
-
-    const inviteeData = buildUser();
-    await apiClient.post(
-      `/projects/${testProjectId}/invitations`,
-      { email: inviteeData.email, role: 'member' },
-      testUser.token,
-    );
-
     const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
-
-    const myInvitations = await apiClient.get<readonly { id: string; projectName: string }[]>(
-      '/invitations/mine',
+    const joined = await apiClient.post<{ id: string }>(
+      '/projects/join',
+      { code: project.joinCode },
       inviteeToken,
     );
 
-    expect(myInvitations.length).toBeGreaterThanOrEqual(1);
+    expect(joined.id).toBe(testProjectId);
+
+    // Verify collaborator appears
+    const collaborators = await apiClient.get<readonly { userId: string }[]>(
+      `/projects/${testProjectId}/collaborators`,
+      testUser.token,
+    );
+    expect(collaborators.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('accept invitation adds collaborator', async ({
-    apiClient,
-    db,
-    testUser,
-    testProjectId,
-  }) => {
-    await activateRemoteDb(db, testProjectId);
-
-    const inviteeData = buildUser();
-    const invitation = await apiClient.post<{ id: string }>(
-      `/projects/${testProjectId}/invitations`,
-      { email: inviteeData.email, role: 'member' },
+  test('regenerate join code', async ({ apiClient, testUser, testProjectId }) => {
+    const first = await apiClient.post<{ joinCode: string }>(
+      `/projects/${testProjectId}/join-code`,
+      {},
       testUser.token,
     );
 
-    // Try to get invitation token from DB (works when API and test use same DB)
-    const invToken = await getInvitationToken(db, invitation.id);
-
-    if (invToken) {
-      const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
-      await apiClient.post(
-        '/invitations/respond',
-        { token: invToken, action: 'accept' },
-        inviteeToken,
-      );
-
-      const collaborators = await apiClient.get<readonly { userId: string }[]>(
-        `/projects/${testProjectId}/collaborators`,
-        testUser.token,
-      );
-
-      expect(collaborators.length).toBeGreaterThanOrEqual(1);
-    } else {
-      // Fallback: add collaborator directly via DB
-      const { user: invitee } = await apiClient.login(inviteeData.name, inviteeData.email);
-      await addCollaborator(db, testProjectId, invitee.id, 'member');
-
-      const collaborators = await apiClient.get<readonly { userId: string }[]>(
-        `/projects/${testProjectId}/collaborators`,
-        testUser.token,
-      );
-
-      expect(collaborators.length).toBeGreaterThanOrEqual(1);
-    }
-  });
-
-  test('cancel invitation removes it', async ({ apiClient, db, testUser, testProjectId }) => {
-    await activateRemoteDb(db, testProjectId);
-
-    const inviteeData = buildUser();
-    const invitation = await apiClient.post<{ id: string }>(
-      `/projects/${testProjectId}/invitations`,
-      { email: inviteeData.email, role: 'member' },
+    const second = await apiClient.post<{ joinCode: string }>(
+      `/projects/${testProjectId}/join-code/regenerate`,
+      {},
       testUser.token,
     );
 
-    await apiClient.del(`/invitations/${invitation.id}`, testUser.token);
+    expect(second.joinCode).toBeTruthy();
+    expect(second.joinCode).not.toBe(first.joinCode);
+  });
 
-    const invitations = await apiClient.get<readonly { id: string }[]>(
-      `/projects/${testProjectId}/invitations`,
+  test('delete join code disables joining', async ({ apiClient, testUser, testProjectId }) => {
+    const project = await apiClient.post<{ joinCode: string }>(
+      `/projects/${testProjectId}/join-code`,
+      {},
       testUser.token,
     );
 
-    const found = invitations.find((inv) => inv.id === invitation.id);
-    expect(found).toBeUndefined();
-  });
+    await apiClient.del(`/projects/${testProjectId}/join-code`, testUser.token);
 
-  test('invitation blocked without remote DB', async ({ apiClient, testUser, testProjectId }) => {
+    // Attempt to join with old code should fail
     const inviteeData = buildUser();
+    const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
     const response = await apiClient.fetchRaw(
       'POST',
-      `/projects/${testProjectId}/invitations`,
-      { email: inviteeData.email, role: 'member' },
-      testUser.token,
+      '/projects/join',
+      { code: project.joinCode },
+      inviteeToken,
     );
 
-    expect(response.status).toBe(403);
-    expect(response.body.error).toContain('Remote DB');
+    expect(response.status).toBe(404);
+  });
+
+  test('invalid join code returns 404', async ({ apiClient, testUser }) => {
+    const inviteeData = buildUser();
+    const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
+
+    const response = await apiClient.fetchRaw(
+      'POST',
+      '/projects/join',
+      { code: 'XXXXXX' },
+      inviteeToken,
+    );
+
+    expect(response.status).toBe(404);
   });
 });

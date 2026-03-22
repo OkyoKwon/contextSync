@@ -4,12 +4,10 @@ import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { useRequireProject } from '../hooks/use-require-project';
 import { usePermissions } from '../hooks/use-permissions';
-import { useMigrationWizard } from '../hooks/use-migration-wizard';
 import { projectsApi } from '../api/projects.api';
 import { authApi } from '../api/auth.api';
 import { CollaboratorList } from '../components/projects/CollaboratorList';
-import { RemoteDbSection } from '../components/settings/RemoteDbSection';
-import { MigrationWizardModal } from '../components/settings/MigrationWizardModal';
+import { CollaborationSection } from '../components/settings/CollaborationSection';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { Button } from '../components/ui/Button';
@@ -47,8 +45,6 @@ export function SettingsPage() {
 }
 
 function SettingsContent({ projectId }: { readonly projectId: string }) {
-  const wizard = useMigrationWizard();
-
   return (
     <div>
       <div className="mb-6">
@@ -56,23 +52,11 @@ function SettingsContent({ projectId }: { readonly projectId: string }) {
       </div>
       <div className="space-y-6">
         <ProjectInfoSection projectId={projectId} />
-        <RemoteDbSection projectId={projectId} onConnectClick={wizard.open} />
+        <CollaborationSection projectId={projectId} />
         <CollaboratorSection projectId={projectId} />
         <ApiKeySection />
         <DangerZoneSection projectId={projectId} />
       </div>
-
-      <MigrationWizardModal
-        isOpen={wizard.isOpen}
-        onClose={wizard.close}
-        projectId={projectId}
-        step={wizard.step}
-        connectionUrl={wizard.connectionUrl}
-        provider={wizard.provider}
-        sslEnabled={wizard.sslEnabled}
-        onStepChange={wizard.setStep}
-        onConnectionInfoChange={wizard.setConnectionInfo}
-      />
     </div>
   );
 }

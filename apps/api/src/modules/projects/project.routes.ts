@@ -5,6 +5,7 @@ import {
   createProjectSchema,
   updateProjectSchema,
   setMyDirectorySchema,
+  joinProjectSchema,
 } from './project.schema.js';
 
 export const projectRoutes: FastifyPluginAsync = async (app) => {
@@ -91,4 +92,43 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
       return reply.send(ok(null));
     },
   );
+
+  // Join Code routes
+  app.post<{ Params: { projectId: string } }>(
+    '/projects/:projectId/join-code',
+    async (request, reply) => {
+      const project = await projectService.generateProjectJoinCode(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+      return reply.status(201).send(ok(project));
+    },
+  );
+
+  app.post<{ Params: { projectId: string } }>(
+    '/projects/:projectId/join-code/regenerate',
+    async (request, reply) => {
+      const project = await projectService.regenerateJoinCode(
+        app.db,
+        request.params.projectId,
+        request.user.userId,
+      );
+      return reply.send(ok(project));
+    },
+  );
+
+  app.delete<{ Params: { projectId: string } }>(
+    '/projects/:projectId/join-code',
+    async (request, reply) => {
+      await projectService.deleteJoinCode(app.db, request.params.projectId, request.user.userId);
+      return reply.send(ok(null));
+    },
+  );
+
+  app.post('/projects/join', async (request, reply) => {
+    const { code } = joinProjectSchema.parse(request.body);
+    const project = await projectService.joinByCode(app.db, code, request.user.userId);
+    return reply.send(ok(project));
+  });
 };

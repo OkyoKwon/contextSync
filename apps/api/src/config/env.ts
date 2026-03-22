@@ -15,11 +15,7 @@ const envSchema = z.object({
   ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-20250514'),
 
   SLACK_WEBHOOK_URL: z.string().optional(),
-  RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default('noreply@contextsync.dev'),
 
-  DEPLOYMENT_MODE: z.enum(['personal', 'team-host', 'team-member']).default('personal'),
-  DATABASE_PROVIDER: z.enum(['self-hosted', 'supabase']).default('self-hosted'),
   DATABASE_SSL: z
     .enum(['true', 'false'])
     .default('false')

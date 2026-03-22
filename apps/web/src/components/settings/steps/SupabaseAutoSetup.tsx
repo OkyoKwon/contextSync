@@ -15,7 +15,6 @@ import { Badge } from '../../ui/Badge';
 import { Spinner } from '../../ui/Spinner';
 
 interface SupabaseAutoSetupProps {
-  readonly projectId: string;
   readonly onAutoSetupComplete: () => void;
 }
 
@@ -36,7 +35,7 @@ const SUPABASE_REGIONS = [
   { value: 'ca-central-1', label: 'Canada (Central)' },
 ] as const;
 
-export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAutoSetupProps) {
+export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProps) {
   const user = useAuthStore((s) => s.user);
   const hasToken = user?.hasSupabaseToken ?? false;
 
@@ -48,8 +47,8 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
 
   // Step 2: Project selection
   const [tab, setTab] = useState<SetupTab>('existing');
-  const supabaseProjects = useSupabaseProjects(projectId, hasToken);
-  const supabaseOrgs = useSupabaseOrganizations(projectId, hasToken && tab === 'new');
+  const supabaseProjects = useSupabaseProjects(hasToken);
+  const supabaseOrgs = useSupabaseOrganizations(hasToken && tab === 'new');
 
   // Existing project form
   const [selectedRef, setSelectedRef] = useState('');
@@ -62,8 +61,8 @@ export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAu
   const [newDbPassword, setNewDbPassword] = useState('');
 
   // Mutations
-  const autoSetupMutation = useSupabaseAutoSetup(projectId);
-  const createAndSetupMutation = useSupabaseCreateAndSetup(projectId);
+  const autoSetupMutation = useSupabaseAutoSetup();
+  const createAndSetupMutation = useSupabaseCreateAndSetup();
 
   const [error, setError] = useState<string | null>(null);
 
