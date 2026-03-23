@@ -30,30 +30,6 @@ describe('getPermissions', () => {
     });
   });
 
-  describe('admin role', () => {
-    const permissions = getPermissions('admin');
-
-    it('returns 7 permissions', () => {
-      expect(permissions.size).toBe(7);
-    });
-
-    it('does NOT have project:delete', () => {
-      expect(permissions.has('project:delete')).toBe(false);
-    });
-
-    it('has project:edit', () => {
-      expect(permissions.has('project:edit')).toBe(true);
-    });
-
-    it('has collaborator:manage', () => {
-      expect(permissions.has('collaborator:manage')).toBe(true);
-    });
-
-    it('has session:edit_others', () => {
-      expect(permissions.has('session:edit_others')).toBe(true);
-    });
-  });
-
   describe('member role', () => {
     const permissions = getPermissions('member');
 
@@ -86,7 +62,7 @@ describe('getPermissions', () => {
   });
 
   describe('shared permissions across all roles', () => {
-    const roles = ['owner', 'admin', 'member'] as const;
+    const roles = ['owner', 'member'] as const;
 
     it('all roles have data:read', () => {
       for (const role of roles) {

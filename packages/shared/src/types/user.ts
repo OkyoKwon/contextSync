@@ -15,7 +15,7 @@ export interface User {
   readonly updatedAt: string;
 }
 
-export type UserRole = 'owner' | 'admin' | 'member';
+export type UserRole = 'owner' | 'member';
 
 export interface NotificationSettings {
   readonly email: boolean;

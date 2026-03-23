@@ -31,7 +31,6 @@ const PlansPage = lazy(() => import('./pages/PlansPage').then((m) => ({ default:
 const AiEvaluationPage = lazy(() =>
   import('./pages/AiEvaluationPage').then((m) => ({ default: m.AiEvaluationPage })),
 );
-const AdminPage = lazy(() => import('./pages/AdminPage').then((m) => ({ default: m.AdminPage })));
 
 function PageFallback() {
   return (
@@ -80,7 +79,7 @@ export function AppRoutes() {
           <Route path="/prd-analysis" element={<PrdAnalysisPage />} />
           <Route path="/ai-evaluation" element={<AiEvaluationPage />} />
           <Route path="/plans" element={<PlansPage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/admin" element={<Navigate to="/settings?tab=integrations" replace />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/team" element={<Navigate to="/settings?tab=team" replace />} />
           <Route

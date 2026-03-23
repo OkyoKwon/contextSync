@@ -23,16 +23,6 @@ const OWNER_PERMISSIONS: ReadonlySet<ProjectPermission> = new Set([
   'data:read',
 ]);
 
-const ADMIN_PERMISSIONS: ReadonlySet<ProjectPermission> = new Set([
-  'project:edit',
-  'collaborator:manage',
-  'session:create',
-  'session:edit_own',
-  'session:edit_others',
-  'conflict:resolve',
-  'data:read',
-]);
-
 const MEMBER_PERMISSIONS: ReadonlySet<ProjectPermission> = new Set([
   'session:create',
   'session:edit_own',
@@ -40,12 +30,10 @@ const MEMBER_PERMISSIONS: ReadonlySet<ProjectPermission> = new Set([
   'data:read',
 ]);
 
-export function getPermissions(role: 'owner' | 'admin' | 'member'): ReadonlySet<ProjectPermission> {
+export function getPermissions(role: 'owner' | 'member'): ReadonlySet<ProjectPermission> {
   switch (role) {
     case 'owner':
       return OWNER_PERMISSIONS;
-    case 'admin':
-      return ADMIN_PERMISSIONS;
     case 'member':
       return MEMBER_PERMISSIONS;
   }
@@ -63,6 +51,6 @@ export async function assertPermission(
   }
   const permissions = getPermissions(role);
   if (!permissions.has(permission)) {
-    throw new ForbiddenError(`Insufficient permissions: ${permission} requires ${permission === 'project:delete' ? 'owner' : 'admin'} role`);
+    throw new ForbiddenError(`Insufficient permissions: ${permission} requires owner role`);
   }
 }

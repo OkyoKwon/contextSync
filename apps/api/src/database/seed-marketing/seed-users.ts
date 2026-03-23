@@ -38,7 +38,7 @@ export async function seedProject(ownerId: string) {
 }
 
 export async function seedCollaborators(projectId: string, users: ReadonlyArray<{ id: string }>) {
-  const roles = ['admin', 'member', 'member'] as const;
+  const roles = ['member', 'member', 'member'] as const;
   for (let i = 1; i < users.length; i++) {
     await db
       .insertInto('project_collaborators')

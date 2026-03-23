@@ -15,7 +15,6 @@ import {
   PrdAnalysisIcon,
   AiEvaluationIcon,
   PlansIcon,
-  AdminIcon,
   SettingsIcon,
   DocsIcon,
   LandingPageIcon,
@@ -76,10 +75,7 @@ export function Sidebar() {
     },
     {
       label: 'System',
-      items: [
-        { to: '/admin', label: 'Admin', icon: AdminIcon },
-        { to: '/settings', label: 'Settings', icon: SettingsIcon },
-      ],
+      items: [{ to: '/settings', label: 'Settings', icon: SettingsIcon }],
     },
   ];
 

@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '../api/admin.api';
 
-export function useAdminStatus() {
+export function useAdminStatus(enabled = true) {
   return useQuery({
     queryKey: ['admin', 'status'],
     queryFn: () => adminApi.getStatus(),
     refetchInterval: 30_000,
+    enabled,
   });
 }
 

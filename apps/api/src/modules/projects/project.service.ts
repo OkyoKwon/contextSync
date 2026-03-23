@@ -172,13 +172,13 @@ export async function getUserRoleInProject(
   db: Db,
   projectId: string,
   userId: string,
-): Promise<'owner' | 'admin' | 'member' | null> {
+): Promise<'owner' | 'member' | null> {
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) return null;
   if (project.ownerId === userId) return 'owner';
   const collab = await collabRepo.findCollaboratorByProjectAndUser(db, projectId, userId);
   if (!collab) return null;
-  return collab.role as 'admin' | 'member';
+  return collab.role as 'owner' | 'member';
 }
 
 // --- Join Code ---

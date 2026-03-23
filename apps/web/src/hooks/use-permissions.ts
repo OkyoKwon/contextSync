@@ -2,11 +2,9 @@ import { useMemo } from 'react';
 import type { UserRole } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from './use-current-project';
-import { useCollaborators } from './use-collaborators';
 
 export interface ProjectPermissions {
   readonly isOwner: boolean;
-  readonly isAdmin: boolean;
   readonly isMember: boolean;
   readonly canEditProject: boolean;
   readonly canManageCollaborators: boolean;
@@ -17,18 +15,14 @@ export interface ProjectPermissions {
 
 export function usePermissions(): ProjectPermissions {
   const currentUserId = useAuthStore((s) => s.user?.id);
-  const currentProjectId = useAuthStore((s) => s.currentProjectId);
   const { data: projectData } = useCurrentProject();
-  const { data: collabData } = useCollaborators(currentProjectId ?? '');
 
   return useMemo(() => {
     const project = projectData?.data ?? null;
-    const collaborators = collabData?.data ?? [];
 
     if (!project || !currentUserId) {
       return {
         isOwner: false,
-        isAdmin: false,
         isMember: false,
         canEditProject: false,
         canManageCollaborators: false,
@@ -43,7 +37,6 @@ export function usePermissions(): ProjectPermissions {
     if (isOwner) {
       return {
         isOwner: true,
-        isAdmin: false,
         isMember: false,
         canEditProject: true,
         canManageCollaborators: true,
@@ -53,19 +46,14 @@ export function usePermissions(): ProjectPermissions {
       };
     }
 
-    const collab = collaborators.find((c) => c.userId === currentUserId);
-    const role = collab?.role ?? null;
-    const isAdmin = role === 'admin';
-
     return {
       isOwner: false,
-      isAdmin,
-      isMember: role === 'member',
-      canEditProject: isAdmin,
-      canManageCollaborators: isAdmin,
+      isMember: true,
+      canEditProject: false,
+      canManageCollaborators: false,
       canDeleteProject: false,
-      canEditOthersSessions: isAdmin,
-      role,
+      canEditOthersSessions: false,
+      role: 'member' as UserRole,
     };
-  }, [projectData, collabData, currentUserId]);
+  }, [projectData, currentUserId]);
 }

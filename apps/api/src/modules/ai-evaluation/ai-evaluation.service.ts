@@ -221,7 +221,7 @@ export async function getTeamSummary(
   await assertProjectAccess(db, projectId, requestingUserId);
 
   const role = await getUserRoleInProject(db, projectId, requestingUserId);
-  if (role !== 'owner' && role !== 'admin') {
+  if (role !== 'owner') {
     throw new ForbiddenError('Only project owners and admins can view team summary');
   }
 
@@ -237,7 +237,7 @@ async function assertViewPermission(
   if (requestingUserId === targetUserId) return;
 
   const role = await getUserRoleInProject(db, projectId, requestingUserId);
-  if (role !== 'owner' && role !== 'admin') {
+  if (role !== 'owner') {
     throw new ForbiddenError('You can only view your own evaluations');
   }
 }

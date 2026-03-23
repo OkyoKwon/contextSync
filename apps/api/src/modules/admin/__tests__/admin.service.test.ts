@@ -1,31 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { assertAdmin, assertOwnerRole, getAdminConfig } from '../admin.service.js';
+import { assertOwnerRole, getAdminConfig } from '../admin.service.js';
 import { ForbiddenError } from '../../../plugins/error-handler.plugin.js';
 
 beforeEach(() => {
   vi.clearAllMocks();
-});
-
-describe('assertAdmin', () => {
-  it('should not throw when role is owner', () => {
-    expect(() => assertAdmin('owner')).not.toThrow();
-  });
-
-  it('should not throw when role is admin', () => {
-    expect(() => assertAdmin('admin')).not.toThrow();
-  });
-
-  it('should throw ForbiddenError when role is member', () => {
-    expect(() => assertAdmin('member')).toThrow(ForbiddenError);
-  });
-
-  it('should throw ForbiddenError when role is empty string', () => {
-    expect(() => assertAdmin('')).toThrow(ForbiddenError);
-  });
-
-  it('should throw ForbiddenError with descriptive message', () => {
-    expect(() => assertAdmin('member')).toThrow('Admin access requires owner or admin role');
-  });
 });
 
 describe('assertOwnerRole', () => {
@@ -33,16 +11,16 @@ describe('assertOwnerRole', () => {
     expect(() => assertOwnerRole('owner')).not.toThrow();
   });
 
-  it('should throw ForbiddenError when role is admin', () => {
-    expect(() => assertOwnerRole('admin')).toThrow(ForbiddenError);
-  });
-
   it('should throw ForbiddenError when role is member', () => {
     expect(() => assertOwnerRole('member')).toThrow(ForbiddenError);
   });
 
+  it('should throw ForbiddenError when role is empty string', () => {
+    expect(() => assertOwnerRole('')).toThrow(ForbiddenError);
+  });
+
   it('should throw ForbiddenError with descriptive message', () => {
-    expect(() => assertOwnerRole('admin')).toThrow('This action requires owner role');
+    expect(() => assertOwnerRole('member')).toThrow('This action requires owner role');
   });
 });
 

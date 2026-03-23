@@ -11,12 +11,14 @@ import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Modal } from '../ui/Modal';
+import { DatabaseAdminSection } from './DatabaseAdminSection';
 
 export function IntegrationsTab() {
   return (
     <>
       <ApiKeySection />
       <DatabaseRemoteSection />
+      <DatabaseAdminSection />
     </>
   );
 }

@@ -313,11 +313,11 @@ describe('getUserRoleInProject', () => {
 
   it('should return collaborator role when user is a collaborator', async () => {
     mockFindProjectById.mockResolvedValue(makeProject({ ownerId: 'other-user' }));
-    mockFindCollabByProjectAndUser.mockResolvedValue({ role: 'admin' });
+    mockFindCollabByProjectAndUser.mockResolvedValue({ role: 'member' });
 
     const result = await getUserRoleInProject(db, 'proj-1', 'user-1');
 
-    expect(result).toBe('admin');
+    expect(result).toBe('member');
   });
 
   it('should return null when project does not exist', async () => {

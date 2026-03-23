@@ -7,7 +7,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
   app.get('/admin/status', async (request, reply) => {
     const user = await getUserWithRole(app.db, request.user.userId);
-    adminService.assertAdmin(user.role);
+    adminService.assertOwnerRole(user.role);
 
     const status = await adminService.getAdminStatus(app.db);
     return reply.send(ok(status));
@@ -23,7 +23,7 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
 
   app.get('/admin/config', async (request, reply) => {
     const user = await getUserWithRole(app.db, request.user.userId);
-    adminService.assertAdmin(user.role);
+    adminService.assertOwnerRole(user.role);
 
     const config = adminService.getAdminConfig(app.env);
     return reply.send(ok(config));

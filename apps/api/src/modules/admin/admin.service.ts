@@ -14,12 +14,6 @@ import type {
 } from '@context-sync/shared';
 import { ForbiddenError } from '../../plugins/error-handler.plugin.js';
 
-export function assertAdmin(userRole: string): void {
-  if (userRole !== 'owner' && userRole !== 'admin') {
-    throw new ForbiddenError('Admin access requires owner or admin role');
-  }
-}
-
 export function assertOwnerRole(userRole: string): void {
   if (userRole !== 'owner') {
     throw new ForbiddenError('This action requires owner role');
