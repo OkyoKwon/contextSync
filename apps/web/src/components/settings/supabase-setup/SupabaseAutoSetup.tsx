@@ -237,6 +237,8 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
               <NewProjectForm
                 organizations={organizations}
                 isLoadingOrgs={supabaseOrgs.isLoading}
+                orgError={supabaseOrgs.isError}
+                onRetryOrgs={() => supabaseOrgs.refetch()}
                 name={newName}
                 region={newRegion}
                 orgId={newOrgId}
