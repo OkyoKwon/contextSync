@@ -35,7 +35,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: ownerToken,
-          user: { id: ownerId, email: ownerData.email, name: ownerName, isAuto: false },
+          user: { id: ownerId, email: ownerData.email, name: ownerName },
           currentProjectId: projectId,
         },
         version: 0,
@@ -156,7 +156,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: ownerToken,
-          user: { id: ownerId, email: `owner@e2e.test`, name: ownerName, isAuto: false },
+          user: { id: ownerId, email: `owner@e2e.test`, name: ownerName },
           currentProjectId: projectId,
         },
         version: 0,
@@ -190,7 +190,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: memberToken,
-          user: { id: memberId, email: memberData.email, name: memberName, isAuto: false },
+          user: { id: memberId, email: memberData.email, name: memberName },
           currentProjectId: memberProject.id,
         },
         version: 0,
@@ -241,7 +241,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: ownerToken,
-          user: { id: ownerId, email: 'owner@e2e.test', name: ownerName, isAuto: false },
+          user: { id: ownerId, email: 'owner@e2e.test', name: ownerName },
           currentProjectId: projectId,
         },
         version: 0,
@@ -276,7 +276,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: ownerToken,
-          user: { id: ownerId, email: 'owner@e2e.test', name: ownerName, isAuto: false },
+          user: { id: ownerId, email: 'owner@e2e.test', name: ownerName },
           currentProjectId: projectId,
         },
         version: 0,
@@ -318,7 +318,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: ownerToken,
-          user: { id: ownerId, email: 'owner@e2e.test', name: ownerName, isAuto: false },
+          user: { id: ownerId, email: 'owner@e2e.test', name: ownerName },
           currentProjectId: projectId,
         },
         version: 0,

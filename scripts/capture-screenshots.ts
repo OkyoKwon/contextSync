@@ -110,7 +110,6 @@ test.describe('Marketing Screenshots', () => {
           id: loginResult.user.id,
           email: loginResult.user.email,
           name: loginResult.user.name,
-          isAuto: false,
         },
         currentProjectId: projectId,
       },

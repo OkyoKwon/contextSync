@@ -16,11 +16,6 @@ export const authApi = {
   identifySelect: (userId: string) =>
     api.post<{ token: string; user: User }>('/auth/identify/select', { userId }),
 
-  autoLogin: () => api.post<{ token: string; user: User }>('/auth/auto'),
-
-  upgrade: (name: string, email: string, autoUserId: string) =>
-    api.post<{ token: string; user: User }>('/auth/upgrade', { name, email, autoUserId }),
-
   refresh: () => api.post<{ token: string }>('/auth/refresh'),
 
   updatePlan: (claudePlan: ClaudePlan) => api.put<User>('/auth/me/plan', { claudePlan }),

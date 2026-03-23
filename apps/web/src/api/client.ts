@@ -1,7 +1,6 @@
 import type { ApiResponse } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
 import { useLoginModal } from '../hooks/use-login-modal';
-import { useUpgradeModal } from '../hooks/use-upgrade-modal';
 import { ApiError } from './api-error';
 
 const BASE_URL = '/api';
@@ -95,15 +94,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
 
     useLoginModal.getState().openLoginModal();
     throw new ApiError('Session expired. Please log in again.', 401);
-  }
-
-  if (response.status === 403) {
-    const errorBody = await response.json().catch(() => null);
-    const message = errorBody?.error ?? `Forbidden (${response.status})`;
-    if (typeof message === 'string' && message.includes('account upgrade')) {
-      useUpgradeModal.getState().openUpgradeModal();
-    }
-    throw new ApiError(message, response.status, errorBody?.data ?? null);
   }
 
   if (!response.ok) {

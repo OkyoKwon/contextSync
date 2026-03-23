@@ -23,15 +23,9 @@ vi.mock('../../hooks/use-login-modal', () => {
   return { useLoginModal: { getState: () => store } };
 });
 
-vi.mock('../../hooks/use-upgrade-modal', () => {
-  const store = { isOpen: false, openUpgradeModal: vi.fn(), closeUpgradeModal: vi.fn() };
-  return { useUpgradeModal: { getState: () => store } };
-});
-
 import { api } from '../client';
 import { useAuthStore } from '../../stores/auth.store';
 import { useLoginModal } from '../../hooks/use-login-modal';
-import { useUpgradeModal } from '../../hooks/use-upgrade-modal';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
@@ -151,28 +145,6 @@ describe('api client', () => {
     const result = await api.get('/protected');
     expect(result.data).toBe('refreshed');
     expect(callCount).toBe(2);
-  });
-
-  it('opens upgrade modal on 403 with account upgrade message', async () => {
-    server.use(
-      http.get('/api/premium', () =>
-        HttpResponse.json({ error: 'Requires account upgrade' }, { status: 403 }),
-      ),
-    );
-
-    await expect(api.get('/premium')).rejects.toThrow('account upgrade');
-    expect(useUpgradeModal.getState().openUpgradeModal).toHaveBeenCalled();
-  });
-
-  it('throws on 403 without upgrade message', async () => {
-    server.use(
-      http.get('/api/forbidden', () =>
-        HttpResponse.json({ error: 'No permission' }, { status: 403 }),
-      ),
-    );
-
-    await expect(api.get('/forbidden')).rejects.toThrow('No permission');
-    expect(useUpgradeModal.getState().openUpgradeModal).not.toHaveBeenCalled();
   });
 
   it('api.patch sends PATCH method', async () => {

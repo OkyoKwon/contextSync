@@ -1,58 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import {
-  upgradeSchema,
-  updatePlanSchema,
-  updateApiKeySchema,
-  updateSupabaseTokenSchema,
-} from '../auth.schema.js';
+import { updatePlanSchema, updateApiKeySchema, updateSupabaseTokenSchema } from '../auth.schema.js';
 
 describe('Auth Schemas', () => {
-  describe('upgradeSchema', () => {
-    it('should accept valid name, email, and autoUserId', () => {
-      const result = upgradeSchema.safeParse({
-        name: 'Test User',
-        email: 'test@example.com',
-        autoUserId: '550e8400-e29b-41d4-a716-446655440000',
-      });
-      expect(result.success).toBe(true);
-    });
-
-    it('should reject empty name', () => {
-      const result = upgradeSchema.safeParse({
-        name: '',
-        email: 'test@example.com',
-        autoUserId: '550e8400-e29b-41d4-a716-446655440000',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject invalid email', () => {
-      const result = upgradeSchema.safeParse({
-        name: 'Test User',
-        email: 'not-an-email',
-        autoUserId: '550e8400-e29b-41d4-a716-446655440000',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject non-uuid autoUserId', () => {
-      const result = upgradeSchema.safeParse({
-        name: 'Test User',
-        email: 'test@example.com',
-        autoUserId: 'not-a-uuid',
-      });
-      expect(result.success).toBe(false);
-    });
-
-    it('should reject missing autoUserId', () => {
-      const result = upgradeSchema.safeParse({
-        name: 'Test User',
-        email: 'test@example.com',
-      });
-      expect(result.success).toBe(false);
-    });
-  });
-
   describe('updatePlanSchema', () => {
     it('should accept all valid plan values', () => {
       const plans = ['free', 'pro', 'max_5x', 'max_20x', 'team', 'enterprise'] as const;

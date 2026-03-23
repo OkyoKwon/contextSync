@@ -32,7 +32,7 @@ export const test = apiTest.extend<AuthFixture>({
     const storageValue = JSON.stringify({
       state: {
         token: testUser.token,
-        user: { id: testUser.id, email: testUser.email, name: testUser.name, isAuto: false },
+        user: { id: testUser.id, email: testUser.email, name: testUser.name },
         currentProjectId: testProjectId,
       },
       version: 0,

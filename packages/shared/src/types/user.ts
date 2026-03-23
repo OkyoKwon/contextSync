@@ -7,7 +7,6 @@ export interface User {
   readonly name: string;
   readonly avatarUrl: string | null;
   readonly role: UserRole;
-  readonly isAuto: boolean;
   readonly claudePlan: ClaudePlan;
   readonly hasAnthropicApiKey: boolean;
   readonly hasSupabaseToken: boolean;

@@ -39,11 +39,6 @@ interface ApiClient {
   patch<T>(path: string, body: unknown, token?: string): Promise<T>;
   del<T>(path: string, token?: string): Promise<T>;
   login(name: string, email: string): Promise<LoginResult>;
-  autoLogin(): Promise<LoginResult>;
-  upgrade(
-    token: string,
-    input: { name: string; email: string; autoUserId: string },
-  ): Promise<LoginResult>;
   createProject(
     token: string,
     input: { name: string; description?: string },
@@ -172,9 +167,6 @@ function createApiClient(): ApiClient {
     del: <T>(path: string, token?: string) => request<T>('DELETE', path, undefined, token),
     login: (name: string, email: string) =>
       request<LoginResult>('POST', '/auth/login', { name, email }),
-    autoLogin: () => request<LoginResult>('POST', '/auth/auto'),
-    upgrade: (token: string, input: { name: string; email: string; autoUserId: string }) =>
-      request<LoginResult>('POST', '/auth/upgrade', input, token),
     createProject: (token: string, input: { name: string; description?: string }) =>
       request<CreateProjectResult>('POST', '/projects', input, token),
     importSession: (token: string, projectId: string, filePath: string) =>

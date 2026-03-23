@@ -35,15 +35,6 @@ describe('authApi', () => {
     expect(api.post).toHaveBeenCalledWith('/auth/identify/select', { userId: 'user-123' });
   });
 
-  it('upgrade calls POST /auth/upgrade', async () => {
-    await authApi.upgrade('John', 'john@test.com', 'auto-1');
-    expect(api.post).toHaveBeenCalledWith('/auth/upgrade', {
-      name: 'John',
-      email: 'john@test.com',
-      autoUserId: 'auto-1',
-    });
-  });
-
   it('refresh calls POST /auth/refresh', async () => {
     await authApi.refresh();
     expect(api.post).toHaveBeenCalledWith('/auth/refresh');

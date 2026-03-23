@@ -10,6 +10,14 @@ AI development context hub — manage sessions, PRD analysis, and plans for indi
 - **pnpm** — `corepack enable` (ships with Node.js)
 - **Docker** — for local PostgreSQL (`docker compose up -d`)
 
+macOS install (Homebrew):
+
+```bash
+brew install node@22 && brew install --cask docker && corepack enable
+```
+
+> Docker Desktop 설치 후 앱을 한 번 실행해야 `docker` CLI가 활성화됩니다.
+
 ```bash
 git clone <repo> && cd contextSync
 pnpm setup                                  # One command: install + DB + migrate + seed

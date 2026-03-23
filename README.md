@@ -90,9 +90,29 @@ Role-based access control (Owner / Member). Invite teammates and share projects 
 
 ### Prerequisites
 
-- **Node.js 22** (see [.nvmrc](.nvmrc) — run `nvm use`)
-- **pnpm 9+** (`corepack enable`)
-- **Docker** (for personal and team-host modes only — not needed for team-member)
+- **Homebrew** — macOS package manager
+- **Node.js 22+** — JavaScript runtime
+- **pnpm** — package manager (enabled via Node.js built-in Corepack)
+- **Docker** — for PostgreSQL container (not needed for team-member mode)
+
+<details>
+<summary>macOS one-command install</summary>
+
+```bash
+# 1. Homebrew (skip if already installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 2. Node.js 22 + Docker Desktop
+brew install node@22
+brew install --cask docker
+
+# 3. Enable pnpm
+corepack enable
+```
+
+> After installing Docker Desktop, launch the app once to activate the `docker` CLI.
+
+</details>
 
 ### Quick Setup (One Command)
 

@@ -10,7 +10,6 @@ const mockUser: User = {
   name: 'Test User',
   avatarUrl: null,
   role: 'owner',
-  isAuto: false,
   claudePlan: 'free',
   hasAnthropicApiKey: false,
   hasSupabaseToken: false,

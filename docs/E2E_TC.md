@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **142 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **134 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -32,29 +32,7 @@
 | 7   | AUTH-003 | Empty field submission is blocked                         | Empty field submission is blocked                         | URL remains at `/login`                         |
 | 8   | AUTH-004 | Authenticated user visiting /login redirects to dashboard | Authenticated user visiting /login redirects to dashboard | URL → `/dashboard`                              |
 
-### 2-2. Auto User
-
-**File:** `e2e/tests/auth/auto-user.spec.ts` (4 TC)
-
-| #   | TC ID    | Test Name                                        | Description                                         | Assertions                             |
-| --- | -------- | ------------------------------------------------ | --------------------------------------------------- | -------------------------------------- |
-| 9   | AUTO-001 | Auto login creates user with is_auto=true        | Auto-login creates an auto user                     | Email contains `@local`, name verified |
-| 10  | AUTO-002 | Auto user can create project                     | Auto user can create projects                       | project.id exists                      |
-| 11  | AUTO-003 | Auto user is blocked from generating join codes  | Auto user blocked from generating join codes (403)  | status === 403, error message verified |
-| 12  | AUTO-004 | Auto user is blocked from removing collaborators | Auto user blocked from removing collaborators (403) | status === 403, error message verified |
-
-### 2-3. Auto User Upgrade
-
-**File:** `e2e/tests/auth/upgrade.spec.ts` (4 TC)
-
-| #   | TC ID    | Test Name                                   | Description                                         | Assertions                                  |
-| --- | -------- | ------------------------------------------- | --------------------------------------------------- | ------------------------------------------- |
-| 13  | UPGR-001 | Upgrade auto user with new email            | Upgrade auto user with new email                    | Email/name changed after upgrade            |
-| 14  | UPGR-002 | Upgraded user can generate join codes       | Upgraded user can generate join codes               | joinCode exists                             |
-| 15  | UPGR-003 | Upgrade with existing email merges data     | Upgrading with existing user's email merges data    | Returns existing user ID, owns all projects |
-| 16  | UPGR-004 | Upgrade already-upgraded user returns error | Re-upgrading an already upgraded user returns error | status === 400                              |
-
-### 2-4. Auth Guard
+### 2-2. Auth Guard
 
 **File:** `e2e/tests/auth/auth-guard.spec.ts` (6 TC)
 

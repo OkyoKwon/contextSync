@@ -3,7 +3,6 @@ import {
   loginSchema,
   identifySchema,
   identifySelectSchema,
-  upgradeSchema,
   updatePlanSchema,
   updateApiKeySchema,
   updateSupabaseTokenSchema,
@@ -12,8 +11,6 @@ import {
   findOrCreateByEmail,
   findOrCreateByName,
   findUserById,
-  createAutoUser,
-  upgradeAutoUser,
   updateUserPlan,
   updateApiKey,
   deleteApiKey,
@@ -81,17 +78,6 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     return reply.send(ok({ token, user }));
   });
 
-  app.post('/auto', async (_request, reply) => {
-    const user = await createAutoUser(app.localDb);
-
-    const token = app.jwt.sign(
-      { userId: user.id, email: user.email },
-      { expiresIn: app.env.JWT_EXPIRES_IN },
-    );
-
-    return reply.send(ok({ token, user }));
-  });
-
   app.get('/me', { preHandler: [app.authenticate] }, async (request, reply) => {
     const user = await findUserById(app.localDb, request.user.userId);
     if (!user) {
@@ -154,22 +140,5 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   app.delete('/me/supabase-token', { preHandler: [app.authenticate] }, async (request, reply) => {
     const user = await deleteSupabaseToken(app.localDb, request.user.userId);
     return reply.send(ok(user));
-  });
-
-  app.post('/upgrade', { preHandler: [app.authenticate] }, async (request, reply) => {
-    const parsed = upgradeSchema.safeParse(request.body);
-    if (!parsed.success) {
-      const message = parsed.error.errors.map((e) => e.message).join(', ');
-      return reply.status(400).send(fail(message));
-    }
-
-    const user = await upgradeAutoUser(app.localDb, parsed.data);
-
-    const token = app.jwt.sign(
-      { userId: user.id, email: user.email },
-      { expiresIn: app.env.JWT_EXPIRES_IN },
-    );
-
-    return reply.send(ok({ token, user }));
   });
 };

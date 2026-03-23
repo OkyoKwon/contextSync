@@ -167,23 +167,6 @@ export const ko: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code (CLI)는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 다른 AI 도구(claude.ai 웹, Cursor, Windsurf 등)의 세션은 Import 버튼으로 수동 업로드할 수 있습니다.',
 
-  // Upgrade
-  'upgrade.modal.title': '계정 설정',
-  'upgrade.modal.description': '팀 기능을 사용하려면 이름과 이메일을 입력하세요',
-  'upgrade.modal.submit': '계정 설정 완료',
-  'upgrade.banner': '팀 기능을 사용하려면 계정을 설정하세요',
-  'upgrade.settings.title': '이메일 연결',
-  'upgrade.settings.description':
-    '이메일을 연결하면 팀 기능을 사용하고 다른 기기에서도 접근할 수 있습니다.',
-  'upgrade.settings.benefit.invite': '팀 초대 받기',
-  'upgrade.settings.benefit.notification': '알림 수신',
-  'upgrade.settings.benefit.multiDevice': '다른 기기에서 접근',
-  'upgrade.settings.cta': '이메일 연결',
-
-  // User Dropdown
-  'user.localUser': '로컬 사용자',
-  'user.linkEmail': '이메일 연결',
-
   // App Entry
   'app.connectionError': '서버에 연결할 수 없습니다',
   'app.retry': '재시도',

@@ -1,6 +1,5 @@
 import fjwt from '@fastify/jwt';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { fail } from '../lib/api-response.js';
 
 export interface JwtPayload {
   readonly userId: string;
@@ -23,16 +22,6 @@ export async function registerJwt(app: FastifyInstance, secret: string): Promise
       await request.jwtVerify();
     } catch {
       return reply.status(401).send({ success: false, data: null, error: 'Unauthorized' });
-    }
-
-    const user = await app.db
-      .selectFrom('users')
-      .select('is_auto')
-      .where('id', '=', request.user.userId)
-      .executeTakeFirst();
-
-    if (user?.is_auto) {
-      return reply.status(403).send(fail('Team features require account upgrade'));
     }
   });
 }

@@ -386,7 +386,7 @@ api.upload<T>(path, file)        // POST FormData (file upload)
 ```
 components/
   ui/           # Generic UI (Button, Card, Input, Modal, ...)
-  auth/         # Login, AppEntryRedirect, UpgradeModal
+  auth/         # IdentifyPage, AppEntryRedirect
   layout/       # AppLayout, Header, Sidebar, ProjectSelector, JoinProjectDialog
   projects/     # Project creation/editing
   sessions/     # Session list, detail, import
