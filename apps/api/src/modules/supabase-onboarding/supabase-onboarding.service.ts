@@ -39,6 +39,62 @@ interface SupabaseCreateProjectResponse {
   readonly created_at: string;
 }
 
+interface SupabasePoolerConfig {
+  readonly database_type: string;
+  readonly db_host: string;
+  readonly db_port: number;
+  readonly db_user: string;
+  readonly db_name: string;
+  readonly pool_mode: string;
+}
+
+const SUPABASE_ERROR_MAPPINGS: readonly {
+  readonly pattern: RegExp;
+  readonly userMessage: string;
+}[] = [
+  {
+    pattern: /tenant or user not found/i,
+    userMessage:
+      'Your Supabase access token appears to be stale or invalid. Please remove your token and re-save a new one from supabase.com/dashboard/account/tokens.',
+  },
+  {
+    pattern: /project .* not found/i,
+    userMessage:
+      'The specified Supabase project could not be found. Please verify the project exists in your Supabase dashboard.',
+  },
+];
+
+const CONNECTION_ERROR_MAPPINGS: readonly {
+  readonly pattern: RegExp;
+  readonly userMessage: string;
+}[] = [
+  {
+    pattern: /tenant or user not found/i,
+    userMessage:
+      'Database connection rejected by Supabase pooler. Please verify your database password is correct (Supabase Dashboard → Project Settings → Database).',
+  },
+  {
+    pattern: /password authentication failed/i,
+    userMessage:
+      'Incorrect database password. You can find or reset it in Supabase Dashboard → Project Settings → Database.',
+  },
+  {
+    pattern: /ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i,
+    userMessage:
+      'Could not reach the Supabase database. The project may still be initializing — please try again in a moment.',
+  },
+];
+
+export function resolveConnectionErrorMessage(rawError: string): string {
+  const match = CONNECTION_ERROR_MAPPINGS.find((m) => m.pattern.test(rawError));
+  return match?.userMessage ?? `Connection test failed: ${rawError}`;
+}
+
+export function resolveSupabaseErrorMessage(rawMessage: string): string {
+  const match = SUPABASE_ERROR_MAPPINGS.find((m) => m.pattern.test(rawMessage));
+  return match?.userMessage ?? rawMessage;
+}
+
 async function supabaseFetch<T>(token: string, path: string, options?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -71,8 +127,8 @@ async function supabaseFetch<T>(token: string, path: string, options?: RequestIn
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { message?: string };
-    const message = body.message ?? `Supabase API error (${response.status})`;
-    throw new AppError(message, response.status);
+    const rawMessage = body.message ?? `Supabase API error (${response.status})`;
+    throw new AppError(resolveSupabaseErrorMessage(rawMessage), response.status);
   }
 
   return response.json() as Promise<T>;
@@ -107,6 +163,34 @@ export function buildConnectionUrl(projectRef: string, dbPassword: string, regio
   return `postgresql://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-${region}.pooler.supabase.com:6543/postgres`;
 }
 
+async function getPoolerConfig(
+  token: string,
+  projectRef: string,
+): Promise<SupabasePoolerConfig | null> {
+  try {
+    const configs = await supabaseFetch<readonly SupabasePoolerConfig[]>(
+      token,
+      `/projects/${projectRef}/config/database/pooler`,
+    );
+    // API returns an array; pick the PRIMARY entry (or first available)
+    return configs.find((c) => c.database_type === 'PRIMARY') ?? configs[0] ?? null;
+  } catch {
+    // Pooler config endpoint may not be available; fall back to manual URL
+    return null;
+  }
+}
+
+function buildConnectionUrlFromPooler(
+  poolerConfig: SupabasePoolerConfig,
+  dbPassword: string,
+): string {
+  const user = poolerConfig.db_user;
+  const host = poolerConfig.db_host;
+  const port = poolerConfig.db_port;
+  const name = poolerConfig.db_name;
+  return `postgresql://${user}:${encodeURIComponent(dbPassword)}@${host}:${port}/${name}`;
+}
+
 export async function createSupabaseProject(
   supabaseToken: string,
   input: AutoSetupNewInput,
@@ -129,6 +213,36 @@ export async function createSupabaseProject(
     createdAt: result.created_at,
     dbPassword: input.dbPassword,
   };
+}
+
+async function validateAndListProjects(token: string): Promise<readonly SupabaseProject[]> {
+  try {
+    return await listProjects(token);
+  } catch (err) {
+    if (err instanceof AppError && err.statusCode === 401) throw err;
+    if (err instanceof AppError) {
+      throw new AppError(`Failed to access your Supabase account. ${err.message}`, 400);
+    }
+    throw new AppError(
+      'Supabase token validation failed. Please remove your token and re-save a new one.',
+      400,
+    );
+  }
+}
+
+async function validateSupabaseToken(token: string): Promise<void> {
+  try {
+    await supabaseFetch<readonly unknown[]>(token, '/projects');
+  } catch (err) {
+    if (err instanceof AppError && (err.statusCode === 401 || err.statusCode === 403)) throw err;
+    if (err instanceof AppError) {
+      throw new AppError(`Token validation failed: ${err.message}`, 400);
+    }
+    throw new AppError(
+      'Supabase token validation failed. Please remove your token and re-save a new one.',
+      400,
+    );
+  }
 }
 
 async function resolveSupabaseToken(db: Db, userId: string, jwtSecret: string): Promise<string> {
@@ -156,8 +270,8 @@ export async function autoSetupExisting(
 ) {
   const supabaseToken = await resolveSupabaseToken(db, userId, jwtSecret);
 
-  // Find the project in user's Supabase account to get region
-  const projects = await listProjects(supabaseToken);
+  // Validate token and fetch projects in one call
+  const projects = await validateAndListProjects(supabaseToken);
   const target = projects.find((p) => p.ref === input.supabaseProjectRef);
   if (!target) {
     throw new AppError('Supabase project not found in your account', 404);
@@ -170,15 +284,19 @@ export async function autoSetupExisting(
     );
   }
 
-  const connectionUrl = buildConnectionUrl(target.ref, input.dbPassword, target.region);
+  // Prefer pooler config from Supabase API for accurate host/port
+  const poolerConfig = await getPoolerConfig(supabaseToken, target.ref);
+  const connectionUrl = poolerConfig
+    ? buildConnectionUrlFromPooler(poolerConfig, input.dbPassword)
+    : buildConnectionUrl(target.ref, input.dbPassword, target.region);
 
   // Test connection before switching
   const testResult = await testConnection(connectionUrl, true);
   if (!testResult.success) {
-    throw new AppError(
-      testResult.error ?? 'Connection test failed. Please check your database password.',
-      400,
-    );
+    const message = testResult.error
+      ? resolveConnectionErrorMessage(testResult.error)
+      : 'Connection test failed. Please check your database password.';
+    throw new AppError(message, 400);
   }
 
   return switchToRemote(connectionUrl, true);
@@ -192,10 +310,17 @@ export async function createAndSetup(
 ): Promise<SwitchToRemoteResult | CreateSetupRecovery> {
   const supabaseToken = await resolveSupabaseToken(db, userId, jwtSecret);
 
+  // Validate token before irreversible project creation
+  await validateSupabaseToken(supabaseToken);
+
   // Create the project on Supabase — this is irreversible
   const created = await createSupabaseProject(supabaseToken, input);
 
-  const connectionUrl = buildConnectionUrl(created.ref, created.dbPassword, created.region);
+  // Try pooler config; new projects may not have it ready yet, so fall back
+  const poolerConfig = await getPoolerConfig(supabaseToken, created.ref);
+  const connectionUrl = poolerConfig
+    ? buildConnectionUrlFromPooler(poolerConfig, created.dbPassword)
+    : buildConnectionUrl(created.ref, created.dbPassword, created.region);
 
   // New projects may take a moment to become available.
   // We retry the connection test a few times with a short delay.
