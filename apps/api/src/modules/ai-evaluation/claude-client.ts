@@ -1,7 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { EvaluationDimension, EvidenceSentiment } from '@context-sync/shared';
+import type {
+  EvaluationDimension,
+  EvidenceSentiment,
+  RateLimitSnapshot,
+} from '@context-sync/shared';
 import { EVALUATION_DIMENSIONS } from '@context-sync/shared';
-import { callWithRetry } from '../../lib/claude-utils.js';
+import { callWithRetryAndHeaders } from '../../lib/claude-utils.js';
 
 const MAX_PROMPT_CHAR_LENGTH = 2000;
 const MAX_TOTAL_CHARS = 80_000;
@@ -37,6 +41,7 @@ export interface EvaluationAnalysisResult {
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly modelUsed: string;
+  readonly rateLimits: RateLimitSnapshot | null;
 }
 
 const SYSTEM_PROMPT = `You are an AI utilization skills evaluator. Your task is to analyze a user's prompts/messages sent to an AI coding assistant and evaluate their proficiency across 5 dimensions.
@@ -151,9 +156,14 @@ export async function analyzeEvaluation(
   const sampled = sampleMessages(messages);
   const userMessage = buildUserMessage(sampled, sessionCount, messages.length);
 
-  const response = await callWithRetry(client, model, SYSTEM_PROMPT, userMessage);
+  const { message, rateLimits } = await callWithRetryAndHeaders(
+    client,
+    model,
+    SYSTEM_PROMPT,
+    userMessage,
+  );
 
-  const text = response.content
+  const text = message.content
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
     .map((block) => block.text)
     .join('');
@@ -162,9 +172,10 @@ export async function analyzeEvaluation(
 
   return {
     ...parsed,
-    inputTokens: response.usage.input_tokens,
-    outputTokens: response.usage.output_tokens,
+    inputTokens: message.usage.input_tokens,
+    outputTokens: message.usage.output_tokens,
     modelUsed: model,
+    rateLimits,
   };
 }
 

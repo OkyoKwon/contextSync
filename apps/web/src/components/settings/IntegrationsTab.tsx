@@ -5,6 +5,7 @@ import { authApi } from '../../api/auth.api';
 import { useDatabaseStatus } from '../../hooks/use-database-status';
 import { useCollaborators } from '../../hooks/use-collaborators';
 import { SupabaseAutoSetup } from './supabase-setup/SupabaseAutoSetup';
+import { SelfHostedSetup } from './self-hosted-setup/SelfHostedSetup';
 import { TeamSetupCta } from './TeamSetupCta';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -144,9 +145,12 @@ function ApiKeySection() {
   );
 }
 
+type RemoteProvider = 'supabase' | 'self-hosted';
+
 function DatabaseRemoteSection() {
   const [justCompleted, setJustCompleted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [provider, setProvider] = useState<RemoteProvider>('supabase');
   const { data: dbStatus } = useDatabaseStatus();
   const currentProjectId = useAuthStore((s) => s.currentProjectId);
   const { data: collaboratorsData } = useCollaborators(currentProjectId ?? '');
@@ -162,11 +166,11 @@ function DatabaseRemoteSection() {
       >
         <div className="flex items-center gap-3">
           <div>
-            <h3 className="text-lg font-semibold">Database Remote (Supabase)</h3>
+            <h3 className="text-lg font-semibold">Remote Database</h3>
             <p className="mt-1 text-sm text-text-tertiary">
               {isRemote
                 ? 'Connected — restart the API server for changes to take effect.'
-                : 'Connect a Supabase project as your remote database.'}
+                : 'Connect a remote PostgreSQL database for team collaboration.'}
             </p>
           </div>
         </div>
@@ -196,8 +200,35 @@ function DatabaseRemoteSection() {
               <TeamSetupCta hasCollaborators={collaborators.length > 0} />
             </>
           ) : (
-            <div className="mt-4">
-              <SupabaseAutoSetup onAutoSetupComplete={() => setJustCompleted(true)} />
+            <div className="mt-4 space-y-4">
+              {/* Provider selector tabs */}
+              <div className="flex rounded-lg bg-page p-0.5">
+                {[
+                  { key: 'supabase' as const, label: 'Supabase' },
+                  { key: 'self-hosted' as const, label: 'Self-Hosted PostgreSQL' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setProvider(key)}
+                    className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                      provider === key
+                        ? 'bg-surface-hover text-text-primary shadow-sm'
+                        : 'text-text-tertiary hover:text-text-secondary'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {provider === 'supabase' && (
+                <SupabaseAutoSetup onAutoSetupComplete={() => setJustCompleted(true)} />
+              )}
+
+              {provider === 'self-hosted' && (
+                <SelfHostedSetup onSetupComplete={() => setJustCompleted(true)} />
+              )}
             </div>
           )}
         </>

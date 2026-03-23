@@ -1,13 +1,11 @@
 import crypto from 'node:crypto';
-import { readFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
-import { join } from 'node:path';
 import type { Db } from '../../database/client.js';
 import type { LoginInput, UpgradeInput } from './auth.schema.js';
 import type { User, ClaudePlan } from '@context-sync/shared';
 import { CLAUDE_PLANS } from '@context-sync/shared';
 import { AppError } from '../../plugins/error-handler.plugin.js';
 import { encrypt, decrypt } from '../../lib/encryption.js';
+import { detectPlan } from '../quota/quota.service.js';
 
 export async function findOrCreateByEmail(db: Db, input: LoginInput): Promise<User> {
   const existing = await db
@@ -182,11 +180,15 @@ export async function findUserById(db: Db, id: string): Promise<User | null> {
   const user = toUser(row);
 
   if (user.claudePlan === 'free') {
-    const detected = await detectClaudePlanFromCli();
-    if (detected !== 'free') {
+    const detected = await detectPlan(db, id);
+    if (detected.plan !== 'free') {
       const updated = await db
         .updateTable('users')
-        .set({ claude_plan: detected, updated_at: new Date() })
+        .set({
+          claude_plan: detected.plan,
+          plan_detection_source: detected.source,
+          updated_at: new Date(),
+        })
         .where('id', '=', id)
         .returningAll()
         .executeTakeFirstOrThrow();
@@ -195,33 +197,6 @@ export async function findUserById(db: Db, id: string): Promise<User | null> {
   }
 
   return user;
-}
-
-async function detectClaudePlanFromCli(): Promise<ClaudePlan> {
-  try {
-    const credentialsPath = join(homedir(), '.claude', '.credentials.json');
-    const raw = await readFile(credentialsPath, 'utf-8');
-    const credentials = JSON.parse(raw) as {
-      claudeAiOauth?: {
-        subscriptionType?: string;
-        rateLimitTier?: string;
-      };
-    };
-
-    const { subscriptionType, rateLimitTier } = credentials.claudeAiOauth ?? {};
-
-    if (subscriptionType === 'max') {
-      if (rateLimitTier?.includes('20x')) return 'max_20x';
-      return 'max_5x';
-    }
-    if (subscriptionType === 'pro') return 'pro';
-    if (subscriptionType === 'team') return 'team';
-    if (subscriptionType === 'enterprise') return 'enterprise';
-
-    return 'free';
-  } catch {
-    return 'free';
-  }
 }
 
 export async function updateUserPlan(

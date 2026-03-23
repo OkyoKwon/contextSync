@@ -529,7 +529,25 @@ Default tab: `general`. Tab selection persisted via `?tab=` query parameter.
 - **`SettingsLayout.tsx`** — Main layout with sidebar tab list + content area
 - **`GeneralTab.tsx`** — Project name/description editing, Claude plan, API key management
 - **`TeamTab.tsx`** — Collaborator list, join code management (`JoinCodeShare`), team setup CTA
-- **`IntegrationsTab.tsx`** — Supabase onboarding, remote DB setup
+- **`IntegrationsTab.tsx`** — Remote DB setup with provider selector (Supabase / Self-Hosted PostgreSQL)
 - **`DangerZoneTab.tsx`** — Project deletion
 - **`JoinCodeShare.tsx`** — Join code display, copy, regenerate, delete
 - **`TeamSetupCta.tsx`** — CTA for inviting team members
+
+### Remote Database Provider Selector
+
+IntegrationsTab's `DatabaseRemoteSection` uses a tab selector to switch between two providers:
+
+| Provider               | Component           | Description                              |
+| ---------------------- | ------------------- | ---------------------------------------- |
+| Supabase               | `SupabaseAutoSetup` | Token-based setup with project selection |
+| Self-Hosted PostgreSQL | `SelfHostedSetup`   | Direct connection URL with SSL toggle    |
+
+### SelfHostedSetup Component (`components/settings/self-hosted-setup/`)
+
+Two-step form following the same StepNumber pattern as SupabaseAutoSetup:
+
+- **Step 1 — Connection Details:** PostgreSQL URL input + SSL toggle + "Test Connection" button. Shows latency/version on success.
+- **Step 2 — Connect Database:** Enabled after successful test. Runs migrations on remote DB and updates `.env`.
+
+Reuses: `StepNumber`, `Input`, `Button`, `Badge`, `Spinner` from shared UI components.

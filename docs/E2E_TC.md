@@ -437,6 +437,23 @@
 | 137 | CLEAN-011 | Second login skips onboarding                               | 프로젝트 보유 유저 재로그인 → `/dashboard` 직행 | URL contains '/dashboard'  |
 | 138 | CLEAN-012 | Onboarding skip works                                       | 새 유저 → 온보딩 Skip → `/dashboard` 도달       | URL contains '/dashboard'  |
 
+### 21.3 Team Collaboration
+
+**File:** `e2e/tests/clean-env/team-collaboration.spec.ts` (10 TC)
+
+| #   | TC ID     | Test Name                                      | Description                                                                | Assertions                                        |
+| --- | --------- | ---------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------- |
+| 139 | CLEAN-013 | Remote DB — Self-Hosted setup form UI          | Settings > Integrations > Self-Hosted PostgreSQL 탭 선택 → URL 입력 → Test | Connection successful, latency/version 표시       |
+| 140 | CLEAN-014 | Remote DB — test-connection API                | POST /setup/test-connection → clean-env DB URL                             | success: true, latencyMs > 0, version: PostgreSQL |
+| 141 | CLEAN-015 | Owner generates Join Code via UI               | Settings > Team > Generate Join Code 클릭                                  | 6자리+ Join Code 표시                             |
+| 142 | CLEAN-016 | Member joins project via Join Code UI          | 사이드바 Join → JoinProjectDialog → Join Code 입력 → Join                  | 프로젝트 참여 확인 (API)                          |
+| 143 | CLEAN-017 | Collaborator list shows both users             | Owner Settings > Team → Members 리스트                                     | Owner + Member 2명 표시, member role badge        |
+| 144 | CLEAN-018 | Owner imports session                          | API로 sample-session.json 임포트 → Dashboard에서 확인                      | 'Auth Feature Implementation' 표시                |
+| 145 | CLEAN-019 | Member imports session with conflict detection | API로 sample-session-2.json 임포트                                         | detectedConflicts > 0                             |
+| 146 | CLEAN-020 | Dashboard shows sessions from both users       | Owner Dashboard 타임라인에 양쪽 세션                                       | 두 세션 제목 + 두 유저 이름 표시                  |
+| 147 | CLEAN-021 | Conflict details include overlapping paths     | GET /projects/:id/conflicts                                                | overlappingPaths에 src/auth/login.ts 포함         |
+| 148 | CLEAN-022 | Team stats show activity from both users       | GET /projects/:id/team-stats                                               | 2명 유저 활동 데이터                              |
+
 ---
 
 ## Test Infrastructure

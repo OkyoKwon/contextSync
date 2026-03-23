@@ -52,7 +52,7 @@ apps/
       database/     client.ts (Kysely), types.ts, migrations/
       plugins/      auth, cors, error-handler
       lib/          api-response.ts (ok, fail, paginated)
-      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, invitations, ai-evaluation, admin, db-config, supabase-onboarding, setup
+      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, invitations, ai-evaluation, admin, db-config, supabase-onboarding, setup, quota
   web/          # React 19 SPA (Vite 6)
     src/
       api/          API client
@@ -112,7 +112,7 @@ Helpers: `ok(data)`, `fail(error)`, `paginated(data, meta)` — `apps/api/src/li
 ### Database
 
 - **Kysely** query builder (not a full ORM), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–025)
+- **Migrations:** `apps/api/src/database/migrations/` (001–026)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **Schema types:** `apps/api/src/database/types.ts`
 

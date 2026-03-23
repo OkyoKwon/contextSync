@@ -19,6 +19,7 @@ import { NotFoundError, ForbiddenError } from '../../plugins/error-handler.plugi
 import { assertProjectAccess, getUserRoleInProject } from '../projects/project.service.js';
 import * as evalRepo from './ai-evaluation.repository.js';
 import { analyzeEvaluation } from './claude-client.js';
+import { saveRateLimitSnapshot } from '../quota/quota.service.js';
 
 export async function triggerEvaluation(
   db: Db,
@@ -97,6 +98,11 @@ export async function triggerEvaluation(
       })),
       sessionCount,
     );
+
+    // Fire-and-forget: save rate limit snapshot
+    if (result.rateLimits) {
+      saveRateLimitSnapshot(db, requestingUserId, result.rateLimits).catch(() => {});
+    }
 
     // Create dimension records
     const dimensions = await evalRepo.createDimensions(

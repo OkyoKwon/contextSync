@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, renderHook, type RenderOptions } from '@testing-library/react';
+import { render, renderHook, type RenderOptions, type RenderResult } from '@testing-library/react';
 
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({
@@ -18,7 +18,7 @@ function createWrapper() {
   };
 }
 
-export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions) {
+export function renderWithProviders(ui: React.ReactElement, options?: RenderOptions): RenderResult {
   return render(ui, { wrapper: createWrapper(), ...options });
 }
 

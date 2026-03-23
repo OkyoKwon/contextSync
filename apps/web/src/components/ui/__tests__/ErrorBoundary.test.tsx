@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '../../../test/test-utils';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen } from '../../../test/test-utils';
 import { ErrorBoundary } from '../ErrorBoundary';
 
 function ThrowError({ shouldThrow }: { shouldThrow: boolean }) {

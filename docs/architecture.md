@@ -519,6 +519,22 @@ services:
 - **Team Host:** Admin runs `docker compose --profile team-host` with SSL certs.
 - **Team Member:** Point `DATABASE_URL` to the remote DB, set `RUN_MIGRATIONS=false`.
 
+### Self-Hosted PostgreSQL Setup Flow
+
+The frontend provides a Self-Hosted PostgreSQL option alongside Supabase in Settings > Integrations > Remote Database:
+
+1. User selects "Self-Hosted PostgreSQL" tab in the provider selector
+2. Enters `postgresql://...` connection URL + toggles SSL
+3. Clicks "Test Connection" → `POST /setup/test-connection` → returns latency/version
+4. Clicks "Connect" → `POST /setup/switch-to-remote` → runs migrations on remote DB, updates `.env`
+5. User restarts API server to apply the new `DATABASE_URL`
+
+**Backend endpoints** (no changes needed — `setup` module already supports this):
+
+- `GET /setup/status` — Returns `{ databaseMode, provider, host }`
+- `POST /setup/test-connection` — Tests arbitrary PostgreSQL URL
+- `POST /setup/switch-to-remote` — Migrates + updates `.env`
+
 Run `bash scripts/setup.sh` for an interactive setup wizard that configures the correct mode.
 
 ### GitHub Actions CI (`.github/workflows/ci.yml`)
