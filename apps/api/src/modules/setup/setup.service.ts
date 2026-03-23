@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { testConnection, type ConnectionTestResult } from '../../lib/test-connection.js';
+import { AppError } from '../../plugins/error-handler.plugin.js';
 
 export { testConnection, type ConnectionTestResult };
 
@@ -43,7 +44,7 @@ export async function switchToRemote(
   // 1. Test connection
   const testResult = await testConnection(connectionUrl, sslEnabled);
   if (!testResult.success) {
-    throw new Error(`Connection test failed: ${testResult.error}`);
+    throw new AppError(`Connection test failed: ${testResult.error}`, 400);
   }
 
   // 2. Run full migrations on the remote DB
@@ -83,7 +84,7 @@ export async function switchToRemote(
     }
 
     if (error) {
-      throw new Error(`Migration failed on remote database: ${String(error)}`);
+      throw new AppError(`Migration failed on remote database: ${String(error)}`, 500);
     }
 
     // 3. Update in-memory state (immediate effect) and persist to .env

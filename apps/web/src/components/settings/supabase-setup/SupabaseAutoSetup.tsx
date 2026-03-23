@@ -8,6 +8,7 @@ import {
   useSaveSupabaseToken,
   useDeleteSupabaseToken,
 } from '../../../hooks/use-supabase-onboarding';
+import { ApiError } from '../../../api/api-error';
 import { Button } from '../../ui/Button';
 import { Input } from '../../ui/Input';
 import { Badge } from '../../ui/Badge';
@@ -15,6 +16,11 @@ import { Spinner } from '../../ui/Spinner';
 import { StepNumber } from './StepNumber';
 import { ExistingProjectForm } from './ExistingProjectForm';
 import { NewProjectForm } from './NewProjectForm';
+
+interface RecoveryData {
+  readonly projectRef: string;
+  readonly region: string;
+}
 
 interface SupabaseAutoSetupProps {
   readonly onAutoSetupComplete: () => void;
@@ -52,6 +58,7 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
   const createAndSetupMutation = useSupabaseCreateAndSetup();
 
   const [error, setError] = useState<string | null>(null);
+  const [recovery, setRecovery] = useState<RecoveryData | null>(null);
 
   const handleSaveToken = () => {
     setError(null);
@@ -84,11 +91,35 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
 
   const handleCreateAndConnect = () => {
     setError(null);
+    setRecovery(null);
     createAndSetupMutation.mutate(
       { name: newName, dbPassword: newDbPassword, region: newRegion, organizationId: newOrgId },
       {
         onSuccess: () => onAutoSetupComplete(),
-        onError: (err) => setError(err instanceof Error ? err.message : 'Create and setup failed'),
+        onError: (err) => {
+          const message = err instanceof Error ? err.message : 'Create and setup failed';
+          setError(message);
+
+          if (err instanceof ApiError && err.data && typeof err.data === 'object') {
+            const data = err.data as Record<string, unknown>;
+            if (typeof data.projectRef === 'string' && typeof data.region === 'string') {
+              setRecovery({ projectRef: data.projectRef, region: data.region });
+            }
+          }
+        },
+      },
+    );
+  };
+
+  const handleRetryConnection = () => {
+    if (!recovery) return;
+    setError(null);
+    setRecovery(null);
+    autoSetupMutation.mutate(
+      { supabaseProjectRef: recovery.projectRef, dbPassword: newDbPassword },
+      {
+        onSuccess: () => onAutoSetupComplete(),
+        onError: (err) => setError(err instanceof Error ? err.message : 'Retry connection failed'),
       },
     );
   };
@@ -266,6 +297,20 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
             />
           </svg>
           <span>{error}</span>
+        </div>
+      )}
+
+      {/* Recovery banner — project created but connection/migration failed */}
+      {recovery && (
+        <div className="rounded-lg border border-yellow-500/20 bg-yellow-500/5 p-3 space-y-2">
+          <p className="text-sm text-yellow-300">
+            Your Supabase project was created successfully (
+            <span className="font-mono text-xs">{recovery.projectRef}</span>), but the connection
+            could not be established. You can retry the connection below.
+          </p>
+          <Button size="sm" onClick={handleRetryConnection} isLoading={autoSetupMutation.isPending}>
+            Retry Connection
+          </Button>
         </div>
       )}
 

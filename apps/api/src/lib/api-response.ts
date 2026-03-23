@@ -8,18 +8,15 @@ export function fail(error: string): ApiResponse<null> {
   return { success: false, data: null, error };
 }
 
-export function paginated<T>(
-  data: T,
-  meta: PaginationMeta,
-): ApiResponse<T> {
+export function failWithData<T>(error: string, data: T): ApiResponse<T> {
+  return { success: false, data, error };
+}
+
+export function paginated<T>(data: T, meta: PaginationMeta): ApiResponse<T> {
   return { success: true, data, error: null, meta };
 }
 
-export function buildPaginationMeta(
-  total: number,
-  page: number,
-  limit: number,
-): PaginationMeta {
+export function buildPaginationMeta(total: number, page: number, limit: number): PaginationMeta {
   return {
     total,
     page,

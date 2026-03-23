@@ -2,6 +2,7 @@ import type { ApiResponse } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
 import { useLoginModal } from '../hooks/use-login-modal';
 import { useUpgradeModal } from '../hooks/use-upgrade-modal';
+import { ApiError } from './api-error';
 
 const BASE_URL = '/api';
 
@@ -86,14 +87,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
       if (retryResponse.ok) {
         const data = (await retryResponse.json()) as ApiResponse<T>;
         if (!data.success && data.error) {
-          throw new Error(data.error);
+          throw new ApiError(data.error, retryResponse.status, data.data);
         }
         return data;
       }
     }
 
     useLoginModal.getState().openLoginModal();
-    throw new Error('Session expired. Please log in again.');
+    throw new ApiError('Session expired. Please log in again.', 401);
   }
 
   if (response.status === 403) {
@@ -102,19 +103,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
     if (typeof message === 'string' && message.includes('account upgrade')) {
       useUpgradeModal.getState().openUpgradeModal();
     }
-    throw new Error(message);
+    throw new ApiError(message, response.status, errorBody?.data ?? null);
   }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
     const message = errorBody?.error ?? `Request failed (${response.status})`;
-    throw new Error(message);
+    throw new ApiError(message, response.status, errorBody?.data ?? null);
   }
 
   const data = (await response.json()) as ApiResponse<T>;
 
   if (!data.success && data.error) {
-    throw new Error(data.error);
+    throw new ApiError(data.error, response.status, data.data);
   }
 
   return data;

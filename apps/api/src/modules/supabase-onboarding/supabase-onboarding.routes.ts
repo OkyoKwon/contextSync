@@ -1,5 +1,5 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { ok, fail } from '../../lib/api-response.js';
+import { ok, fail, failWithData } from '../../lib/api-response.js';
 import { autoSetupExistingSchema, autoSetupNewSchema } from './supabase-onboarding.schema.js';
 import {
   getProjectsForUser,
@@ -51,6 +51,15 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
         app.env.JWT_SECRET,
         parsed.data,
       );
+
+      if ('recovered' in result) {
+        return reply
+          .status(504)
+          .send(
+            failWithData(result.error, { projectRef: result.projectRef, region: result.region }),
+          );
+      }
+
       return reply.send(ok(result));
     },
   );

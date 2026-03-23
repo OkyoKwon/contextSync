@@ -2,9 +2,16 @@ import type { Db } from '../../database/client.js';
 import type { SupabaseProject, SupabaseOrganization } from '@context-sync/shared';
 import { getSupabaseToken } from '../auth/auth.service.js';
 import { testConnection } from '../../lib/test-connection.js';
-import { switchToRemote } from '../setup/setup.service.js';
+import { switchToRemote, type SwitchToRemoteResult } from '../setup/setup.service.js';
 import { AppError } from '../../plugins/error-handler.plugin.js';
 import type { AutoSetupExistingInput, AutoSetupNewInput } from './supabase-onboarding.schema.js';
+
+export interface CreateSetupRecovery {
+  readonly recovered: true;
+  readonly projectRef: string;
+  readonly region: string;
+  readonly error: string;
+}
 
 const SUPABASE_API_BASE = 'https://api.supabase.com/v1';
 
@@ -33,14 +40,20 @@ interface SupabaseCreateProjectResponse {
 }
 
 async function supabaseFetch<T>(token: string, path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${SUPABASE_API_BASE}${path}`, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${SUPABASE_API_BASE}${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw new AppError('Failed to connect to Supabase API. Check your network connection.', 502);
+  }
 
   if (response.status === 401) {
     throw new AppError(
@@ -119,7 +132,16 @@ export async function createSupabaseProject(
 }
 
 async function resolveSupabaseToken(db: Db, userId: string, jwtSecret: string): Promise<string> {
-  const token = await getSupabaseToken(db, userId, jwtSecret);
+  let token: string | null;
+  try {
+    token = await getSupabaseToken(db, userId, jwtSecret);
+  } catch (err) {
+    if (err instanceof AppError) throw err;
+    throw new AppError(
+      'Failed to decrypt Supabase token. Try removing and re-saving your token.',
+      400,
+    );
+  }
   if (!token) {
     throw new AppError('No Supabase access token configured. Please save your token first.', 400);
   }
@@ -160,10 +182,10 @@ export async function createAndSetup(
   userId: string,
   jwtSecret: string,
   input: AutoSetupNewInput,
-) {
+): Promise<SwitchToRemoteResult | CreateSetupRecovery> {
   const supabaseToken = await resolveSupabaseToken(db, userId, jwtSecret);
 
-  // Create the project on Supabase
+  // Create the project on Supabase — this is irreversible
   const created = await createSupabaseProject(supabaseToken, input);
 
   const connectionUrl = buildConnectionUrl(created.ref, created.dbPassword, created.region);
@@ -174,21 +196,35 @@ export async function createAndSetup(
   const RETRY_DELAY_MS = 6_000;
   let lastError: string | null = null;
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const testResult = await testConnection(connectionUrl, true);
-    if (testResult.success) {
-      return switchToRemote(connectionUrl, true);
+  try {
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const testResult = await testConnection(connectionUrl, true);
+      if (testResult.success) {
+        return switchToRemote(connectionUrl, true);
+      }
+      lastError = testResult.error;
+      if (attempt < MAX_RETRIES - 1) {
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+      }
     }
-    lastError = testResult.error;
-    if (attempt < MAX_RETRIES - 1) {
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
-    }
-  }
 
-  throw new AppError(
-    `Supabase project created but database is not yet reachable: ${lastError ?? 'Connection timed out'}. The project may still be initializing — try again in a minute.`,
-    504,
-  );
+    // All retries exhausted — return recovery data instead of throwing
+    return {
+      recovered: true,
+      projectRef: created.ref,
+      region: created.region,
+      error: `Database is not yet reachable: ${lastError ?? 'Connection timed out'}. The project may still be initializing — try again in a minute.`,
+    };
+  } catch (err) {
+    // switchToRemote or unexpected failure after project creation
+    const message = err instanceof Error ? err.message : 'Connection setup failed';
+    return {
+      recovered: true,
+      projectRef: created.ref,
+      region: created.region,
+      error: message,
+    };
+  }
 }
 
 export async function getProjectsForUser(
