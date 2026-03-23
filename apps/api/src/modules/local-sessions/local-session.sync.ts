@@ -146,6 +146,7 @@ export async function recalculateTokenUsage(
         tokens_used: msg.tokensUsed ?? null,
         model_used: msg.modelUsed ?? null,
         sort_order: index,
+        ...(msg.timestamp ? { created_at: new Date(msg.timestamp) } : {}),
       }));
 
       if (values.length > 0) {

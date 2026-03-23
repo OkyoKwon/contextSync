@@ -19,7 +19,10 @@ function makeRecord(overrides: Record<string, unknown>): string {
   });
 }
 
-function makeUserRecord(content: string, overrides: Record<string, unknown> = {}): string {
+function makeUserRecord(
+  content: string | { type: string; text?: string; source?: unknown }[],
+  overrides: Record<string, unknown> = {},
+): string {
   return makeRecord({
     type: 'user',
     requestId: undefined,
@@ -56,15 +59,12 @@ describe('parseClaudeCodeSession', () => {
   it('includes cache tokens in tokensUsed', () => {
     const raw = [
       makeUserRecord('Hello'),
-      makeAssistantRecord(
-        [{ type: 'text', text: 'Hi there' }],
-        {
-          input_tokens: 5,
-          output_tokens: 20,
-          cache_creation_input_tokens: 3000,
-          cache_read_input_tokens: 10000,
-        },
-      ),
+      makeAssistantRecord([{ type: 'text', text: 'Hi there' }], {
+        input_tokens: 5,
+        output_tokens: 20,
+        cache_creation_input_tokens: 3000,
+        cache_read_input_tokens: 10000,
+      }),
     ].join('\n');
 
     const { parsed } = parseClaudeCodeSession(raw);
@@ -132,12 +132,22 @@ describe('parseClaudeCodeSession', () => {
       makeUserRecord('Explain and fix'),
       makeAssistantRecord(
         [{ type: 'text', text: 'Here is the explanation' }],
-        { input_tokens: 2, output_tokens: 50, cache_creation_input_tokens: 500, cache_read_input_tokens: 15000 },
+        {
+          input_tokens: 2,
+          output_tokens: 50,
+          cache_creation_input_tokens: 500,
+          cache_read_input_tokens: 15000,
+        },
         { requestId: 'req_mix' },
       ),
       makeAssistantRecord(
         [{ type: 'tool_use', name: 'Edit' }],
-        { input_tokens: 2, output_tokens: 150, cache_creation_input_tokens: 500, cache_read_input_tokens: 15000 },
+        {
+          input_tokens: 2,
+          output_tokens: 150,
+          cache_creation_input_tokens: 500,
+          cache_read_input_tokens: 15000,
+        },
         { requestId: 'req_mix' },
       ),
     ].join('\n');
@@ -174,13 +184,61 @@ describe('parseClaudeCodeSession', () => {
     expect(assistantMessages[1]!.tokensUsed).toBe(6021);
   });
 
+  it('preserves timestamps from JSONL records', () => {
+    const raw = [
+      makeUserRecord('Hello', { timestamp: '2026-03-15T09:00:00Z' }),
+      makeAssistantRecord(
+        [{ type: 'text', text: 'Hi there' }],
+        { input_tokens: 1, output_tokens: 5 },
+        { requestId: 'req_ts', timestamp: '2026-03-15T09:00:05Z' },
+      ),
+      makeUserRecord('Follow up', { timestamp: '2026-03-15T09:01:00Z' }),
+      makeAssistantRecord(
+        [{ type: 'text', text: 'Sure' }],
+        { input_tokens: 1, output_tokens: 3 },
+        { requestId: 'req_ts2', timestamp: '2026-03-15T09:01:10Z' },
+      ),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+
+    expect(parsed.messages[0]!.timestamp).toBe('2026-03-15T09:00:00Z');
+    expect(parsed.messages[1]!.timestamp).toBe('2026-03-15T09:00:05Z');
+    expect(parsed.messages[2]!.timestamp).toBe('2026-03-15T09:01:00Z');
+    expect(parsed.messages[3]!.timestamp).toBe('2026-03-15T09:01:10Z');
+  });
+
+  it('sets timestamp to undefined when JSONL records have no timestamp', () => {
+    const raw = [
+      makeUserRecord('Hello', { timestamp: undefined }),
+      makeAssistantRecord(
+        [{ type: 'text', text: 'Hi' }],
+        { input_tokens: 1, output_tokens: 5 },
+        { requestId: 'req_no_ts', timestamp: undefined },
+      ),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+
+    expect(parsed.messages[0]!.timestamp).toBeUndefined();
+    expect(parsed.messages[1]!.timestamp).toBeUndefined();
+  });
+
   it('preserves model from assistant records', () => {
     const raw = [
       makeUserRecord('Hi'),
       makeAssistantRecord(
         [{ type: 'text', text: 'Hello' }],
         { input_tokens: 1, output_tokens: 5 },
-        { requestId: 'req_model', message: { role: 'assistant', content: [{ type: 'text', text: 'Hello' }], model: 'claude-opus-4-20250514', usage: { input_tokens: 1, output_tokens: 5 } } },
+        {
+          requestId: 'req_model',
+          message: {
+            role: 'assistant',
+            content: [{ type: 'text', text: 'Hello' }],
+            model: 'claude-opus-4-20250514',
+            usage: { input_tokens: 1, output_tokens: 5 },
+          },
+        },
       ),
     ].join('\n');
 
@@ -235,7 +293,10 @@ describe('parseClaudeCodeSessionWithTimestamps', () => {
 
   it('skips system/command messages from user records', () => {
     const raw = [
-      makeUserRecord('<local-command-caveat>You are being asked to clear the conversation.</local-command-caveat>\n<command-name>clear</command-name>', { timestamp: '2026-03-20T10:00:00Z' }),
+      makeUserRecord(
+        '<local-command-caveat>You are being asked to clear the conversation.</local-command-caveat>\n<command-name>clear</command-name>',
+        { timestamp: '2026-03-20T10:00:00Z' },
+      ),
       makeUserRecord('Real question here', { timestamp: '2026-03-20T10:01:00Z' }),
       makeAssistantRecord(
         [{ type: 'text', text: 'Answer' }],
@@ -255,12 +316,11 @@ describe('parseClaudeCodeSessionWithTimestamps', () => {
 describe('system message filtering', () => {
   it('skips /clear command messages in parseClaudeCodeSession', () => {
     const raw = [
-      makeUserRecord('<local-command-caveat>caveat</local-command-caveat>\n<command-name>clear</command-name>'),
-      makeUserRecord('Hello world'),
-      makeAssistantRecord(
-        [{ type: 'text', text: 'Hi' }],
-        { input_tokens: 1, output_tokens: 5 },
+      makeUserRecord(
+        '<local-command-caveat>caveat</local-command-caveat>\n<command-name>clear</command-name>',
       ),
+      makeUserRecord('Hello world'),
+      makeAssistantRecord([{ type: 'text', text: 'Hi' }], { input_tokens: 1, output_tokens: 5 }),
     ].join('\n');
 
     const { parsed } = parseClaudeCodeSession(raw);
@@ -273,10 +333,7 @@ describe('system message filtering', () => {
   it('keeps cleaned content when XML tags surround real text', () => {
     const raw = [
       makeUserRecord('<system-reminder>reminder</system-reminder> Fix the bug please'),
-      makeAssistantRecord(
-        [{ type: 'text', text: 'Done' }],
-        { input_tokens: 1, output_tokens: 5 },
-      ),
+      makeAssistantRecord([{ type: 'text', text: 'Done' }], { input_tokens: 1, output_tokens: 5 }),
     ].join('\n');
 
     const { parsed } = parseClaudeCodeSession(raw);
@@ -289,10 +346,10 @@ describe('system message filtering', () => {
     const raw = [
       makeUserRecord('<command-name>clear</command-name>'),
       makeUserRecord('Real message'),
-      makeAssistantRecord(
-        [{ type: 'text', text: 'Response' }],
-        { input_tokens: 1, output_tokens: 5 },
-      ),
+      makeAssistantRecord([{ type: 'text', text: 'Response' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
     ].join('\n');
 
     const result = previewClaudeCodeSession(raw);
@@ -302,11 +359,125 @@ describe('system message filtering', () => {
   });
 
   it('throws when all messages are system messages', () => {
-    const raw = [
-      makeUserRecord('<command-name>clear</command-name>'),
-    ].join('\n');
+    const raw = [makeUserRecord('<command-name>clear</command-name>')].join('\n');
 
     expect(() => parseClaudeCodeSession(raw)).toThrow('No conversation messages found');
+  });
+});
+
+describe('user content array handling', () => {
+  it('extracts text from array content blocks in parseClaudeCodeSession', () => {
+    const raw = [
+      makeUserRecord([
+        { type: 'image', source: { type: 'base64', data: 'abc' } },
+        { type: 'text', text: 'What is in this image?' },
+      ]),
+      makeAssistantRecord([{ type: 'text', text: 'I see a cat.' }], {
+        input_tokens: 10,
+        output_tokens: 20,
+      }),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+    const userMsg = parsed.messages.find((m) => m.role === 'user');
+
+    expect(userMsg).toBeDefined();
+    expect(userMsg!.content).toBe('What is in this image?');
+  });
+
+  it('joins multiple text blocks with double newline', () => {
+    const raw = [
+      makeUserRecord([
+        { type: 'text', text: 'First paragraph' },
+        { type: 'image', source: { type: 'base64', data: 'abc' } },
+        { type: 'text', text: 'Second paragraph' },
+      ]),
+      makeAssistantRecord([{ type: 'text', text: 'Response' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+    const userMsg = parsed.messages.find((m) => m.role === 'user');
+
+    expect(userMsg!.content).toBe('First paragraph Second paragraph');
+  });
+
+  it('generates title from array content', () => {
+    const raw = [
+      makeUserRecord([
+        { type: 'image', source: { type: 'base64', data: 'abc' } },
+        { type: 'text', text: 'Describe the architecture in this diagram' },
+      ]),
+      makeAssistantRecord([{ type: 'text', text: 'The diagram shows...' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+    expect(parsed.title).not.toBe('Untitled Session');
+    expect(parsed.title.length).toBeGreaterThan(0);
+  });
+
+  it('skips image-only array content (no text blocks)', () => {
+    const raw = [
+      makeUserRecord([{ type: 'image', source: { type: 'base64', data: 'abc' } }]),
+      makeUserRecord('Actual question'),
+      makeAssistantRecord([{ type: 'text', text: 'Answer' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+    const userMessages = parsed.messages.filter((m) => m.role === 'user');
+
+    expect(userMessages).toHaveLength(1);
+    expect(userMessages[0]!.content).toBe('Actual question');
+  });
+
+  it('handles array content in previewClaudeCodeSession', () => {
+    const raw = [
+      makeUserRecord([
+        { type: 'image', source: { type: 'base64', data: 'abc' } },
+        { type: 'text', text: 'Preview this image' },
+      ]),
+      makeAssistantRecord([{ type: 'text', text: 'I see...' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
+    ].join('\n');
+
+    const result = previewClaudeCodeSession(raw);
+
+    expect(result.messageCount).toBe(2);
+    expect(result.firstMessage).not.toBe('Empty session');
+  });
+
+  it('handles array content in parseClaudeCodeSessionWithTimestamps', () => {
+    const raw = [
+      makeUserRecord(
+        [
+          { type: 'image', source: { type: 'base64', data: 'abc' } },
+          { type: 'text', text: 'Timestamp test with image' },
+        ],
+        { timestamp: '2026-03-20T10:00:00Z' },
+      ),
+      makeAssistantRecord(
+        [{ type: 'text', text: 'Response' }],
+        { input_tokens: 1, output_tokens: 5 },
+        { requestId: 'req_arr', timestamp: '2026-03-20T10:00:01Z' },
+      ),
+    ].join('\n');
+
+    const result = parseClaudeCodeSessionWithTimestamps(raw);
+    const userMsg = result.messages.find((m) => m.role === 'user');
+
+    expect(userMsg).toBeDefined();
+    expect(userMsg!.content).toBe('Timestamp test with image');
+    expect(userMsg!.timestamp).toBe('2026-03-20T10:00:00Z');
   });
 });
 

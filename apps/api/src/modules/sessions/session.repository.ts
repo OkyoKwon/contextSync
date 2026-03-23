@@ -43,6 +43,7 @@ export async function createMessages(
     contentType?: string;
     tokensUsed?: number;
     modelUsed?: string;
+    timestamp?: string;
   }[],
 ): Promise<readonly Message[]> {
   if (messages.length === 0) return [];
@@ -55,6 +56,7 @@ export async function createMessages(
     tokens_used: msg.tokensUsed ?? null,
     model_used: msg.modelUsed ?? null,
     sort_order: index,
+    ...(msg.timestamp ? { created_at: new Date(msg.timestamp) } : {}),
   }));
 
   const rows = await db.insertInto('messages').values(values).returningAll().execute();

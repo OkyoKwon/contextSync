@@ -59,6 +59,17 @@ export interface TimestampedParseResult {
   readonly filePaths: readonly string[];
 }
 
+function extractUserText(content: string | readonly ClaudeContentBlock[]): string {
+  if (typeof content === 'string') return content;
+  return content
+    .filter(
+      (block): block is ClaudeContentBlock & { text: string } =>
+        block.type === 'text' && typeof block.text === 'string',
+    )
+    .map((block) => block.text)
+    .join('\n\n');
+}
+
 export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedParseResult {
   const lines = raw.trim().split('\n').filter(Boolean);
   const messages: TimestampedMessage[] = [];
@@ -113,8 +124,9 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
       lastTimestamp = String((record as Record<string, unknown>)['timestamp']);
     }
 
-    if (record.type === 'user' && typeof record.message?.content === 'string') {
-      const cleaned = stripSystemXmlContent(record.message.content);
+    if (record.type === 'user' && record.message?.content != null) {
+      const rawText = extractUserText(record.message.content);
+      const cleaned = stripSystemXmlContent(rawText);
       if (cleaned) {
         flushPendingTurn();
         messages.push({

@@ -60,6 +60,17 @@ export interface ClaudeCodeParseResult {
   readonly filePaths: readonly string[];
 }
 
+function extractUserText(content: string | readonly ClaudeContentBlock[]): string {
+  if (typeof content === 'string') return content;
+  return content
+    .filter(
+      (block): block is ClaudeContentBlock & { text: string } =>
+        block.type === 'text' && typeof block.text === 'string',
+    )
+    .map((block) => block.text)
+    .join('\n\n');
+}
+
 export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
   const lines = raw.trim().split('\n').filter(Boolean);
   const messages: SessionImportData['messages'][number][] = [];
@@ -69,6 +80,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
 
   let currentRequestId: string | undefined;
   let pendingTurn: PendingAssistantTurn | undefined;
+  let lastTimestamp: string | undefined;
 
   const flushPendingTurn = () => {
     if (!pendingTurn) return;
@@ -90,6 +102,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
         contentType: 'response',
         modelUsed: turnModel,
         tokensUsed: tokensUsed || undefined,
+        timestamp: pendingTurn.timestamp,
       });
 
       if (pendingTurn.model) {
@@ -109,14 +122,20 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
       continue;
     }
 
-    if (record.type === 'user' && typeof record.message?.content === 'string') {
-      const cleaned = stripSystemXmlContent(record.message.content);
+    if ('timestamp' in record && (record as Record<string, unknown>)['timestamp']) {
+      lastTimestamp = String((record as Record<string, unknown>)['timestamp']);
+    }
+
+    if (record.type === 'user' && record.message?.content != null) {
+      const rawText = extractUserText(record.message.content);
+      const cleaned = stripSystemXmlContent(rawText);
       if (cleaned) {
         flushPendingTurn();
         messages.push({
           role: 'user',
           content: cleaned,
           contentType: 'prompt',
+          timestamp: lastTimestamp,
         });
       }
     }
@@ -133,7 +152,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
           toolNames: [],
           model: undefined,
           usage: undefined,
-          timestamp: undefined,
+          timestamp: lastTimestamp,
         };
       } else if (!pendingTurn) {
         // No requestId or first record — start a new turn
@@ -142,7 +161,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
           toolNames: [],
           model: undefined,
           usage: undefined,
-          timestamp: undefined,
+          timestamp: lastTimestamp,
         };
       }
 
@@ -153,6 +172,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
       }
       if (record.message.model) pendingTurn.model = record.message.model;
       if (record.message.usage) pendingTurn.usage = record.message.usage;
+      if (lastTimestamp) pendingTurn.timestamp = lastTimestamp;
     }
 
     if (record.snapshot?.trackedFileBackups) {
@@ -266,11 +286,12 @@ export function previewClaudeCodeSession(
       startedAt = String((record as Record<string, unknown>)['timestamp']);
     }
 
-    if (record.type === 'user' && typeof record.message?.content === 'string') {
-      const cleaned = stripSystemXmlContent(record.message.content);
+    if (record.type === 'user' && record.message?.content != null) {
+      const rawText = extractUserText(record.message.content);
+      const cleaned = stripSystemXmlContent(rawText);
       if (cleaned) {
         if (!firstMessage || firstMessage === UNTITLED) {
-          firstMessage = generateTitle(record.message.content);
+          firstMessage = generateTitle(rawText);
         }
         messageCount++;
       }
@@ -296,8 +317,9 @@ export function previewClaudeCodeSession(
         continue;
       }
 
-      if (record.type === 'user' && typeof record.message?.content === 'string') {
-        const cleaned = stripSystemXmlContent(record.message.content);
+      if (record.type === 'user' && record.message?.content != null) {
+        const rawText = extractUserText(record.message.content);
+        const cleaned = stripSystemXmlContent(rawText);
         if (cleaned) {
           messageCount++;
         }

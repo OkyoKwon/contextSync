@@ -11,6 +11,7 @@ export interface SessionImportData {
     readonly contentType?: string;
     readonly tokensUsed?: number;
     readonly modelUsed?: string;
+    readonly timestamp?: string;
   }[];
 }
 
@@ -71,6 +72,7 @@ export function validateSessionImport(data: unknown): {
       contentType: m['contentType'] as string | undefined,
       tokensUsed: typeof m['tokensUsed'] === 'number' ? m['tokensUsed'] : undefined,
       modelUsed: m['modelUsed'] as string | undefined,
+      timestamp: m['timestamp'] as string | undefined,
     })),
   };
 
