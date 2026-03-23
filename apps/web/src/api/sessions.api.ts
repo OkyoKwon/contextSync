@@ -97,8 +97,8 @@ export const sessionsApi = {
     });
     if (!response.ok) {
       if (response.status === 401) {
-        const { useLoginModal } = await import('../hooks/use-login-modal');
-        useLoginModal.getState().openLoginModal();
+        const { useAuthStore } = await import('../stores/auth.store');
+        useAuthStore.getState().logout();
         throw new Error('Session expired. Please log in again.');
       }
       const errorBody = await response.json().catch(() => null);

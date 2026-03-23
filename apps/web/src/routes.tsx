@@ -3,8 +3,6 @@ import { Routes, Route, Navigate, useParams } from 'react-router';
 import { useAuthStore } from './stores/auth.store';
 import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
-import { LoginPage } from './pages/LoginPage';
-import { IdentifyPage } from './pages/IdentifyPage';
 import { AppEntryRedirect } from './components/auth/AppEntryRedirect';
 
 const OnboardingPage = lazy(() =>
@@ -45,7 +43,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
   const status = useOnboardingStatus();
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!token) return <Navigate to="/onboarding" replace />;
   if (status === 'loading') return null;
   if (status === 'needs-project') return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
@@ -61,8 +59,8 @@ export function AppRoutes() {
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/" element={<AppEntryRedirect />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/identify" element={<IdentifyPage />} />
+        <Route path="/login" element={<Navigate to="/onboarding" replace />} />
+        <Route path="/identify" element={<Navigate to="/onboarding" replace />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route
           element={

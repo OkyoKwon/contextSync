@@ -1,6 +1,5 @@
 import type { ApiResponse } from '@context-sync/shared';
 import { useAuthStore } from '../stores/auth.store';
-import { useLoginModal } from '../hooks/use-login-modal';
 import { ApiError } from './api-error';
 
 const BASE_URL = '/api';
@@ -92,7 +91,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<ApiR
       }
     }
 
-    useLoginModal.getState().openLoginModal();
+    useAuthStore.getState().logout();
     throw new ApiError('Session expired. Please log in again.', 401);
   }
 

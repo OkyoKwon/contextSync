@@ -4,10 +4,14 @@ import { server } from '../../test/mocks/server';
 
 // Must mock stores/hooks before importing client
 vi.mock('../../stores/auth.store', () => {
-  const store = {
+  const store: Record<string, any> = {
     token: null as string | null,
     user: null as any,
     setAuth: vi.fn(),
+    logout: vi.fn(() => {
+      store.token = null;
+      store.user = null;
+    }),
   };
   return {
     useAuthStore: {
@@ -18,14 +22,8 @@ vi.mock('../../stores/auth.store', () => {
   };
 });
 
-vi.mock('../../hooks/use-login-modal', () => {
-  const store = { isOpen: false, openLoginModal: vi.fn(), closeLoginModal: vi.fn() };
-  return { useLoginModal: { getState: () => store } };
-});
-
 import { api } from '../client';
 import { useAuthStore } from '../../stores/auth.store';
-import { useLoginModal } from '../../hooks/use-login-modal';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterEach(() => {
@@ -112,7 +110,7 @@ describe('api client', () => {
     await expect(api.get('/soft-fail')).rejects.toThrow('Validation failed');
   });
 
-  it('opens login modal on 401 when refresh fails', async () => {
+  it('clears auth state on 401 when refresh fails', async () => {
     (useAuthStore as any).__store.token = 'expired-token';
     server.use(
       http.get('/api/protected', () =>
@@ -122,7 +120,7 @@ describe('api client', () => {
     );
 
     await expect(api.get('/protected')).rejects.toThrow('Session expired');
-    expect(useLoginModal.getState().openLoginModal).toHaveBeenCalled();
+    expect((useAuthStore as any).__store.token).toBeNull();
   });
 
   it('retries after successful token refresh', async () => {

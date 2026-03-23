@@ -2,7 +2,6 @@ import { BrowserRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AppRoutes } from './routes';
-import { LoginModal } from './components/auth/LoginModal';
 import { ApiKeyGuardModal } from './components/shared/ApiKeyGuardModal';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useThemeSync } from './hooks/use-theme';
@@ -28,7 +27,6 @@ export function App() {
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <AppRoutes />
-          <LoginModal />
           <ApiKeyGuardModal />
         </BrowserRouter>
         <Toaster

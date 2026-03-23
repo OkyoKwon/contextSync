@@ -1,15 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Navigate } from 'react-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStatus } from '@/hooks/use-onboarding-status';
 import { authApi } from '@/api/auth.api';
 
-type EntryState = 'authenticated' | 'needs-identify';
-
 export function AppEntryRedirect() {
   const token = useAuthStore((s) => s.token);
   const setAuth = useAuthStore((s) => s.setAuth);
-  const [state] = useState<EntryState>(token ? 'authenticated' : 'needs-identify');
+  const logout = useAuthStore((s) => s.logout);
 
   useEffect(() => {
     if (!token) return;
@@ -23,30 +21,22 @@ export function AppEntryRedirect() {
           setAuth(token!, response.data);
         }
       } catch {
-        // silently ignore — cached user is still usable
+        if (!cancelled) {
+          logout();
+        }
       }
     }
     refreshUser();
     return () => {
       cancelled = true;
     };
-  }, [token, setAuth]);
+  }, [token, setAuth, logout]);
 
-  if (state === 'needs-identify') {
-    return <Navigate to="/identify" replace />;
+  if (!token) {
+    return <Navigate to="/onboarding" replace />;
   }
 
-  if (state === 'authenticated') {
-    return <AuthenticatedRedirect />;
-  }
-
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-      </div>
-    </div>
-  );
+  return <AuthenticatedRedirect />;
 }
 
 function AuthenticatedRedirect() {
