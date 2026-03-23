@@ -138,6 +138,19 @@ test.describe('Team Collaboration — Full Flow', () => {
       projectId = project.id;
     }
 
+    // Generate join code via API (the UI button may be disabled when the
+    // global database status is 'local', e.g. when CLEAN-013 did not run or
+    // the in-process switchedToRemoteHost flag was lost).
+    const generated = await apiClient.post<{ id: string; joinCode: string }>(
+      `/projects/${projectId}/join-code`,
+      {},
+      ownerToken,
+    );
+    joinCode = generated.joinCode ?? '';
+    expect(joinCode).toBeTruthy();
+    expect(joinCode.length).toBeGreaterThanOrEqual(6);
+
+    // Verify the join code is visible in the Team tab UI
     await page.addInitScript(
       (value) => window.localStorage.setItem('context-sync-auth', value),
       JSON.stringify({
@@ -153,19 +166,10 @@ test.describe('Team Collaboration — Full Flow', () => {
     await page.goto('/settings?tab=team');
     await waitForAppReady(page);
 
-    // Click Generate Join Code
-    const generateBtn = page.locator('button:has-text("Generate Join Code")');
-    await generateBtn.waitFor({ state: 'visible', timeout: 10_000 });
-    await generateBtn.click();
-
-    // Wait for join code to appear (code element in JoinCodeShare)
-    const codeElement = page.locator('code');
+    const codeElement = page.locator('code.tracking-widest');
     await codeElement.waitFor({ state: 'visible', timeout: 10_000 });
     const codeText = await codeElement.textContent();
-    expect(codeText).toBeTruthy();
-    expect(codeText!.length).toBeGreaterThanOrEqual(6);
-
-    joinCode = codeText!.trim();
+    expect(codeText!.trim()).toBe(joinCode);
   });
 
   // ── CLEAN-016: Member joins project with Join Code (UI) ──────────────

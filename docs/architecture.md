@@ -90,14 +90,14 @@ Module route registration order:
 7. PRD Analysis → `/api`
 8. Activity → `/api`
 9. Plans → `/api`
-10. Invitations → `/api`
-11. AI Evaluation → `/api`
-12. Admin → `/api`
-13. DB Config → `/api`
-14. Supabase Onboarding → `/api`
-15. Setup → `/api`
+10. AI Evaluation → `/api`
+11. Admin → `/api`
+12. Supabase Onboarding → `/api`
+13. Setup → `/api`
+14. Local Sessions → `/api`
+15. Quota → `/api`
 
-`db` (Kysely), `env` (Env), and `poolManager` (DbPoolManager) objects are decorated onto the FastifyInstance.
+`localDb` (Kysely), `remoteDb` (Kysely | null), `resolveDb` (async projectId → Db), and `env` (Env) objects are decorated onto the FastifyInstance. `resolveDb` dynamically routes to `localDb` or `remoteDb` based on the project's `database_mode`.
 
 ### Module Pattern (4-file structure)
 
@@ -120,23 +120,23 @@ Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (o
 
 ### 15 Modules
 
-| Module                | Route Prefix                                        | Purpose                                                             |
-| --------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
-| `auth`                | `/api/auth`                                         | Name-based identity, JWT issuance/refresh                           |
-| `projects`            | `/api/projects`                                     | Project CRUD, collaborator management                               |
-| `sessions`            | `/api/projects/:id/sessions`                        | Session management, import/export, local sync, token usage          |
-| `conflicts`           | `/api/projects/:id/conflicts`                       | Conflict detection, status management (detected→reviewing→resolved) |
-| `search`              | `/api/projects/:id/search`                          | PostgreSQL tsvector full-text search                                |
-| `notifications`       | `/api/projects/:id/notifications`                   | Email/Slack notifications                                           |
-| `prd-analysis`        | `/api/projects/:id/prd`                             | PRD upload, Claude API analysis, requirement tracking               |
-| `activity`            | `/api/projects/:id/activity`                        | Project activity log (session/conflict/collaboration events)        |
-| `plans`               | `/api/projects/:id/plans`                           | Plan management (CRUD)                                              |
-| `invitations`         | `/api/invitations`, `/api/projects/:id/invitations` | Project invitation with token/link, accept/decline workflow         |
-| `ai-evaluation`       | `/api/projects/:id/ai-evaluation`                   | AI utilization evaluation (per-user proficiency analysis)           |
-| `admin`               | `/api/admin`                                        | DB health, migration management, team config (team-host only)       |
-| `db-config`           | `/api/projects/:id/db-config`                       | External DB configuration (Supabase connection, data migration)     |
-| `supabase-onboarding` | `/api/supabase-onboarding`                          | Supabase onboarding flow (project creation, guided setup)           |
-| `setup`               | `/api/setup`                                        | Database connection status, remote DB test/switch, migration run    |
+| Module                | Route Prefix                      | Purpose                                                             |
+| --------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| `auth`                | `/api/auth`                       | Name-based identity, JWT issuance/refresh                           |
+| `projects`            | `/api/projects`                   | Project CRUD, collaborator management                               |
+| `sessions`            | `/api/projects/:id/sessions`      | Session management, import/export, local sync, token usage          |
+| `conflicts`           | `/api/projects/:id/conflicts`     | Conflict detection, status management (detected→reviewing→resolved) |
+| `search`              | `/api/projects/:id/search`        | PostgreSQL tsvector full-text search                                |
+| `notifications`       | `/api/projects/:id/notifications` | Email/Slack notifications                                           |
+| `prd-analysis`        | `/api/projects/:id/prd`           | PRD upload, Claude API analysis, requirement tracking               |
+| `activity`            | `/api/projects/:id/activity`      | Project activity log (session/conflict/collaboration events)        |
+| `plans`               | `/api/projects/:id/plans`         | Plan management (CRUD)                                              |
+| `ai-evaluation`       | `/api/projects/:id/ai-evaluation` | AI utilization evaluation (per-user proficiency analysis)           |
+| `admin`               | `/api/admin`                      | DB health, migrations, project settings                             |
+| `supabase-onboarding` | `/api/supabase-onboarding`        | Supabase onboarding flow (project creation, guided setup)           |
+| `setup`               | `/api/setup`                      | Database connection status, remote DB test/switch, migration run    |
+| `local-sessions`      | `/api/sessions/local`             | Local session scanning & sync                                       |
+| `quota`               | `/api/quota`                      | Rate limit capture & quota tracking                                 |
 
 ### Service Conventions
 
@@ -197,26 +197,26 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 
 ### Tables (18)
 
-| Table                      | Purpose                    | Key Columns                                                                |
-| -------------------------- | -------------------------- | -------------------------------------------------------------------------- |
-| `users`                    | User profiles              | github_id (nullable), email, name, avatar_url, is_auto, claude_plan        |
-| `projects`                 | Project metadata           | owner_id, name, description, repo_url, local_directory                     |
-| `project_collaborators`    | Role-based access          | project_id, user_id, role (owner/admin/member), local_directory            |
-| `project_invitations`      | Invitation token/workflow  | project_id, inviter_id, email, token, role, status, expires_at             |
-| `sessions`                 | Claude Code sessions       | title, source, status, file_paths[], module_names[], tags[], search_vector |
-| `messages`                 | Session messages           | role, content, content_type, tokens_used, model_used, search_vector        |
-| `conflicts`                | Detected conflicts         | conflict_type, severity, status, overlapping_paths[], reviewer_id          |
-| `prompt_templates`         | Reusable prompts           | category, tags[], usage_count, version                                     |
-| `synced_sessions`          | External session tracking  | external_session_id, source_path                                           |
-| `prd_documents`            | PRD document uploads       | title, content, file_name                                                  |
-| `prd_analyses`             | PRD analysis results       | status, overall_rate, model_used, token usage                              |
-| `prd_requirements`         | Individual requirements    | category, status, confidence, evidence, file_paths[]                       |
-| `activity_log`             | Project activity log       | project_id, user_id, action, entity_type, entity_id, metadata              |
-| `ai_evaluations`           | AI utilization evaluations | project_id, target_user_id, overall_score, proficiency_tier                |
-| `ai_evaluation_dimensions` | Evaluation dimensions      | evaluation_id, dimension, score, confidence, strengths[], weaknesses[]     |
-| `ai_evaluation_evidence`   | Evaluation evidence        | dimension_id, message_id, session_id, excerpt, sentiment                   |
-| `project_db_configs`       | External DB configuration  | project_id, provider, connection_url, ssl_enabled, status                  |
-| `data_migration_jobs`      | Data migration jobs        | project_id, direction, status, total/migrated sessions/messages            |
+| Table                      | Purpose                      | Key Columns                                                                |
+| -------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
+| `users`                    | User profiles                | github_id (nullable), email, name, avatar_url, is_auto, claude_plan        |
+| `projects`                 | Project metadata             | owner_id, name, description, repo_url, local_directory, database_mode      |
+| `project_collaborators`    | Role-based access            | project_id, user_id, role (owner/member), local_directory                  |
+| `sessions`                 | Claude Code sessions         | title, source, status, file_paths[], module_names[], tags[], search_vector |
+| `messages`                 | Session messages             | role, content, content_type, tokens_used, model_used, search_vector        |
+| `conflicts`                | Detected conflicts           | conflict_type, severity, status, overlapping_paths[], reviewer_id          |
+| `prompt_templates`         | Reusable prompts             | category, tags[], usage_count, version                                     |
+| `synced_sessions`          | External session tracking    | external_session_id, source_path                                           |
+| `prd_documents`            | PRD document uploads         | title, content, file_name                                                  |
+| `prd_analyses`             | PRD analysis results         | status, overall_rate, model_used, token usage                              |
+| `prd_requirements`         | Individual requirements      | category, status, confidence, evidence, file_paths[]                       |
+| `activity_log`             | Project activity log         | project_id, user_id, action, entity_type, entity_id, metadata              |
+| `ai_evaluations`           | AI utilization evaluations   | project_id, target_user_id, overall_score, proficiency_tier                |
+| `ai_evaluation_dimensions` | Evaluation dimensions        | evaluation_id, dimension, score, confidence, strengths[], weaknesses[]     |
+| `ai_evaluation_evidence`   | Evaluation evidence          | dimension_id, message_id, session_id, excerpt, sentiment                   |
+| `project_db_configs`       | External DB configuration    | project_id, provider, connection_url, ssl_enabled, status                  |
+| `data_migration_jobs`      | Data migration jobs          | project_id, direction, status, total/migrated sessions/messages            |
+| `rate_limit_snapshots`     | Rate limit snapshot tracking | user_id, project_id, plan_tier, usage_percent, captured_at                 |
 
 ### Full-Text Search
 
@@ -224,36 +224,39 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 - `messages.search_vector` (tsvector) — message content search
 - PostgreSQL FTS with `plainto_tsquery`
 
-### Migrations (24)
+### Migrations (27)
 
 `apps/api/src/database/migrations/`
 
-| #   | File                               | Description                          |
-| --- | ---------------------------------- | ------------------------------------ |
-| 001 | `create_users`                     | Users table                          |
-| 002 | `create_teams`                     | Teams (deprecated, replaced in 012)  |
-| 003 | `create_projects`                  | Projects                             |
-| 004 | `create_sessions`                  | Sessions                             |
-| 005 | `create_messages`                  | Messages                             |
-| 006 | `create_conflicts`                 | Conflicts                            |
-| 007 | `create_prompt_templates`          | Prompt templates                     |
-| 008 | `add_search_indexes`               | tsvector full-text search            |
-| 009 | `add_sync_tracking`                | Sync tracking                        |
-| 010 | `add_personal_projects`            | Personal projects                    |
-| 011 | `add_project_local_directory`      | Local directory field                |
-| 012 | `replace_teams_with_collaborators` | Role-based collaborators             |
-| 013 | `create_prd_analysis`              | PRD analysis tables                  |
-| 014 | `create_activity_log`              | Activity log table                   |
-| 015 | `add_conflict_reviewer`            | Reviewer fields on conflicts         |
-| 016 | `add_collaborator_local_directory` | Local directory for collaborators    |
-| 017 | `create_project_invitations`       | Project invitation workflow          |
-| 018 | `create_ai_evaluations`            | AI evaluation tables (3 tables)      |
-| 019 | `make_github_id_nullable`          | Allow null github_id for local auth  |
-| 020 | `add_is_auto_to_users`             | Auto-user flag                       |
-| 021 | `add_claude_plan_to_users`         | Claude plan tier field               |
-| 022 | `create_db_config_tables`          | External DB config + migration jobs  |
-| 023 | `add_anthropic_api_key_to_users`   | Per-user Anthropic API key           |
-| 024 | `add_supabase_token_to_users`      | Supabase access token for onboarding |
+| #   | File                               | Description                                 |
+| --- | ---------------------------------- | ------------------------------------------- |
+| 001 | `create_users`                     | Users table                                 |
+| 002 | `create_teams`                     | Teams (deprecated, replaced in 012)         |
+| 003 | `create_projects`                  | Projects                                    |
+| 004 | `create_sessions`                  | Sessions                                    |
+| 005 | `create_messages`                  | Messages                                    |
+| 006 | `create_conflicts`                 | Conflicts                                   |
+| 007 | `create_prompt_templates`          | Prompt templates                            |
+| 008 | `add_search_indexes`               | tsvector full-text search                   |
+| 009 | `add_sync_tracking`                | Sync tracking                               |
+| 010 | `add_personal_projects`            | Personal projects                           |
+| 011 | `add_project_local_directory`      | Local directory field                       |
+| 012 | `replace_teams_with_collaborators` | Role-based collaborators                    |
+| 013 | `create_prd_analysis`              | PRD analysis tables                         |
+| 014 | `create_activity_log`              | Activity log table                          |
+| 015 | `add_conflict_reviewer`            | Reviewer fields on conflicts                |
+| 016 | `add_collaborator_local_directory` | Local directory for collaborators           |
+| 017 | `create_project_invitations`       | Project invitation workflow                 |
+| 018 | `create_ai_evaluations`            | AI evaluation tables (3 tables)             |
+| 019 | `make_github_id_nullable`          | Allow null github_id for local auth         |
+| 020 | `add_is_auto_to_users`             | Auto-user flag                              |
+| 021 | `add_claude_plan_to_users`         | Claude plan tier field                      |
+| 022 | `create_db_config_tables`          | External DB config + migration jobs         |
+| 023 | `add_anthropic_api_key_to_users`   | Per-user Anthropic API key                  |
+| 024 | `add_supabase_token_to_users`      | Supabase access token for onboarding        |
+| 025 | `simplify_collaboration`           | Remove admin role, simplify to owner/member |
+| 026 | `create_rate_limit_snapshots`      | Rate limit snapshot tracking                |
+| 027 | `add_project_database_mode`        | Per-project local/remote DB routing         |
 
 ---
 
@@ -400,7 +403,7 @@ components/
 
 Imported as `@context-sync/shared` by both API and Web.
 
-### Types (16 files)
+### Types (15 files)
 
 | File                     | Key Types                                                                      |
 | ------------------------ | ------------------------------------------------------------------------------ |
@@ -412,7 +415,6 @@ Imported as `@context-sync/shared` by both API and Web.
 | `prd-analysis.ts`        | `PrdDocument`, `PrdAnalysis`, `PrdRequirement`, `PrdAnalysisWithRequirements`  |
 | `token-usage.ts`         | `ModelUsageBreakdown`, `TokenUsageStats`, `DailyTokenUsage`                    |
 | `collaborator.ts`        | `Collaborator`, `AddCollaboratorInput`                                         |
-| `invitation.ts`          | `Invitation`, `InvitationStatus`, `CreateInvitationInput`                      |
 | `sync.ts`                | Sync-related types                                                             |
 | `admin.ts`               | `AdminStatus`, `AdminConfig`, `MigrationInfo`, `MigrationRunResult`            |
 | `activity.ts`            | `ActivityLog`, `ActivityAction`, `ActivityEntityType`                          |
@@ -423,17 +425,17 @@ Imported as `@context-sync/shared` by both API and Web.
 
 ### Constants (9 files)
 
-| File                   | Contents                                        |
-| ---------------------- | ----------------------------------------------- |
-| `roles.ts`             | `USER_ROLES = ['owner', 'admin', 'member']`     |
-| `session-status.ts`    | Session status enumerations                     |
-| `conflict-severity.ts` | Conflict severity enumerations                  |
-| `model-pricing.ts`     | Per-model token pricing                         |
-| `prd-analysis.ts`      | `SUPPORTED_PRD_EXTENSIONS`, `MAX_PRD_FILE_SIZE` |
-| `invitation-status.ts` | `INVITATION_STATUSES`, `INVITATION_EXPIRY_DAYS` |
-| `ai-evaluation.ts`     | Evaluation dimensions, proficiency tiers        |
-| `anthropic-models.ts`  | Anthropic model definitions and metadata        |
-| `claude-plan.ts`       | Claude plan tiers (free, pro, team, enterprise) |
+| File                       | Contents                                        |
+| -------------------------- | ----------------------------------------------- |
+| `roles.ts`                 | `USER_ROLES = ['owner', 'member']`              |
+| `session-status.ts`        | Session status enumerations                     |
+| `conflict-severity.ts`     | Conflict severity enumerations                  |
+| `model-pricing.ts`         | Per-model token pricing                         |
+| `prd-analysis.ts`          | `SUPPORTED_PRD_EXTENSIONS`, `MAX_PRD_FILE_SIZE` |
+| `ai-evaluation.ts`         | Evaluation dimensions, proficiency tiers        |
+| `anthropic-models.ts`      | Anthropic model definitions and metadata        |
+| `claude-plan.ts`           | Claude plan tiers (free, pro, team, enterprise) |
+| `rate-limit-thresholds.ts` | Rate limit thresholds per Claude plan tier      |
 
 ### Validators (2 files)
 
@@ -492,23 +494,23 @@ Managed in `apps/api/.env`, validated at startup by `config/env.ts` using Zod.
 
 ### Optional (with defaults)
 
-| Variable            | Default                    | Description                                             |
-| ------------------- | -------------------------- | ------------------------------------------------------- |
-| `JWT_SECRET`        | (dev default built-in)     | JWT signing key (min 32 chars, override in production)  |
-| `PORT`              | `3001`                     | API server port                                         |
-| `HOST`              | `0.0.0.0`                  | Bind host                                               |
-| `NODE_ENV`          | `development`              | Environment                                             |
-| `JWT_EXPIRES_IN`    | `7d`                       | Token expiry                                            |
-| `FRONTEND_URL`      | `http://localhost:5173`    | CORS origin                                             |
-| `ANTHROPIC_API_KEY` | —                          | Claude API key for PRD analysis                         |
-| `ANTHROPIC_MODEL`   | `claude-sonnet-4-20250514` | Analysis model                                          |
-| `SLACK_WEBHOOK_URL` | —                          | Slack notifications                                     |
-| `RESEND_API_KEY`    | —                          | Email delivery                                          |
-| `EMAIL_FROM`        | `noreply@contextsync.dev`  | Sender email                                            |
-| `DEPLOYMENT_MODE`   | `personal`                 | Deployment mode: `personal`, `team-host`, `team-member` |
-| `DATABASE_SSL`      | `false`                    | Enable SSL for PostgreSQL connection                    |
-| `DATABASE_SSL_CA`   | —                          | Path to CA certificate for SSL verification             |
-| `RUN_MIGRATIONS`    | `true`                     | Auto-run migrations (`false` for team-member)           |
+| Variable                 | Default                    | Description                                            |
+| ------------------------ | -------------------------- | ------------------------------------------------------ |
+| `JWT_SECRET`             | (dev default built-in)     | JWT signing key (min 32 chars, override in production) |
+| `PORT`                   | `3001`                     | API server port                                        |
+| `HOST`                   | `0.0.0.0`                  | Bind host                                              |
+| `NODE_ENV`               | `development`              | Environment                                            |
+| `JWT_EXPIRES_IN`         | `7d`                       | Token expiry                                           |
+| `FRONTEND_URL`           | `http://localhost:5173`    | CORS origin                                            |
+| `ANTHROPIC_API_KEY`      | —                          | Claude API key for PRD analysis                        |
+| `ANTHROPIC_MODEL`        | `claude-sonnet-4-20250514` | Analysis model                                         |
+| `SLACK_WEBHOOK_URL`      | —                          | Slack notifications                                    |
+| `DATABASE_SSL`           | `false`                    | Enable SSL for PostgreSQL connection                   |
+| `DATABASE_SSL_CA`        | —                          | Path to CA certificate for SSL verification            |
+| `RUN_MIGRATIONS`         | `true`                     | Auto-run migrations (`false` for team-member)          |
+| `REMOTE_DATABASE_URL`    | —                          | Remote PostgreSQL for dual-pool routing                |
+| `REMOTE_DATABASE_SSL`    | `false`                    | SSL for remote DB connection                           |
+| `REMOTE_DATABASE_SSL_CA` | —                          | CA certificate for remote DB SSL                       |
 
 ---
 
@@ -532,15 +534,15 @@ services:
 
 ### Deployment Modes
 
-| Mode          | Docker? | DB          | Migrations | SSL |
-| ------------- | ------- | ----------- | ---------- | --- |
-| `personal`    | Yes     | Local       | Auto       | Off |
-| `team-host`   | Yes     | Local + SSL | Auto       | On  |
-| `team-member` | No      | Remote      | Disabled   | On  |
+| Mode          | Docker? | DB             | Migrations | SSL |
+| ------------- | ------- | -------------- | ---------- | --- |
+| `personal`    | Yes     | Local          | Auto       | Off |
+| `team-host`   | Yes     | Local + Remote | Auto       | On  |
+| `team-member` | No      | Remote         | Disabled   | On  |
 
 - **Personal:** Default mode. Local Docker PostgreSQL, zero config.
-- **Team Host:** Admin runs `docker compose --profile team-host` with SSL certs.
-- **Team Member:** Point `DATABASE_URL` to the remote DB, set `RUN_MIGRATIONS=false`.
+- **Team Host:** Admin runs `docker compose --profile team-host`. Dual DB pool routes per-project via `database_mode`.
+- **Team Member:** Developer joins via `pnpm setup:team`. No Docker needed.
 
 ### Self-Hosted PostgreSQL Setup Flow
 

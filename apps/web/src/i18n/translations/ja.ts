@@ -106,7 +106,7 @@ export const ja: TranslationKeys = {
     'セッション統計、タイムライン、トークン使用量チャート、ホットファイルを確認できます。ダッシュボードでチームのAI活動をリアルタイムに把握しましょう。',
   'docs.gettingStarted.step.3.title': 'チームを招待',
   'docs.gettingStarted.step.3.desc':
-    'Owner、Admin、Memberのロールでコラボレーターを追加します。各ロールにはプロジェクトとセッション管理の異なる権限があります。',
+    'OwnerまたはMemberのロールでコラボレーターを追加します。各ロールにはプロジェクトとセッション管理の異なる権限があります。',
   'docs.features.title': '機能',
   'docs.features.learnMore': '詳しく見る',
   'docs.features.0.title': 'Session Sync',
@@ -140,9 +140,9 @@ export const ja: TranslationKeys = {
     'PostgreSQL全文検索をtsvectorインデックスで使用。キーワード、ファイルパス、コードスニペットでセッション履歴全体を検索できます。結果は関連度順にソートされセッション別にグループ化されます。',
   'docs.features.6.title': 'Team Collaboration',
   'docs.features.6.summary':
-    'Owner、Admin、Memberのロールベースアクセス制御。コラボレーターを招待し権限を管理。',
+    'OwnerとMemberのロールベースアクセス制御。コラボレーターを招待し権限を管理。',
   'docs.features.6.detail':
-    'プロジェクトは3つのロールに対応：Owner（削除含む全権限）、Admin（メンバーとセッション管理）、Member（セッション閲覧と同期）。GitHubユーザー名でメンバーを招待し設定でロールを管理できます。',
+    'プロジェクトは2つのロールに対応：Owner（削除およびメンバー管理を含む全権限）とMember（セッション閲覧と同期）。名前でメンバーを招待し設定でロールを管理できます。',
   'docs.features.7.title': 'AI Evaluation',
   'docs.features.7.summary':
     'チームメンバーのAI活用度をセッション単位で分析し、多次元評価でスコア化。',
@@ -160,7 +160,7 @@ export const ja: TranslationKeys = {
     'はい。PRD分析はClaude APIを使用します。サーバーにANTHROPIC_API_KEY環境変数を設定してください。なければPRD分析機能は利用できません。',
   'docs.faq.3.q': 'チームロールの違いは何ですか？',
   'docs.faq.3.a':
-    'Owner：削除とロール管理含む全プロジェクト制御。Admin：メンバー、セッション、コンフリクト管理。Member：データ閲覧と自身のセッション同期。全ロールで検索とセッション閲覧が可能です。',
+    'Owner：削除、ロール管理、メンバー管理を含む全プロジェクト制御。Member：データ閲覧と自身のセッション同期。両ロールで検索とセッション閲覧が可能です。',
   'docs.faq.4.q': '何を検索できますか？',
   'docs.faq.4.a':
     'セッションタイトル、会話メッセージ、ファイルパスを検索できます。PostgreSQL全文検索インデックスを使用しており、自然言語クエリと部分マッチングに対応しています。',

@@ -106,7 +106,7 @@ export const ko: TranslationKeys = {
     '세션 통계, 타임라인, 토큰 사용량 차트, 핫 파일을 확인하세요. 대시보드에서 팀의 AI 활동을 실시간으로 파악할 수 있습니다.',
   'docs.gettingStarted.step.3.title': '팀 초대',
   'docs.gettingStarted.step.3.desc':
-    'Owner, Admin, Member 역할로 협업자를 추가하세요. 각 역할은 프로젝트와 세션 관리에 대해 다른 권한을 가집니다.',
+    'Owner, Member 역할로 협업자를 추가하세요. 각 역할은 프로젝트와 세션 관리에 대해 다른 권한을 가집니다.',
   'docs.features.title': '기능',
   'docs.features.learnMore': '자세히 보기',
   'docs.features.0.title': 'Session Sync',
@@ -140,9 +140,9 @@ export const ko: TranslationKeys = {
     'PostgreSQL 전문 검색을 사용하며 세션과 메시지에 tsvector 인덱스를 적용합니다. 키워드, 파일 경로, 코드 스니펫으로 전체 세션 히스토리를 검색할 수 있습니다. 결과는 관련도순으로 정렬되고 세션별로 그룹화됩니다.',
   'docs.features.6.title': 'Team Collaboration',
   'docs.features.6.summary':
-    'Owner, Admin, Member 역할 기반 접근 제어. 협업자를 초대하고 권한을 관리하세요.',
+    'Owner, Member 역할 기반 접근 제어. 협업자를 초대하고 권한을 관리하세요.',
   'docs.features.6.detail':
-    '프로젝트는 세 가지 역할을 지원합니다: Owner(삭제 포함 전체 권한), Admin(멤버와 세션 관리), Member(세션 조회와 동기화). GitHub 사용자명으로 팀원을 초대하고 설정에서 역할을 관리하세요.',
+    '프로젝트는 두 가지 역할을 지원합니다: Owner(삭제 및 멤버 관리를 포함한 전체 권한), Member(세션 조회와 동기화). 이름으로 팀원을 초대하고 설정에서 역할을 관리하세요.',
   'docs.features.7.title': 'AI Evaluation',
   'docs.features.7.summary': '팀원의 AI 활용도를 세션 단위로 분석하고 다차원 평가로 점수화합니다.',
   'docs.features.7.detail':
@@ -159,7 +159,7 @@ export const ko: TranslationKeys = {
     '네. PRD 분석은 Claude API를 사용합니다. 서버에 ANTHROPIC_API_KEY 환경 변수를 설정하세요. 없으면 PRD 분석 기능을 사용할 수 없습니다.',
   'docs.faq.3.q': '팀 역할의 차이점은 무엇인가요?',
   'docs.faq.3.a':
-    'Owner: 삭제와 역할 관리를 포함한 전체 프로젝트 제어. Admin: 멤버, 세션, 충돌 관리. Member: 데이터 조회와 자신의 세션 동기화. 모든 역할에서 검색과 세션 탐색이 가능합니다.',
+    'Owner: 삭제, 역할 관리, 멤버 관리를 포함한 전체 프로젝트 제어. Member: 데이터 조회와 자신의 세션 동기화. 두 역할 모두 검색과 세션 탐색이 가능합니다.',
   'docs.faq.4.q': '무엇을 검색할 수 있나요?',
   'docs.faq.4.a':
     '세션 제목, 대화 메시지, 파일 경로를 검색할 수 있습니다. PostgreSQL 전문 검색 인덱스를 사용하므로 자연어 쿼리와 부분 매칭을 지원합니다.',

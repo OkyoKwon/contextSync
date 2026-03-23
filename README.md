@@ -80,7 +80,7 @@ Score team members' AI utilization across sessions with multi-dimensional analys
 
 ### Team Collaboration
 
-Role-based access control (Owner / Admin / Member). Invite teammates and share projects with granular permissions.
+Role-based access control (Owner / Member). Invite teammates and share projects with simple permissions.
 
 <img src="apps/web/public/screenshots/settings-team.png" alt="Team settings" width="720" />
 
@@ -105,7 +105,7 @@ pnpm dev
 > `pnpm setup` runs the full bootstrap: Docker Compose up → DB migration → seed data.
 > Or run `bash scripts/setup.sh` (without `--defaults`) for an interactive wizard with deployment mode selection.
 
-Open `http://localhost:5173` and sign in with your name and email. API runs at `http://localhost:3001`.
+Open `http://localhost:5173` and enter your name. API runs at `http://localhost:3001`.
 
 ### Manual Setup
 
@@ -131,7 +131,7 @@ pnpm install
 # Place SSL certs in certs/ directory
 docker compose --profile team-host up -d
 cp apps/api/.env.example apps/api/.env
-# Set DEPLOYMENT_MODE=team-host, DATABASE_SSL=true
+# Set DATABASE_SSL=true, REMOTE_DATABASE_URL for team sharing
 pnpm --filter @context-sync/api migrate
 pnpm dev
 ```
@@ -143,12 +143,11 @@ pnpm dev
 
 ```bash
 pnpm install
-cp apps/api/.env.example apps/api/.env
-# Set DATABASE_URL to remote DB, DATABASE_SSL=true, RUN_MIGRATIONS=false
+pnpm setup:team    # Interactive: DB URL + name + Join Code
 pnpm dev
 ```
 
-No Docker required.
+No Docker required. Runs interactive setup that configures remote DB connection and joins the team project.
 
 </details>
 
@@ -159,24 +158,23 @@ Only `DATABASE_URL` is required. All others have sensible defaults.
 <details>
 <summary>Full environment variable reference</summary>
 
-| Variable            | Required | Description                                                        |
-| ------------------- | -------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`      | Yes      | PostgreSQL connection string                                       |
-| `JWT_SECRET`        | No       | JWT signing key (min 32 chars, dev default built-in)               |
-| `JWT_EXPIRES_IN`    | No       | Token expiry (default: `7d`)                                       |
-| `HOST`              | No       | Server host (default: `0.0.0.0`)                                   |
-| `NODE_ENV`          | No       | `development` (default), `production`, or `test`                   |
-| `FRONTEND_URL`      | No       | Frontend URL (default: `http://localhost:5173`)                    |
-| `ANTHROPIC_API_KEY` | No       | For PRD analysis feature                                           |
-| `ANTHROPIC_MODEL`   | No       | Claude model ID (default: `claude-sonnet-4-20250514`)              |
-| `SLACK_WEBHOOK_URL` | No       | Slack notification webhook                                         |
-| `RESEND_API_KEY`    | No       | Email notifications                                                |
-| `EMAIL_FROM`        | No       | Sender address (default: `noreply@contextsync.dev`)                |
-| `DEPLOYMENT_MODE`   | No       | `personal` (default), `team-host`, or `team-member`                |
-| `DATABASE_PROVIDER` | No       | `self-hosted` (default) or `supabase`                              |
-| `DATABASE_SSL`      | No       | Enable SSL for DB connection (default: `false`)                    |
-| `DATABASE_SSL_CA`   | No       | Path to CA certificate for self-signed certs                       |
-| `RUN_MIGRATIONS`    | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
+| Variable                 | Required | Description                                                        |
+| ------------------------ | -------- | ------------------------------------------------------------------ |
+| `DATABASE_URL`           | Yes      | PostgreSQL connection string                                       |
+| `JWT_SECRET`             | No       | JWT signing key (min 32 chars, dev default built-in)               |
+| `JWT_EXPIRES_IN`         | No       | Token expiry (default: `7d`)                                       |
+| `HOST`                   | No       | Server host (default: `0.0.0.0`)                                   |
+| `NODE_ENV`               | No       | `development` (default), `production`, or `test`                   |
+| `FRONTEND_URL`           | No       | Frontend URL (default: `http://localhost:5173`)                    |
+| `ANTHROPIC_API_KEY`      | No       | For PRD analysis feature                                           |
+| `ANTHROPIC_MODEL`        | No       | Claude model ID (default: `claude-sonnet-4-20250514`)              |
+| `SLACK_WEBHOOK_URL`      | No       | Slack notification webhook                                         |
+| `DATABASE_SSL`           | No       | Enable SSL for DB connection (default: `false`)                    |
+| `DATABASE_SSL_CA`        | No       | Path to CA certificate for self-signed certs                       |
+| `RUN_MIGRATIONS`         | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
+| `REMOTE_DATABASE_URL`    | No       | Remote PostgreSQL URL for dual-pool routing                        |
+| `REMOTE_DATABASE_SSL`    | No       | Enable SSL for remote DB (default: `false`)                        |
+| `REMOTE_DATABASE_SSL_CA` | No       | Path to CA certificate for remote DB SSL                           |
 
 </details>
 
@@ -184,11 +182,11 @@ Only `DATABASE_URL` is required. All others have sensible defaults.
 
 ## Deployment Modes
 
-| Mode          | Docker? | DB          | Use Case                                                                        |
-| ------------- | ------- | ----------- | ------------------------------------------------------------------------------- |
-| `personal`    | Yes     | Local       | Solo dev archiving sessions locally. Simplest setup, everything on one machine. |
-| `team-host`   | Yes     | Local + SSL | Admin hosting a shared DB for the team. SSL-secured, manages migrations.        |
-| `team-member` | No      | Remote      | Developer connecting to team DB. No Docker needed, read-only migrations.        |
+| Mode        | Docker? | DB             | Use Case                                                                                          |
+| ----------- | ------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| Personal    | Yes     | Local          | Solo dev archiving sessions locally. Simplest setup, everything on one machine.                   |
+| Team Host   | Yes     | Local + Remote | Admin hosting a shared project. Local DB for metadata, remote DB (e.g. Supabase) for shared data. |
+| Team Member | No      | Remote         | Developer joining a team project via `pnpm setup:team`. No Docker needed.                         |
 
 ---
 
@@ -199,7 +197,7 @@ Only `DATABASE_URL` is required. All others have sensible defaults.
 | Frontend | React 19, Vite 6, Tailwind CSS 4, Zustand 5, React Query 5, React Router 7 |
 | Backend  | Fastify 5, Kysely, Zod                                                     |
 | Database | PostgreSQL 16                                                              |
-| Auth     | Email/Name local auth + JWT                                                |
+| Auth     | Name-based identity + JWT                                                  |
 | Monorepo | pnpm workspaces + Turborepo                                                |
 
 ---
@@ -222,18 +220,20 @@ contextSync/
 ```
 apps/api/src/modules/
 ├── activity/        # Activity logging
-├── admin/           # DB health, migrations, team config
+├── admin/           # DB health, migrations, settings
 ├── ai-evaluation/   # AI utilization scoring
-├── auth/            # Email/Name auth + JWT
+├── auth/            # Name-based identity + JWT
 ├── conflicts/       # Conflict detection & resolution
-├── db-config/       # Remote database configuration
-├── invitations/     # Team invitation management
-├── notifications/   # Slack & email alerts
+├── local-sessions/  # Local session scanning
+├── notifications/   # Slack notifications
 ├── plans/           # Markdown planning documents
 ├── prd-analysis/    # PRD analysis with AI
 ├── projects/        # Project management
+├── quota/           # Rate limit & quota tracking
 ├── search/          # Full-text search
-└── sessions/        # Session import, sync, parsing
+├── sessions/        # Session import, sync, parsing
+├── setup/           # Database connection & team setup
+└── supabase-onboarding/ # Supabase guided setup
 ```
 
 </details>
@@ -244,6 +244,7 @@ apps/api/src/modules/
 
 ```bash
 pnpm dev              # Start all services (API + Web)
+pnpm setup:team       # Team member interactive setup
 pnpm build            # Build all packages
 pnpm test             # Run tests
 pnpm test:coverage    # Run tests with coverage (80% threshold)

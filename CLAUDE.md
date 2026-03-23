@@ -59,7 +59,7 @@ apps/
       database/     client.ts (Kysely), types.ts, migrations/
       plugins/      auth, cors, error-handler
       lib/          api-response.ts (ok, fail, paginated)
-      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, invitations, ai-evaluation, admin, db-config, supabase-onboarding, setup, quota
+      modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, ai-evaluation, admin, local-sessions, supabase-onboarding, setup, quota
   web/          # React 19 SPA (Vite 6)
     src/
       api/          API client
@@ -72,7 +72,7 @@ packages/
   shared/       # Shared types, constants, Zod validators
     src/
       types/        api.ts, user.ts, project.ts, session.ts, conflict.ts, ...
-      constants/    roles, session-status, conflict-severity, model-pricing, ai-evaluation, anthropic-models, claude-plan, invitation-status, prd-analysis
+      constants/    roles, session-status, conflict-severity, model-pricing, ai-evaluation, anthropic-models, claude-plan, rate-limit-thresholds, prd-analysis
       validators/   session.validator.ts, project.validator.ts
 ```
 
@@ -119,7 +119,7 @@ Helpers: `ok(data)`, `fail(error)`, `paginated(data, meta)` — `apps/api/src/li
 ### Database
 
 - **Kysely** query builder (not a full ORM), pool max 20
-- **Migrations:** `apps/api/src/database/migrations/` (001–026)
+- **Migrations:** `apps/api/src/database/migrations/` (001–027)
 - **Full-text search:** `sessions.search_vector`, `messages.search_vector` (tsvector)
 - **Schema types:** `apps/api/src/database/types.ts`
 
@@ -159,7 +159,7 @@ Required: `DATABASE_URL`
 
 With defaults: `JWT_SECRET` (built-in dev default, must override in production), `FRONTEND_URL`, `JWT_EXPIRES_IN` (`'7d'`), `ANTHROPIC_MODEL` (`'claude-sonnet-4-20250514'`), `DATABASE_SSL` (`'false'`), `RUN_MIGRATIONS` (`'true'`)
 
-Optional: `ANTHROPIC_API_KEY` (PRD analysis / AI evaluation), `SLACK_WEBHOOK_URL`, `DATABASE_SSL_CA`
+Optional: `ANTHROPIC_API_KEY` (PRD analysis / AI evaluation), `SLACK_WEBHOOK_URL`, `DATABASE_SSL_CA`, `REMOTE_DATABASE_URL` (remote DB for dual-pool routing), `REMOTE_DATABASE_SSL` (`'false'`), `REMOTE_DATABASE_SSL_CA`
 
 ### Frontend State
 

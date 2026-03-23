@@ -108,7 +108,7 @@ export const en: TranslationKeys = {
     "View session stats, timeline, token usage charts, and hot files. The dashboard gives you a real-time overview of your team's AI activity.",
   'docs.gettingStarted.step.3.title': 'Invite Your Team',
   'docs.gettingStarted.step.3.desc':
-    'Add collaborators with roles — Owner, Admin, or Member. Each role has different permissions for managing projects and sessions.',
+    'Add collaborators with roles — Owner or Member. Each role has different permissions for managing projects and sessions.',
   'docs.features.title': 'Features',
   'docs.features.learnMore': 'Learn more',
   'docs.features.0.title': 'Session Sync',
@@ -143,9 +143,9 @@ export const en: TranslationKeys = {
     'ContextSync uses PostgreSQL full-text search with tsvector indexes on sessions and messages. Search by keyword, file path, or code snippet to find relevant conversations across your entire session history. Results are ranked by relevance and grouped by session for easy browsing.',
   'docs.features.6.title': 'Team Collaboration',
   'docs.features.6.summary':
-    'Role-based access control with Owner, Admin, and Member roles. Invite collaborators and manage permissions.',
+    'Role-based access control with Owner and Member roles. Invite collaborators and manage permissions.',
   'docs.features.6.detail':
-    'Projects support three roles: Owner (full control including deletion), Admin (manage members and sessions), and Member (view and sync sessions). Invite teammates by GitHub username and manage roles from the Settings page. Activity feeds keep everyone informed about session syncs, conflicts, and resolution updates.',
+    'Projects support two roles: Owner (full control including deletion and member management) and Member (view data and sync sessions). Invite teammates by name and manage roles from the Settings page. Activity feeds keep everyone informed about session syncs, conflicts, and resolution updates.',
   'docs.features.7.title': 'AI Evaluation',
   'docs.features.7.summary':
     "Score team members' AI utilization across sessions with multi-dimensional analysis and evidence tracking.",
@@ -163,7 +163,7 @@ export const en: TranslationKeys = {
     'Yes. PRD analysis uses the Claude API to extract and evaluate requirements. Set the ANTHROPIC_API_KEY environment variable on the server. Without it, the PRD analysis feature will not be available.',
   'docs.faq.3.q': 'What are the differences between team roles?',
   'docs.faq.3.a':
-    'Owner: full project control including deletion and role management. Admin: manage members, sessions, and conflicts. Member: view data and sync their own sessions. All roles can search and browse sessions.',
+    'Owner: full project control including deletion, role management, and member management. Member: view data and sync their own sessions. Both roles can search and browse sessions.',
   'docs.faq.4.q': 'What can I search for?',
   'docs.faq.4.a':
     'You can search across session titles, conversation messages, and file paths. The search uses PostgreSQL full-text indexing, so it supports natural language queries and partial matching. Use the search page or the global search bar in the navigation.',
