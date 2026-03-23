@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **134 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **130 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -376,31 +376,13 @@
 
 ---
 
-## 20. Setup Verification
-
-**File:** `e2e/tests/setup-verification.spec.ts` (7 TC)
-
-> QuickStart 가이드 완료 후 환경이 정상적으로 구성되었는지 검증하는 테스트.
-
-| #   | TC ID     | Test Name                                            | Description                                                   | Assertions                                               |
-| --- | --------- | ---------------------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
-| 120 | SETUP-001 | All migrations are applied                           | kysely_migration 테이블의 마이그레이션 수 및 마지막 이름 확인 | count === 25, last === '025_simplify_collaboration'      |
-| 121 | SETUP-002 | Database has all expected application tables         | Database interface의 15개 테이블 전부 존재 확인               | information_schema에서 모든 테이블 확인                  |
-| 122 | SETUP-003 | .env.example covers all env.ts schema variables      | .env.example이 env.ts의 모든 변수를 커버하는지 확인           | env.ts의 모든 키가 .env.example에 존재                   |
-| 123 | SETUP-004 | Web frontend responds with HTML                      | 웹 프론트엔드 접근 가능 확인                                  | GET / → response.ok, content-type: text/html             |
-| 124 | SETUP-005 | docker-compose.yml defines postgres with healthcheck | docker-compose.yml에 postgres 서비스 및 healthcheck 정의 확인 | postgres:16-alpine, healthcheck, pg_isready 포함         |
-| 125 | SETUP-006 | Auth system works end-to-end after setup             | 인증 시스템 정상 동작 확인 (login → 프로젝트 생성)            | token 발급, project.id 존재                              |
-| 126 | SETUP-007 | Full-text search vectors are configured              | search_vector 컬럼 존재 확인                                  | sessions.search_vector, messages.search_vector 컬럼 존재 |
-
----
-
-## 21. Clean Environment
+## 20. Clean Environment
 
 > Docker postgres부터 시작하여 DB 생성 → 마이그레이션 → 시드 → API/Web 기동 → 온보딩까지, "from zero" 전체 경로를 검증.
 >
 > Config: `e2e/playwright.clean-env.config.ts` | Port: API 3098, Web 5198, DB 5433
 
-### 21-1. Fresh Setup
+### 20-1. Fresh Setup
 
 **File:** `e2e/tests/clean-env/fresh-setup.spec.ts` (8 TC)
 
@@ -415,7 +397,7 @@
 | 133 | CLEAN-007 | Full CRUD works after fresh setup         | 프로젝트 생성 → 세션 import → 조회 → 삭제           | 각 단계 성공, 삭제 후 404                                |
 | 134 | CLEAN-008 | Seed script runs without errors           | seed 스크립트 실행 → 시드 데이터 DB 조회            | exit code 0, users/projects count > 0                    |
 
-### 21-2. Onboarding
+### 20-2. Onboarding
 
 **File:** `e2e/tests/clean-env/onboarding.spec.ts` (4 TC)
 
