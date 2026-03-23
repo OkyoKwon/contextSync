@@ -92,7 +92,7 @@ Role-based access control (Owner / Member). Invite teammates and share projects 
 
 - **Homebrew** — macOS package manager
 - **Node.js 22+** — JavaScript runtime
-- **pnpm** — package manager (enabled via Node.js built-in Corepack)
+- **pnpm** — package manager (via `corepack enable` or `npm install -g pnpm`)
 - **Docker** — for PostgreSQL container (not needed for team-member mode)
 
 <details>
@@ -129,10 +129,11 @@ corepack enable
 ```bash
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
 corepack enable
-pnpm install
 pnpm bootstrap
 pnpm dev
 ```
+
+> `corepack`이 없으면 `npm install -g pnpm`으로 대체 가능합니다.
 
 > `pnpm bootstrap` runs the full bootstrap: Docker Compose up → DB migration → seed data.
 > Or run `bash scripts/setup.sh` (without `--defaults`) for an interactive wizard with deployment mode selection.

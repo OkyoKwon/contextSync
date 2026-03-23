@@ -7,7 +7,7 @@ AI development context hub — manage sessions, PRD analysis, and plans for indi
 ### Prerequisites
 
 - **Node.js 22+** — `node -v`
-- **pnpm** — `corepack enable` (ships with Node.js)
+- **pnpm** — `corepack enable` or `npm install -g pnpm`
 - **Docker** — for local PostgreSQL (`docker compose up -d`)
 
 macOS install (Homebrew + nvm):

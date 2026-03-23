@@ -13,8 +13,9 @@ echo ""
 cleanup() {
   echo ""
   echo "=== Cleanup ==="
-  # dev 서버 종료 (pnpm dev는 turbo를 실행하고 turbo가 자식 프로세스를 spawn)
+  # dev 서버 종료 (pnpm dev → turbo → tsx/vite 프로세스 트리 전체를 종료)
   if [ -n "${DEV_PID:-}" ]; then
+    pkill -P "$DEV_PID" 2>/dev/null || true
     kill "$DEV_PID" 2>/dev/null || true
     wait "$DEV_PID" 2>/dev/null || true
   fi

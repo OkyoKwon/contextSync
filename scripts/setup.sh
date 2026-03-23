@@ -19,7 +19,8 @@ fi
 
 NODE_MAJOR=$(node -e 'console.log(process.versions.node.split(".")[0])')
 if [ "$NODE_MAJOR" -lt 22 ]; then
-  echo "WARNING: Node.js 22+ recommended (found v$(node -v))"
+  echo "ERROR: Node.js 22+ is required (found v$(node -v)). Upgrade with: nvm install 22"
+  exit 1
 fi
 
 # Check pnpm
