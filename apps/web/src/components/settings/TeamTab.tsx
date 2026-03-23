@@ -113,6 +113,7 @@ export function TeamTab({ projectId }: TeamTabProps) {
           {joinCode ? (
             <JoinCodeShare
               joinCode={joinCode}
+              repoUrl={project?.repoUrl}
               onRegenerate={() => regenerateMutation.mutate()}
               onDelete={() => deleteMutation.mutate()}
               isRegenerating={regenerateMutation.isPending}
