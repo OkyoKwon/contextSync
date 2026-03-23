@@ -471,3 +471,16 @@
 | `sample-session-2.json` | 'Auth Refactoring' (paths: src/auth/login.ts, etc., for conflict detection) |
 | `sample-session.jsonl`  | JSONL format session (2 messages, non-conflicting paths)                    |
 | `sample-prd.md`         | Sample document for PRD analysis                                            |
+
+---
+
+## QuickStart — Full Onboarding (`e2e/tests/quickstart/`)
+
+> git clone → bootstrap → dev → 브라우저 온보딩까지 전체 파이프라인 검증.
+> 실행: `pnpm test:quickstart` (셸 스크립트 + Playwright)
+
+| TC ID  | Description                                          | File                    |
+| ------ | ---------------------------------------------------- | ----------------------- |
+| QS-001 | Root URL (`/`) redirects to `/identify`              | full-onboarding.spec.ts |
+| QS-002 | New user enters name → redirected to `/onboarding`   | full-onboarding.spec.ts |
+| QS-003 | Full journey: name → project → dashboard with verify | full-onboarding.spec.ts |
