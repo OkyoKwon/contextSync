@@ -10,12 +10,13 @@ AI development context hub — manage sessions, PRD analysis, and plans for indi
 - **pnpm** — `corepack enable` (ships with Node.js)
 - **Docker** — for local PostgreSQL (`docker compose up -d`)
 
-macOS install (Homebrew):
+macOS install (Homebrew + nvm):
 
 ```bash
-brew install node@22 && brew install --cask docker && corepack enable
+brew install nvm && nvm install 22 && brew install --cask docker && corepack enable
 ```
 
+> nvm 최초 설치 시 쉘 설정(~/.zshrc)에 nvm 초기화 스크립트 추가 필요. 자세한 내용은 README 참조.
 > Docker Desktop 설치 후 앱을 한 번 실행해야 `docker` CLI가 활성화됩니다.
 
 ```bash

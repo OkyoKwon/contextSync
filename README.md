@@ -102,15 +102,25 @@ Role-based access control (Owner / Member). Invite teammates and share projects 
 # 1. Homebrew (skip if already installed)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 2. Node.js 22 + Docker Desktop
-brew install node@22
+# 2. nvm (Node Version Manager)
+brew install nvm
+echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
+echo '[ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"' >> ~/.zshrc
+source ~/.zshrc
+
+# 3. Node.js 22 (project uses .nvmrc)
+nvm install 22
+nvm use 22
+
+# 4. Docker Desktop
 brew install --cask docker
 
-# 3. Enable pnpm
+# 5. Enable pnpm
 corepack enable
 ```
 
 > After installing Docker Desktop, launch the app once to activate the `docker` CLI.
+> `node -v` 로 v22 이상인지 확인하세요.
 
 </details>
 
