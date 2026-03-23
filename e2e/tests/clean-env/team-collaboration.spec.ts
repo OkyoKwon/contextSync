@@ -86,11 +86,15 @@ test.describe('Team Collaboration — Full Flow', () => {
 
     // Verify latency and version info displayed
     await expect(page.locator('text=/Latency:.*ms/')).toBeVisible();
-    await expect(page.locator('text=/PostgreSQL/')).toBeVisible();
+    await expect(page.locator('text=/PostgreSQL/').first()).toBeVisible();
 
     // Step 2 should now be active
     const connectBtn = page.locator('button:has-text("Connect"):not(:has-text("Test"))');
     await expect(connectBtn).toBeEnabled();
+
+    // Actually connect the remote DB so subsequent tests can generate join codes
+    await connectBtn.click();
+    await expect(page.locator('text=Setup complete')).toBeVisible({ timeout: 15_000 });
   });
 
   // ── CLEAN-014: test-connection API Verification ───────────────────────
