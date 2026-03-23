@@ -70,13 +70,13 @@ export function TokenUsageSummary({ stats }: TokenUsageSummaryProps) {
             <IconComponent size={16} className={color} />
             <p className="text-xs font-medium uppercase text-text-tertiary">{label}</p>
             {tooltip && <Tooltip content={tooltip} position="bottom" />}
+            {badge && (
+              <span className="rounded-full bg-surface-tertiary px-2 py-0.5 text-[10px] font-medium text-text-tertiary">
+                {badge}
+              </span>
+            )}
           </div>
           <p className={`text-2xl font-bold ${color} truncate`}>{value}</p>
-          {badge && (
-            <span className="mt-1 inline-block rounded-full bg-surface-tertiary px-2 py-0.5 text-[10px] font-medium text-text-tertiary">
-              {badge}
-            </span>
-          )}
         </Card>
       ))}
     </div>

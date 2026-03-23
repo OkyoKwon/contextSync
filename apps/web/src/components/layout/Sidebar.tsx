@@ -223,7 +223,7 @@ export function Sidebar() {
       <div className="space-y-1 border-t border-border-default p-3">
         {sidebarCollapsed ? (
           <>
-            <Tooltip content="Landing Page" position="bottom" align="left" width="w-auto">
+            <Tooltip content="Project Site" position="bottom" align="left" width="w-auto">
               <a
                 href="https://okyokwon.github.io/contextSync/"
                 target="_blank"
@@ -253,7 +253,7 @@ export function Sidebar() {
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary transition-colors hover:bg-interactive-hover hover:text-text-primary"
             >
               <LandingPageIcon />
-              <span className="flex-1">Landing Page</span>
+              <span className="flex-1">Project Site</span>
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"

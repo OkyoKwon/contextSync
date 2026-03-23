@@ -27,7 +27,7 @@ export function PrdAnalysisPage() {
   const hasKey = useAuthStore((s) => s.user?.hasAnthropicApiKey ?? false);
   const openApiKeyGuard = useApiKeyGuard((s) => s.openApiKeyGuard);
   const startAnalysisMutation = useStartAnalysis();
-  const { data: latestData, isLoading: isLoadingLatest } = useLatestPrdAnalysis();
+  const { data: latestData } = useLatestPrdAnalysis();
   const { data: documentsData } = usePrdDocuments();
   const [selectedAnalysisId, setSelectedAnalysisId] = useState<string | null>(null);
   const { data: detailData } = usePrdAnalysisDetail(selectedAnalysisId);
@@ -114,9 +114,12 @@ export function PrdAnalysisPage() {
 
         {!hasDocument && (
           <Card>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
+            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
               PRD Document
             </h2>
+            <p className="mb-3 text-xs text-text-tertiary">
+              Upload your product requirements document to track implementation progress.
+            </p>
             <PrdDocumentSection
               onStartAnalysis={handleStartAnalysis}
               isAnalyzing={startAnalysisMutation.isPending}
@@ -142,14 +145,6 @@ export function PrdAnalysisPage() {
               <PrdRequirementList requirements={displayAnalysis.requirements} />
             </Card>
           </>
-        )}
-
-        {!startAnalysisMutation.isPending && !displayAnalysis && !isLoadingLatest && (
-          <Card padding="lg" className="text-center text-sm text-text-tertiary">
-            {hasDocument
-              ? 'Document uploaded. Click Re-analyze to start.'
-              : 'Upload a PRD document to get started.'}
-          </Card>
         )}
 
         <Card>

@@ -34,23 +34,26 @@ export function LandingNav() {
           <img src={assetUrl('/logo.png')} alt="ContextSync" className="h-8" />
         </Link>
         <div className="flex items-center gap-3">
-          <a
-            href="https://github.com/OkyoKwon/contextSync"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-text-tertiary transition-colors hover:text-text-secondary"
-            aria-label={t('nav.github')}
-          >
-            <GitHubIcon />
-          </a>
-          <a
-            href={EXTERNAL_URLS.docs}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
-          >
-            {t('nav.docs')}
-          </a>
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/OkyoKwon/contextSync"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-text-tertiary transition-colors hover:text-text-secondary"
+              aria-label={t('nav.github')}
+            >
+              <GitHubIcon />
+            </a>
+            <a
+              href={EXTERNAL_URLS.docs}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-xs text-text-tertiary transition-colors hover:text-text-secondary"
+            >
+              {t('nav.docs')}
+            </a>
+          </div>
+          <div className="border-l border-border-default h-4" />
           <LanguageSwitcher />
         </div>
       </div>

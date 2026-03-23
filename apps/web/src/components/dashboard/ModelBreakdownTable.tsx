@@ -1,7 +1,6 @@
 import type { ModelUsageBreakdown } from '@context-sync/shared';
 import { Card } from '../ui/Card';
-import { Tooltip } from '../ui/Tooltip';
-import { formatTokenCount, formatUSD } from '../../lib/format';
+import { formatTokenCount } from '../../lib/format';
 
 interface ModelBreakdownTableProps {
   readonly breakdown: readonly ModelUsageBreakdown[];
@@ -24,16 +23,6 @@ export function ModelBreakdownTable({ breakdown }: ModelBreakdownTableProps) {
             <th className="text-left font-medium px-4 py-2">Model</th>
             <th className="text-right font-medium px-4 py-2">Tokens</th>
             <th className="text-right font-medium px-4 py-2">Messages</th>
-            <th className="text-right font-medium px-4 py-2">
-              <span className="inline-flex items-center justify-end gap-1">
-                Cost
-                <Tooltip
-                  content="Estimated cost based on average blended input/output rates per model."
-                  position="bottom"
-                  align="right"
-                />
-              </span>
-            </th>
             <th className="text-right font-medium px-4 py-2">Share</th>
           </tr>
         </thead>
@@ -41,9 +30,10 @@ export function ModelBreakdownTable({ breakdown }: ModelBreakdownTableProps) {
           {breakdown.map((row) => (
             <tr key={row.model} className="border-b border-border-default last:border-0">
               <td className="px-4 py-2 font-medium text-text-primary">{row.model}</td>
-              <td className="px-4 py-2 text-right text-text-secondary">{formatTokenCount(row.totalTokens)}</td>
+              <td className="px-4 py-2 text-right text-text-secondary">
+                {formatTokenCount(row.totalTokens)}
+              </td>
               <td className="px-4 py-2 text-right text-text-secondary">{row.messageCount}</td>
-              <td className="px-4 py-2 text-right text-text-secondary">{formatUSD(row.estimatedCost)}</td>
               <td className="px-4 py-2 text-right text-text-secondary">{row.percentage}%</td>
             </tr>
           ))}

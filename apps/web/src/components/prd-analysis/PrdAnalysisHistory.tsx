@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { PrdAnalysisHistoryEntry } from '@context-sync/shared';
 import { usePrdAnalysisHistory } from '../../hooks/use-prd-analysis';
+import { EmptyState } from '../ui/EmptyState';
 import { PrdRateDelta } from './PrdRateDelta';
 
 interface PrdAnalysisHistoryProps {
@@ -37,21 +38,32 @@ export function PrdAnalysisHistory({ onSelectAnalysis }: PrdAnalysisHistoryProps
   const meta = historyData?.meta;
 
   if (isLoading) {
-    return (
-      <div className="py-8 text-center text-sm text-text-tertiary">Loading history...</div>
-    );
+    return <div className="py-8 text-center text-sm text-text-tertiary">Loading history...</div>;
   }
 
   if (entries.length === 0) {
     return (
-      <div className="py-8 text-center text-sm text-text-tertiary">
-        No analysis history yet. Upload a PRD and run your first analysis.
-      </div>
+      <EmptyState
+        className="!py-12"
+        icon={
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        }
+        title="No analysis history"
+        description="Analysis results will appear here after you upload a PRD and run your first analysis."
+      />
     );
   }
 
-  const completedEntries = (entries as readonly PrdAnalysisHistoryEntry[])
-    .filter((e) => e.status === 'completed' && e.overallRate !== null);
+  const completedEntries = (entries as readonly PrdAnalysisHistoryEntry[]).filter(
+    (e) => e.status === 'completed' && e.overallRate !== null,
+  );
   const deltaMap = new Map<string, number | null>();
   completedEntries.forEach((entry, i) => {
     if (i === completedEntries.length - 1) {
@@ -89,12 +101,17 @@ export function PrdAnalysisHistory({ onSelectAnalysis }: PrdAnalysisHistoryProps
                 >
                   <td className="px-4 py-2 text-text-primary">{entry.documentTitle}</td>
                   <td className="px-4 py-2">{getStatusBadge(entry.status)}</td>
-                  <td className={`px-4 py-2 text-right font-medium ${getRateColor(entry.overallRate)}`}>
+                  <td
+                    className={`px-4 py-2 text-right font-medium ${getRateColor(entry.overallRate)}`}
+                  >
                     {entry.overallRate !== null ? `${entry.overallRate.toFixed(1)}%` : '-'}
                   </td>
                   <td className="px-4 py-2 text-right">
                     {entry.overallRate !== null && delta !== undefined ? (
-                      <PrdRateDelta currentRate={entry.overallRate} previousRate={delta !== null ? entry.overallRate - delta : null} />
+                      <PrdRateDelta
+                        currentRate={entry.overallRate}
+                        previousRate={delta !== null ? entry.overallRate - delta : null}
+                      />
                     ) : (
                       <span className="text-text-tertiary">-</span>
                     )}
@@ -136,4 +153,3 @@ export function PrdAnalysisHistory({ onSelectAnalysis }: PrdAnalysisHistoryProps
     </div>
   );
 }
-

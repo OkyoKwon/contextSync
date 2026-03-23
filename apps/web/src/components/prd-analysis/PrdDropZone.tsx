@@ -55,10 +55,10 @@ export function PrdDropZone({ onFileDrop, isUploading, compact = false }: PrdDro
       } ${isUploading ? 'pointer-events-none opacity-50' : ''}`}
     >
       <input {...getInputProps()} />
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-3">
         {!compact && (
           <svg
-            className="h-10 w-10 text-text-tertiary"
+            className="h-12 w-12 text-text-tertiary"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -71,12 +71,20 @@ export function PrdDropZone({ onFileDrop, isUploading, compact = false }: PrdDro
             />
           </svg>
         )}
-        <p className="text-sm text-text-secondary">
-          {isDragActive ? 'Drop your PRD file here' : 'Drag & drop a PRD file, or click to select'}
-        </p>
-        <p className="text-xs text-text-tertiary">
-          Supported: {SUPPORTED_PRD_EXTENSIONS.join(', ')} (max {MAX_PRD_FILE_SIZE / 1024}KB)
-        </p>
+        <div className="space-y-1 text-center">
+          <p className="text-base font-medium text-text-primary">
+            {isDragActive ? (
+              'Drop your PRD file here'
+            ) : (
+              <>
+                Drag & drop a PRD file, or <span className="text-link underline">browse files</span>
+              </>
+            )}
+          </p>
+          <p className="text-xs text-text-tertiary">
+            Supported: {SUPPORTED_PRD_EXTENSIONS.join(', ')} (max {MAX_PRD_FILE_SIZE / 1024}KB)
+          </p>
+        </div>
       </div>
       {isDragActive && (
         <div role="status" aria-live="polite" className="sr-only">

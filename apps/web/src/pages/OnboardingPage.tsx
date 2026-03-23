@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/auth.store';
@@ -10,6 +10,12 @@ import { Input } from '../components/ui/Input';
 import { Card } from '../components/ui/Card';
 import { DirectoryPicker } from '../components/projects/DirectoryPicker';
 
+const LiquidGradientBackground = lazy(() =>
+  import('../components/ui/LiquidGradientBackground').then((m) => ({
+    default: m.LiquidGradientBackground,
+  })),
+);
+
 export function OnboardingPage() {
   const token = useAuthStore((s) => s.token);
   const status = useOnboardingStatus();
@@ -19,8 +25,15 @@ export function OnboardingPage() {
   if (status === 'ready') return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-page p-4">
-      <div className="w-full max-w-lg space-y-6">
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+      <Suspense
+        fallback={
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0F172A] via-[#141414] to-[#1e293b]" />
+        }
+      >
+        <LiquidGradientBackground className="absolute inset-0" />
+      </Suspense>
+      <div className="relative z-10 w-full max-w-lg space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-text-primary">Welcome to ContextSync!</h1>
           <p className="mt-1 text-sm text-text-tertiary">
