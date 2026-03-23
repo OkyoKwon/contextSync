@@ -167,10 +167,6 @@ export const ko: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code (CLI)는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 다른 AI 도구(claude.ai 웹, Cursor, Windsurf 등)의 세션은 Import 버튼으로 수동 업로드할 수 있습니다.',
 
-  // Hero (auto login)
-  'hero.cta.start': '바로 시작하기',
-  'hero.cta.loginExisting': '로그인',
-
   // Upgrade
   'upgrade.modal.title': '계정 설정',
   'upgrade.modal.description': '팀 기능을 사용하려면 이름과 이메일을 입력하세요',

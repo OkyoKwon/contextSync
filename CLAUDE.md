@@ -27,6 +27,12 @@ pnpm --filter @context-sync/api seed        # Optional: sample data
 pnpm dev                                    # API :3001, Web :5173
 ```
 
+### Team Setup (for team members joining an existing project)
+
+```bash
+pnpm setup:team    # Interactive: DB URL + name + Join Code
+```
+
 ## Commands
 
 | Command                                   | Description                            |
@@ -76,7 +82,7 @@ packages/
 
 - **Backend:** Fastify 5, Kysely 0.27, PostgreSQL 16, `@fastify/jwt`
 - **Frontend:** React 19, Vite 6, Tailwind CSS 4, Zustand 5, React Query 5, React Router 7
-- **Auth:** Email/Name local auth → JWT
+- **Auth:** Name-based identity → JWT
 - **Build:** TypeScript 5.7 (strict), Turborepo, tsx (dev)
 - **Test:** Vitest 3, Testing Library
 

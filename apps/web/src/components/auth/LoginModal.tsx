@@ -1,13 +1,17 @@
-import { Modal } from '../ui/Modal';
-import { LoginHero } from './LoginHero';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 import { useLoginModal } from '../../hooks/use-login-modal';
 
 export function LoginModal() {
   const { isOpen, closeLoginModal } = useLoginModal();
+  const navigate = useNavigate();
 
-  return (
-    <Modal isOpen={isOpen} onClose={closeLoginModal} title="">
-      <LoginHero compact />
-    </Modal>
-  );
+  useEffect(() => {
+    if (isOpen) {
+      closeLoginModal();
+      navigate('/identify', { replace: true });
+    }
+  }, [isOpen, closeLoginModal, navigate]);
+
+  return null;
 }

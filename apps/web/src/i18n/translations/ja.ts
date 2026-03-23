@@ -168,10 +168,6 @@ export const ja: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code（CLI）はプロジェクトルートの.claude/ディレクトリにセッションデータを保存します。セッションスキャンをトリガーするとこのディレクトリから読み取ります。他のAIツール（claude.aiウェブ、Cursor、Windsurf等）のセッションはImportボタンで手動アップロードできます。',
 
-  // Hero (auto login)
-  'hero.cta.start': 'すぐ始める',
-  'hero.cta.loginExisting': 'ログイン',
-
   // Upgrade
   'upgrade.modal.title': 'アカウント設定',
   'upgrade.modal.description': 'チーム機能を使うには名前とメールを入力してください',

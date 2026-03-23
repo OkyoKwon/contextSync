@@ -122,7 +122,7 @@ Client ← Routes (ok/fail)        ← Service (domain logic)  ← Repository (o
 
 | Module                | Route Prefix                                        | Purpose                                                             |
 | --------------------- | --------------------------------------------------- | ------------------------------------------------------------------- |
-| `auth`                | `/api/auth`                                         | Email/name local auth, JWT issuance/refresh                         |
+| `auth`                | `/api/auth`                                         | Name-based identity, JWT issuance/refresh                           |
 | `projects`            | `/api/projects`                                     | Project CRUD, collaborator management                               |
 | `sessions`            | `/api/projects/:id/sessions`                        | Session management, import/export, local sync, token usage          |
 | `conflicts`           | `/api/projects/:id/conflicts`                       | Conflict detection, status management (detected→reviewing→resolved) |
@@ -265,11 +265,19 @@ sequenceDiagram
     participant W as Web (React)
     participant A as API (Fastify)
 
-    U->>W: Enter name + email
-    W->>A: POST /api/auth/login {name, email}
-    A->>A: Find or create user by email
-    A->>A: Issue JWT (userId, email)
-    A-->>W: Return JWT token + user
+    U->>W: Enter name at /identify
+    W->>A: POST /api/auth/identify {name}
+    A->>A: Find user(s) by name
+    alt Single match or new user
+        A->>A: Find or create user, issue JWT
+        A-->>W: Return JWT token + user
+    else Multiple matches (duplicate names)
+        A-->>W: Return {needsSelection: true, users: [...]}
+        U->>W: Select account from candidate list
+        W->>A: POST /api/auth/identify/select {userId}
+        A->>A: Issue JWT for selected user
+        A-->>W: Return JWT token + user
+    end
     W->>W: Save to Zustand store (localStorage)
 
     Note over W,A: All subsequent requests
@@ -281,6 +289,20 @@ sequenceDiagram
     A-->>W: Issue new JWT
 ```
 
+### Auth Endpoints
+
+| Endpoint                    | Method | Auth | Description                                                         |
+| --------------------------- | ------ | ---- | ------------------------------------------------------------------- |
+| `/api/auth/identify`        | POST   | No   | Enter name to create or find user. Returns JWT or candidate list.   |
+| `/api/auth/identify/select` | POST   | No   | Select a specific user from duplicate-name candidates. Returns JWT. |
+| `/api/auth/login`           | POST   | No   | Legacy: login with name + email.                                    |
+| `/api/auth/refresh`         | POST   | Yes  | Refresh JWT token.                                                  |
+| `/api/auth/me`              | GET    | Yes  | Get current user profile.                                           |
+| `/api/setup/status`         | GET    | No   | Database connection status (publicly accessible, no auth required). |
+
+### Key Behaviors
+
+- **AppEntryRedirect** (`/`): Redirects unauthenticated users to `/identify`. Authenticated users go to `/dashboard` or `/onboarding`.
 - JWT expiry: `JWT_EXPIRES_IN` (default 7d)
 - JWT Secret: minimum 32 characters
 - API client automatically attempts one refresh on 401 response
@@ -300,8 +322,9 @@ sequenceDiagram
 ### Routing (React Router 7)
 
 ```
-/                               → AppEntryRedirect (auto-login → /dashboard or /onboarding)
-/login                          → LoginPage
+/                               → AppEntryRedirect (redirects to /identify or /dashboard or /onboarding)
+/identify                       → IdentifyPage (name-based identify flow)
+/login                          → LoginPage (redirects to /identify)
 /onboarding                     → OnboardingPage (redirects to /project on success)
 / (Protected + AppLayout)
   ├── /dashboard                → DashboardPage

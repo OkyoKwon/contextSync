@@ -25,9 +25,14 @@ describe('authApi', () => {
     expect(api.post).toHaveBeenCalledWith('/auth/login', { name: 'John', email: 'john@test.com' });
   });
 
-  it('autoLogin calls POST /auth/auto', async () => {
-    await authApi.autoLogin();
-    expect(api.post).toHaveBeenCalledWith('/auth/auto');
+  it('identify calls POST /auth/identify with name', async () => {
+    await authApi.identify('Alice');
+    expect(api.post).toHaveBeenCalledWith('/auth/identify', { name: 'Alice' });
+  });
+
+  it('identifySelect calls POST /auth/identify/select with userId', async () => {
+    await authApi.identifySelect('user-123');
+    expect(api.post).toHaveBeenCalledWith('/auth/identify/select', { userId: 'user-123' });
   });
 
   it('upgrade calls POST /auth/upgrade', async () => {

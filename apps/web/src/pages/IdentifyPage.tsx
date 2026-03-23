@@ -87,15 +87,15 @@ export function IdentifyPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-text-primary">ContextSync</h1>
-          <p className="mt-2 text-sm text-text-secondary">
-            Team mode — enter your name to get started
-          </p>
+          <p className="mt-2 text-sm text-text-secondary">Enter your name to get started</p>
         </div>
 
         {state === 'selecting' ? (
           <div className="space-y-4">
+            <h2 className="text-base font-semibold text-text-primary">Select your account</h2>
             <p className="text-sm text-text-secondary">
-              Multiple users found with the name &quot;{name}&quot;. Select yours:
+              Multiple users found with the name &quot;{name}&quot;. Select yours or create a new
+              account:
             </p>
             <div className="space-y-2">
               {candidates.map((user) => (
@@ -143,6 +143,9 @@ export function IdentifyPage() {
                 autoComplete="name"
                 className="w-full rounded-lg border border-border-primary bg-surface-primary px-3 py-2 text-sm text-text-primary placeholder-text-tertiary outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
+              <p className="mt-1 text-xs text-text-tertiary">
+                Your name identifies you across sessions and projects
+              </p>
             </div>
             <button
               type="submit"

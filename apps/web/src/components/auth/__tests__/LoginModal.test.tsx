@@ -1,53 +1,53 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '../../../test/test-utils';
+import { render } from '../../../test/test-utils';
+
+const mockNavigate = vi.fn();
+
+vi.mock('react-router', async () => {
+  const actual = await vi.importActual('react-router');
+  return { ...actual, useNavigate: () => mockNavigate };
+});
 
 vi.mock('../../../hooks/use-login-modal', () => ({
   useLoginModal: vi.fn(),
-}));
-
-vi.mock('../LoginHero', () => ({
-  LoginHero: ({ compact }: { compact?: boolean }) => (
-    <div data-testid="login-hero" data-compact={compact}>
-      Login Hero Mock
-    </div>
-  ),
 }));
 
 import { useLoginModal } from '../../../hooks/use-login-modal';
 import { LoginModal } from '../LoginModal';
 
 describe('LoginModal', () => {
-  it('renders modal when open', () => {
+  it('navigates to /identify when modal opens', () => {
+    const closeLoginModal = vi.fn();
     vi.mocked(useLoginModal).mockReturnValue({
       isOpen: true,
-      closeLoginModal: vi.fn(),
+      closeLoginModal,
       openLoginModal: vi.fn(),
     });
 
     render(<LoginModal />);
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByTestId('login-hero')).toBeInTheDocument();
+    expect(closeLoginModal).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith('/identify', { replace: true });
   });
 
-  it('does not render when closed', () => {
+  it('renders nothing when closed', () => {
     vi.mocked(useLoginModal).mockReturnValue({
       isOpen: false,
       closeLoginModal: vi.fn(),
       openLoginModal: vi.fn(),
     });
 
-    render(<LoginModal />);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    const { container } = render(<LoginModal />);
+    expect(container.innerHTML).toBe('');
   });
 
-  it('passes compact prop to LoginHero', () => {
+  it('returns null (no modal rendered)', () => {
     vi.mocked(useLoginModal).mockReturnValue({
-      isOpen: true,
+      isOpen: false,
       closeLoginModal: vi.fn(),
       openLoginModal: vi.fn(),
     });
 
-    render(<LoginModal />);
-    expect(screen.getByTestId('login-hero')).toHaveAttribute('data-compact', 'true');
+    const { container } = render(<LoginModal />);
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
   });
 });

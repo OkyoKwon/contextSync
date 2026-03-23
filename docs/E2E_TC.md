@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **138 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **142 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -66,6 +66,17 @@
 | 20  | GUARD-004 | /settings redirects to /login (unauthenticated)  | Unauthenticated → /settings redirects to login            | URL → `/login`                  |
 | 21  | GUARD-005 | / redirects to /login (unauthenticated)          | Unauthenticated → / auto-login fails → redirects to login | URL → `/login`                  |
 | 22  | GUARD-006 | Public routes are accessible without auth        | Public routes (/docs, /login) are accessible              | Each URL loads without redirect |
+
+### 2-5. Identify Flow
+
+**File:** `e2e/tests/auth/identify.spec.ts` (4 TC)
+
+| #   | TC ID        | Test Name                                              | Description                                                                | Assertions                                    |
+| --- | ------------ | ------------------------------------------------------ | -------------------------------------------------------------------------- | --------------------------------------------- |
+| 149 | IDENTIFY-001 | New name creates user and redirects to onboarding      | Enter a new name at /identify, user is created, redirect to /onboarding    | Token issued, URL contains '/onboarding'      |
+| 150 | IDENTIFY-002 | Existing name recovers user and redirects to dashboard | Enter existing user name at /identify, user is recovered with existing JWT | Token issued, URL contains '/dashboard'       |
+| 151 | IDENTIFY-003 | Duplicate names show candidate selection UI            | Enter a name shared by multiple users, candidate list is displayed         | Candidate list visible, user count matches    |
+| 152 | IDENTIFY-004 | Duplicate names allow creating new account             | From candidate selection, click create new account                         | New user created, token issued, redirect to / |
 
 ---
 

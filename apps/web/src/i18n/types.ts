@@ -140,10 +140,6 @@ export interface TranslationKeys {
   readonly 'docs.faq.5.q': string;
   readonly 'docs.faq.5.a': string;
 
-  // Hero (auto login)
-  readonly 'hero.cta.start': string;
-  readonly 'hero.cta.loginExisting': string;
-
   // Upgrade
   readonly 'upgrade.modal.title': string;
   readonly 'upgrade.modal.description': string;

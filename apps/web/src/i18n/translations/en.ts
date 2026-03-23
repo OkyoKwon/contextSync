@@ -171,10 +171,6 @@ export const en: TranslationKeys = {
   'docs.faq.5.a':
     'Claude Code (CLI) stores session data in the .claude/ directory within your project root. ContextSync reads from this directory when you trigger a session scan. For other AI tools (claude.ai web, Cursor, Windsurf, etc.), use the Import button to upload session files manually.',
 
-  // Hero (auto login)
-  'hero.cta.start': 'Get Started',
-  'hero.cta.loginExisting': 'Log in',
-
   // Upgrade
   'upgrade.modal.title': 'Set Up Account',
   'upgrade.modal.description': 'Enter your name and email to use team features',
