@@ -7,7 +7,6 @@ import { Timeline } from '../components/dashboard/Timeline';
 import { ActiveConflictsSidebar } from '../components/dashboard/ActiveConflictsSidebar';
 import { HotFiles } from '../components/dashboard/HotFiles';
 import { TokenUsagePanel } from '../components/dashboard/TokenUsagePanel';
-import { QuotaPanel } from '../components/dashboard/QuotaPanel';
 import { TeamActivityPanel } from '../components/dashboard/TeamActivityPanel';
 import { ActivityFeed } from '../components/dashboard/ActivityFeed';
 import { EmptyDashboard } from '../components/dashboard/EmptyDashboard';
@@ -109,10 +108,6 @@ export function DashboardPage() {
       </div>
 
       {stats ? <DashboardStatsView stats={stats} isTeam={isTeam} /> : null}
-
-      <div className="mt-6">
-        <QuotaPanel />
-      </div>
 
       <div className="mt-6">
         <TokenUsagePanel />
