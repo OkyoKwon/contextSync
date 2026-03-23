@@ -42,27 +42,7 @@ if [ "$DEFAULTS" = true ]; then
   echo "Installing dependencies..."
   pnpm install
 
-  # Docker check + start
-  if command -v docker &>/dev/null; then
-    echo "Starting PostgreSQL with Docker..."
-    docker compose up -d
-
-    echo "Waiting for PostgreSQL to be ready..."
-    for i in $(seq 1 30); do
-      if docker compose exec -T postgres pg_isready -U postgres &>/dev/null 2>&1; then
-        echo "PostgreSQL is ready."
-        break
-      fi
-      if [ "$i" -eq 30 ]; then
-        echo "WARNING: PostgreSQL health check timed out. Continuing anyway..."
-      fi
-      sleep 1
-    done
-  else
-    echo "WARNING: Docker not found. Make sure PostgreSQL is running at $DATABASE_URL"
-  fi
-
-  # Create .env if it doesn't exist
+  # Create .env if it doesn't exist (before Docker, so it exists even if Docker fails)
   if [ ! -f apps/api/.env ]; then
     cat > apps/api/.env <<EOF
 PORT=3001
@@ -79,6 +59,26 @@ EOF
     echo "Created apps/api/.env"
   else
     echo "apps/api/.env already exists, skipping"
+  fi
+
+  # Docker check + start (postgres service only — avoids team-host variable interpolation)
+  if command -v docker &>/dev/null; then
+    echo "Starting PostgreSQL with Docker..."
+    docker compose up -d postgres
+
+    echo "Waiting for PostgreSQL to be ready..."
+    for i in $(seq 1 30); do
+      if docker compose exec -T postgres pg_isready -U postgres &>/dev/null 2>&1; then
+        echo "PostgreSQL is ready."
+        break
+      fi
+      if [ "$i" -eq 30 ]; then
+        echo "WARNING: PostgreSQL health check timed out. Continuing anyway..."
+      fi
+      sleep 1
+    done
+  else
+    echo "WARNING: Docker not found. Make sure PostgreSQL is running at $DATABASE_URL"
   fi
 
   # Run migrations

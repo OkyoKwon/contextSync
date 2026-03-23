@@ -128,9 +128,9 @@ corepack enable
 
 ```bash
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
-corepack enable           # Activates pnpm (one-time, requires Node.js 22+)
+corepack enable
 pnpm install
-pnpm bootstrap           # Installs deps, starts DB, migrates, seeds
+pnpm bootstrap
 pnpm dev
 ```
 
