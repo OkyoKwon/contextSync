@@ -255,11 +255,6 @@ function SessionRow({
               Synced
             </Badge>
           )}
-          {session.needsApproval && session.isActive && (
-            <Badge variant="warning" title="Waiting for tool approval">
-              Needs Approval
-            </Badge>
-          )}
           {session.isActive && (
             <Badge variant="info" title="Used within 10 min">
               Active

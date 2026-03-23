@@ -209,56 +209,6 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
   };
 }
 
-/** Non-conversation record types that should be skipped when looking for the last meaningful turn */
-const SKIP_RECORD_TYPES = new Set([
-  'progress',
-  'file-history-snapshot',
-  'lock',
-  'unlock',
-  'summary',
-  'system',
-  'result',
-]);
-
-/**
- * Detect whether the session is waiting for tool approval.
- * True when the last meaningful record is an `assistant` turn containing `tool_use`
- * blocks with no subsequent `user` `tool_result`.
- */
-export function detectPendingApproval(raw: string): boolean {
-  const lines = raw.trimEnd().split('\n');
-
-  // Scan backwards to find the last meaningful record
-  for (let i = lines.length - 1; i >= 0; i--) {
-    const line = lines[i];
-    if (!line) continue;
-
-    let record: ClaudeCodeRecord;
-    try {
-      record = JSON.parse(line) as ClaudeCodeRecord;
-    } catch {
-      continue;
-    }
-
-    const recordType = record.type;
-    if (!recordType || SKIP_RECORD_TYPES.has(recordType)) continue;
-
-    // If the last meaningful record is a user turn, no pending approval
-    if (recordType === 'user') return false;
-
-    // If the last meaningful record is an assistant turn with tool_use blocks → pending
-    if (recordType === 'assistant' && Array.isArray(record.message?.content)) {
-      const blocks = record.message.content as readonly ClaudeContentBlock[];
-      return blocks.some((block) => block.type === 'tool_use');
-    }
-
-    // Any other record type — not pending
-    return false;
-  }
-
-  return false;
-}
-
 export function previewClaudeCodeSession(
   raw: string,
   maxLines = 200,

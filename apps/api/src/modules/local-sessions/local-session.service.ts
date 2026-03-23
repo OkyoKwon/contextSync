@@ -15,7 +15,6 @@ import type {
 import {
   parseClaudeCodeSession,
   parseClaudeCodeSessionWithTimestamps,
-  detectPendingApproval,
 } from '../sessions/parsers/claude-code-session.parser.js';
 import { getProjectSessionFiles } from './local-session.sync.js';
 
@@ -155,7 +154,6 @@ export async function listLocalSessions(
         lastModifiedAt: new Date(file.lastModifiedMs).toISOString(),
         isSynced: syncedIds.has(sessionId),
         isActive,
-        needsApproval: isActive ? detectPendingApproval(content) : false,
       });
     } catch {
       // Skip files we can't read

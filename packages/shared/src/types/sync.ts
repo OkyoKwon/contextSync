@@ -15,7 +15,6 @@ export interface LocalSessionInfo {
   readonly totalTokens: number;
   readonly isSynced: boolean;
   readonly isActive: boolean;
-  readonly needsApproval: boolean;
 }
 
 export interface LocalProjectGroup {
