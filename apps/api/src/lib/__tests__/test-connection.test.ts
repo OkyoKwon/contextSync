@@ -70,7 +70,7 @@ describe('testConnection', () => {
 
     expect(pg.Pool).toHaveBeenCalledWith(
       expect.objectContaining({
-        ssl: { rejectUnauthorized: true },
+        ssl: { rejectUnauthorized: false },
       }),
     );
   });

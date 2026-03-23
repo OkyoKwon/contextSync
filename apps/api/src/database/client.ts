@@ -12,7 +12,7 @@ export interface DbOptions {
 export function createDb(options: DbOptions): Kysely<Database> {
   const sslConfig = options.ssl
     ? {
-        rejectUnauthorized: true,
+        rejectUnauthorized: !!options.sslCaPath,
         ...(options.sslCaPath ? { ca: readFileSync(options.sslCaPath, 'utf-8') } : {}),
       }
     : false;

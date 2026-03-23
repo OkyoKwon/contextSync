@@ -15,7 +15,7 @@ export async function testConnection(
     connectionString: connectionUrl,
     max: 1,
     connectionTimeoutMillis: 10_000,
-    ssl: sslEnabled ? { rejectUnauthorized: true } : false,
+    ssl: sslEnabled ? { rejectUnauthorized: false } : false,
   });
 
   const start = Date.now();

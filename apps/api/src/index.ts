@@ -1,3 +1,6 @@
+import dns from 'node:dns';
+dns.setDefaultResultOrder('ipv4first');
+
 import { loadEnv } from './config/env.js';
 import { buildApp } from './app.js';
 import { runMigrations } from './database/migrate.js';

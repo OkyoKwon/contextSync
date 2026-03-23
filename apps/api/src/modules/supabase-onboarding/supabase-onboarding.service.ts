@@ -103,8 +103,8 @@ export async function listOrganizations(
   return orgs.map((o) => ({ id: o.id, name: o.name }));
 }
 
-export function buildConnectionUrl(projectRef: string, dbPassword: string, region: string): string {
-  return `postgresql://postgres.${projectRef}:${encodeURIComponent(dbPassword)}@aws-0-${region}.pooler.supabase.com:6543/postgres`;
+export function buildConnectionUrl(projectRef: string, dbPassword: string): string {
+  return `postgresql://postgres:${encodeURIComponent(dbPassword)}@db.${projectRef}.supabase.co:5432/postgres`;
 }
 
 export async function createSupabaseProject(
@@ -163,7 +163,14 @@ export async function autoSetupExisting(
     throw new AppError('Supabase project not found in your account', 404);
   }
 
-  const connectionUrl = buildConnectionUrl(target.ref, input.dbPassword, target.region);
+  if (target.status === 'INACTIVE' || target.status === 'PAUSED') {
+    throw new AppError(
+      `This Supabase project is currently ${target.status.toLowerCase()}. Please restore it from the Supabase dashboard before connecting.`,
+      400,
+    );
+  }
+
+  const connectionUrl = buildConnectionUrl(target.ref, input.dbPassword);
 
   // Test connection before switching
   const testResult = await testConnection(connectionUrl, true);
@@ -188,7 +195,7 @@ export async function createAndSetup(
   // Create the project on Supabase — this is irreversible
   const created = await createSupabaseProject(supabaseToken, input);
 
-  const connectionUrl = buildConnectionUrl(created.ref, created.dbPassword, created.region);
+  const connectionUrl = buildConnectionUrl(created.ref, created.dbPassword);
 
   // New projects may take a moment to become available.
   // We retry the connection test a few times with a short delay.

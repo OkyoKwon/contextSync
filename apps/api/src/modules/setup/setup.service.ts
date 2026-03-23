@@ -57,7 +57,7 @@ export async function switchToRemote(
     dialect: new PostgresDialect({
       pool: new pg.default.Pool({
         connectionString: connectionUrl,
-        ssl: sslEnabled ? { rejectUnauthorized: true } : false,
+        ssl: sslEnabled ? { rejectUnauthorized: false } : false,
       }),
     }),
   });

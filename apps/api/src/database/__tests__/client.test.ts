@@ -49,7 +49,7 @@ describe('createDb', () => {
 
     expect(MockPool).toHaveBeenCalledWith(
       expect.objectContaining({
-        ssl: { rejectUnauthorized: true },
+        ssl: { rejectUnauthorized: false },
       }),
     );
   });
