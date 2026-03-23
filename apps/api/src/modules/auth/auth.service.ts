@@ -172,6 +172,41 @@ async function mergeAutoUserIntoExisting(
   });
 }
 
+export interface IdentifyResult {
+  readonly users: readonly User[];
+  readonly created: boolean;
+}
+
+export async function findOrCreateByName(db: Db, name: string): Promise<IdentifyResult> {
+  const existing = await db
+    .selectFrom('users')
+    .selectAll()
+    .where('name', '=', name)
+    .where('is_auto', '=', false)
+    .execute();
+
+  if (existing.length >= 1) {
+    return { users: existing.map(toUser), created: false };
+  }
+
+  const email = `${name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')}-${crypto.randomUUID().slice(0, 8)}@local`;
+  const created = await db
+    .insertInto('users')
+    .values({
+      email,
+      name,
+      avatar_url: null,
+      is_auto: false,
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow();
+
+  return { users: [toUser(created)], created: true };
+}
+
 export async function findUserById(db: Db, id: string): Promise<User | null> {
   const row = await db.selectFrom('users').selectAll().where('id', '=', id).executeTakeFirst();
 

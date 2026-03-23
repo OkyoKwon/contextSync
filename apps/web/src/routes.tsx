@@ -4,6 +4,7 @@ import { useAuthStore } from './stores/auth.store';
 import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
+import { IdentifyPage } from './pages/IdentifyPage';
 import { AppEntryRedirect } from './components/auth/AppEntryRedirect';
 
 const OnboardingPage = lazy(() =>
@@ -61,6 +62,7 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<AppEntryRedirect />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/identify" element={<IdentifyPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route
           element={

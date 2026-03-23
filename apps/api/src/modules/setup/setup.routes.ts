@@ -14,12 +14,14 @@ const switchToRemoteSchema = z.object({
 });
 
 export const setupRoutes: FastifyPluginAsync = async (app) => {
-  app.addHook('preHandler', app.authenticate);
-
+  // Public — no auth required (needed before login to detect DB mode)
   app.get('/setup/status', async (_request, reply) => {
     const result = getDatabaseStatus(app.env.DATABASE_URL);
     return reply.send(ok(result));
   });
+
+  // All remaining routes require authentication
+  app.addHook('preHandler', app.authenticate);
 
   app.post('/setup/test-connection', async (request, reply) => {
     const { connectionUrl, sslEnabled } = testConnectionSchema.parse(request.body);

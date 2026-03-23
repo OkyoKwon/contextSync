@@ -7,6 +7,18 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const identifySchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100).trim(),
+});
+
+export type IdentifyInput = z.infer<typeof identifySchema>;
+
+export const identifySelectSchema = z.object({
+  userId: z.string().uuid('Invalid user ID'),
+});
+
+export type IdentifySelectInput = z.infer<typeof identifySelectSchema>;
+
 export const upgradeSchema = z.object({
   name: z.string().min(1, 'Name is required').max(255),
   email: z.string().email('Invalid email address').max(255),

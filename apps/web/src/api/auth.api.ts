@@ -7,6 +7,15 @@ export const authApi = {
   login: (name: string, email: string) =>
     api.post<{ token: string; user: User }>('/auth/login', { name, email }),
 
+  identify: (name: string) =>
+    api.post<{ token: string; user: User } | { users: User[]; needsSelection: true }>(
+      '/auth/identify',
+      { name },
+    ),
+
+  identifySelect: (userId: string) =>
+    api.post<{ token: string; user: User }>('/auth/identify/select', { userId }),
+
   autoLogin: () => api.post<{ token: string; user: User }>('/auth/auto'),
 
   upgrade: (name: string, email: string, autoUserId: string) =>

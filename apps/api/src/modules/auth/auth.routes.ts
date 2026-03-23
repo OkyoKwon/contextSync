@@ -1,6 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
 import {
   loginSchema,
+  identifySchema,
+  identifySelectSchema,
   upgradeSchema,
   updatePlanSchema,
   updateApiKeySchema,
@@ -8,6 +10,7 @@ import {
 } from './auth.schema.js';
 import {
   findOrCreateByEmail,
+  findOrCreateByName,
   findUserById,
   createAutoUser,
   upgradeAutoUser,
@@ -34,6 +37,47 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       { expiresIn: app.env.JWT_EXPIRES_IN },
     );
 
+    return reply.send(ok({ token, user }));
+  });
+
+  app.post('/identify', async (request, reply) => {
+    const parsed = identifySchema.safeParse(request.body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join(', ');
+      return reply.status(400).send(fail(message));
+    }
+
+    const result = await findOrCreateByName(app.db, parsed.data.name);
+
+    const singleUser = result.users.length === 1 ? result.users[0] : undefined;
+    if (singleUser) {
+      const token = app.jwt.sign(
+        { userId: singleUser.id, email: singleUser.email },
+        { expiresIn: app.env.JWT_EXPIRES_IN },
+      );
+      return reply.send(ok({ token, user: singleUser }));
+    }
+
+    // Multiple users with same name — return list for selection
+    return reply.send(ok({ users: result.users, needsSelection: true }));
+  });
+
+  app.post('/identify/select', async (request, reply) => {
+    const parsed = identifySelectSchema.safeParse(request.body);
+    if (!parsed.success) {
+      const message = parsed.error.errors.map((e) => e.message).join(', ');
+      return reply.status(400).send(fail(message));
+    }
+
+    const user = await findUserById(app.db, parsed.data.userId);
+    if (!user) {
+      return reply.status(404).send(fail('User not found'));
+    }
+
+    const token = app.jwt.sign(
+      { userId: user.id, email: user.email },
+      { expiresIn: app.env.JWT_EXPIRES_IN },
+    );
     return reply.send(ok({ token, user }));
   });
 

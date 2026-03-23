@@ -39,6 +39,7 @@ pnpm dev                                    # API :3001, Web :5173
 | `pnpm typecheck`                          | Type check all packages                |
 | `pnpm clean`                              | Clean dist outputs                     |
 | `pnpm --filter @context-sync/api migrate` | Run DB migrations                      |
+| `pnpm setup:team`                         | Team member one-command setup          |
 
 ## Project Structure
 
