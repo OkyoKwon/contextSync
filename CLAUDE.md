@@ -21,7 +21,7 @@ brew install node@22 && brew install --cask docker && corepack enable
 ```bash
 git clone <repo> && cd contextSync
 corepack enable                             # Activates pnpm (one-time, requires Node.js 22+)
-pnpm setup                                  # One command: install + DB + migrate + seed
+pnpm bootstrap                              # One command: install + DB + migrate + seed
 pnpm dev                                    # API :3001, Web :5173
 ```
 

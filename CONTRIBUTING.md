@@ -16,7 +16,7 @@ git clone https://github.com/<your-username>/contextSync.git
 cd contextSync
 
 # 2. One-command setup (installs deps, starts DB, runs migrations, seeds data)
-pnpm setup
+pnpm bootstrap
 
 # 3. Start dev servers
 pnpm dev

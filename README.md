@@ -120,11 +120,11 @@ corepack enable
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
 corepack enable           # Activates pnpm (one-time, requires Node.js 22+)
 pnpm install
-pnpm setup               # Installs deps, starts DB, migrates, seeds
+pnpm bootstrap           # Installs deps, starts DB, migrates, seeds
 pnpm dev
 ```
 
-> `pnpm setup` runs the full bootstrap: Docker Compose up → DB migration → seed data.
+> `pnpm bootstrap` runs the full bootstrap: Docker Compose up → DB migration → seed data.
 > Or run `bash scripts/setup.sh` (without `--defaults`) for an interactive wizard with deployment mode selection.
 
 Open `http://localhost:5173` and enter your name. API runs at `http://localhost:3001`.

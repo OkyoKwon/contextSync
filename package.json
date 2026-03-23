@@ -12,7 +12,7 @@
     "test": "turbo test",
     "test:coverage": "turbo test:coverage",
     "clean": "turbo clean",
-    "setup": "bash scripts/setup.sh --defaults",
+    "bootstrap": "bash scripts/setup.sh --defaults",
     "prepare": "husky",
     "test:e2e": "playwright test --config=e2e/playwright.config.ts",
     "test:e2e:ui": "playwright test --ui --config=e2e/playwright.config.ts",

@@ -568,7 +568,7 @@ Run `bash scripts/setup.sh` for an interactive setup wizard that configures the 
 
 **Pipeline:**
 
-1. Checkout → pnpm setup (v4) → Node 22 + cache
+1. Checkout → pnpm bootstrap (v4) → Node 22 + cache
 2. `pnpm install --frozen-lockfile`
 3. Build shared package
 4. `pnpm typecheck`
