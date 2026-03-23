@@ -38,7 +38,7 @@ export const ja: TranslationKeys = {
   'features.sectionLabel': '// Features',
   'features.hero.0.title': 'Session Archive & Sync',
   'features.hero.0.description': 'セッションをチームのナレッジ資産に',
-  'features.hero.0.detail.0': 'Claude Codeセッションの自動収集・アーカイブ',
+  'features.hero.0.detail.0': 'Claude Code（CLI）セッションの自動収集・アーカイブ',
   'features.hero.0.detail.1': 'プロジェクト別セッショングルーピング・タイムライン',
   'features.hero.0.detail.2': 'メッセージ単位の全文検索（Full-text search）',
   'features.hero.0.detail.3': 'トークン使用量・コスト分析ダッシュボード',
@@ -59,7 +59,7 @@ export const ja: TranslationKeys = {
   'howItWorks.sectionLabel': '// How It Works',
   'howItWorks.step.0.title': 'Import',
   'howItWorks.step.0.description':
-    'ローカルClaude Codeセッションをプロジェクトに同期。自動マッチングでワンクリックアップロード。',
+    'ローカルClaude Code（CLI）セッションをプロジェクトに同期、または他のAIツールのセッションファイルをインポート。',
   'howItWorks.step.1.title': 'Analyze',
   'howItWorks.step.1.description':
     'コンフリクト検知、PRD達成率分析、トークン使用量追跡を自動実行。',
@@ -84,7 +84,7 @@ export const ja: TranslationKeys = {
   'docs.hero.title': 'ContextSyncの活用方法を学ぼう',
   'docs.hero.subtitle': 'チームのClaude Codeセッションをアーカイブ・同期・検索・コンフリクト検知',
   'docs.hero.highlight.0.title': 'Session Sync',
-  'docs.hero.highlight.0.desc': 'Claude Codeセッションを自動でインポート・アーカイブ',
+  'docs.hero.highlight.0.desc': 'Claude Code（CLI）セッションを自動でインポート・アーカイブ',
   'docs.hero.highlight.1.title': 'Conflict Detection',
   'docs.hero.highlight.1.desc': 'マージ地獄になる前にファイルコンフリクトを検知',
   'docs.hero.highlight.2.title': 'Full-Text Search',
@@ -111,9 +111,9 @@ export const ja: TranslationKeys = {
   'docs.features.learnMore': '詳しく見る',
   'docs.features.0.title': 'Session Sync',
   'docs.features.0.summary':
-    'ローカル.claude/ディレクトリからセッションをスキャン。自動/手動インポートと同期ステータス追跡に対応。',
+    'ローカル.claude/ディレクトリからClaude Code（CLI）セッションをスキャン。他のAIツールは手動ファイルインポートにも対応。',
   'docs.features.0.detail':
-    'セッション同期はローカルClaude Codeセッションファイルを読み取り、会話とファイル変更を抽出してプロジェクトにアップロードします。手動スキャンまたは自動検知が使えます。各同期はステータス（待機中、同期中、完了、失敗）を表示します。',
+    'セッション同期はローカルClaude Code（CLI）セッションファイルを読み取り、会話とファイル変更を抽出してプロジェクトにアップロードします。手動スキャンまたは自動検知が使えます。他のツール（claude.aiウェブ、Cursor、Windsurf等）はImportボタンでセッションファイルを直接アップロードできます。各同期はステータス（待機中、同期中、完了、失敗）を表示します。',
   'docs.features.1.title': 'Conflict Detection',
   'docs.features.1.summary':
     '複数のチームメンバーが同じファイルを編集すると自動検知。重大度バッジ（info、warning、critical）とステータスフロー追跡。',
@@ -166,7 +166,7 @@ export const ja: TranslationKeys = {
     'セッションタイトル、会話メッセージ、ファイルパスを検索できます。PostgreSQL全文検索インデックスを使用しており、自然言語クエリと部分マッチングに対応しています。',
   'docs.faq.5.q': 'ローカルセッションはどこに保存されますか？',
   'docs.faq.5.a':
-    'Claude Codeはプロジェクトルートの.claude/ディレクトリにセッションデータを保存します。セッションスキャンをトリガーするとこのディレクトリから読み取ります。明示的に同期するまでデータはローカルに残ります。',
+    'Claude Code（CLI）はプロジェクトルートの.claude/ディレクトリにセッションデータを保存します。セッションスキャンをトリガーするとこのディレクトリから読み取ります。他のAIツール（claude.aiウェブ、Cursor、Windsurf等）のセッションはImportボタンで手動アップロードできます。',
 
   // Hero (auto login)
   'hero.cta.start': 'すぐ始める',

@@ -39,7 +39,7 @@ export const en: TranslationKeys = {
   'features.sectionLabel': '// Features',
   'features.hero.0.title': 'Session Archive & Sync',
   'features.hero.0.description': 'Turn sessions into team knowledge assets',
-  'features.hero.0.detail.0': 'Automatic Claude Code session collection & archiving',
+  'features.hero.0.detail.0': 'Automatic Claude Code (CLI) session collection & archiving',
   'features.hero.0.detail.1': 'Project-based session grouping & timeline',
   'features.hero.0.detail.2': 'Full-text search across messages',
   'features.hero.0.detail.3': 'Token usage & cost analysis dashboard',
@@ -60,7 +60,7 @@ export const en: TranslationKeys = {
   'howItWorks.sectionLabel': '// How It Works',
   'howItWorks.step.0.title': 'Import',
   'howItWorks.step.0.description':
-    'Sync local Claude Code sessions to your project. One-click upload with auto project matching.',
+    'Sync local Claude Code (CLI) sessions to your project, or import session files from other AI tools.',
   'howItWorks.step.1.title': 'Analyze',
   'howItWorks.step.1.description':
     'Automatic conflict detection, PRD fulfillment analysis, and token usage tracking.',
@@ -86,7 +86,7 @@ export const en: TranslationKeys = {
   'docs.hero.subtitle':
     'Manage sessions, PRD analysis, and plans in one place — with AI evaluation and conflict detection',
   'docs.hero.highlight.0.title': 'Session Sync',
-  'docs.hero.highlight.0.desc': 'Import and archive Claude Code sessions automatically',
+  'docs.hero.highlight.0.desc': 'Import and archive Claude Code (CLI) sessions automatically',
   'docs.hero.highlight.1.title': 'Conflict Detection',
   'docs.hero.highlight.1.desc': 'Detect file conflicts before they become merge hell',
   'docs.hero.highlight.2.title': 'Full-Text Search',
@@ -113,9 +113,9 @@ export const en: TranslationKeys = {
   'docs.features.learnMore': 'Learn more',
   'docs.features.0.title': 'Session Sync',
   'docs.features.0.summary':
-    'Scans local .claude/ directories for sessions. Supports auto and manual import with sync status tracking.',
+    'Scans local .claude/ directories for Claude Code (CLI) sessions. Also supports manual file import for other AI tools.',
   'docs.features.0.detail':
-    'Session sync reads your local Claude Code session files, extracts conversations and file changes, and uploads them to your project. You can trigger a manual scan or let ContextSync auto-detect new sessions. Each sync shows status (pending, syncing, synced, failed) so you always know where things stand.',
+    'Session sync reads your local Claude Code (CLI) session files, extracts conversations and file changes, and uploads them to your project. You can trigger a manual scan or let ContextSync auto-detect new sessions. For other tools (claude.ai, Cursor, Windsurf, etc.), use the Import button to upload session files directly. Each sync shows status (pending, syncing, synced, failed) so you always know where things stand.',
   'docs.features.1.title': 'Conflict Detection',
   'docs.features.1.summary':
     'Auto-detects when multiple team members edit the same files. Severity badges (info, warning, critical) and status flow tracking.',
@@ -169,7 +169,7 @@ export const en: TranslationKeys = {
     'You can search across session titles, conversation messages, and file paths. The search uses PostgreSQL full-text indexing, so it supports natural language queries and partial matching. Use the search page or the global search bar in the navigation.',
   'docs.faq.5.q': 'Where are local sessions stored?',
   'docs.faq.5.a':
-    'Claude Code stores session data in the .claude/ directory within your project root. ContextSync reads from this directory when you trigger a session scan. The data stays on your machine until you explicitly sync it to a project.',
+    'Claude Code (CLI) stores session data in the .claude/ directory within your project root. ContextSync reads from this directory when you trigger a session scan. For other AI tools (claude.ai web, Cursor, Windsurf, etc.), use the Import button to upload session files manually.',
 
   // Hero (auto login)
   'hero.cta.start': 'Get Started',

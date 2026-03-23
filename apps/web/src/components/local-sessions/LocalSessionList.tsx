@@ -125,7 +125,7 @@ export function LocalSessionList({
                 </button>
               </p>
             ) : (
-              <p>No local sessions found. Start a Claude Code session to see it here.</p>
+              <p>No local sessions found. Start a Claude Code (CLI) session to see it here.</p>
             )}
           </div>
         )}

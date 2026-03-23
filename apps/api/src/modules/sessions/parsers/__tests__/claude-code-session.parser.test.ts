@@ -501,4 +501,48 @@ describe('stripSystemXmlContent', () => {
   it('collapses whitespace after stripping', () => {
     expect(stripSystemXmlContent('<tag>x</tag>  hello   world')).toBe('hello world');
   });
+
+  it('strips bracket-wrapped interruption messages', () => {
+    expect(stripSystemXmlContent('[Request interrupted by user for tool use]')).toBe('');
+    expect(stripSystemXmlContent('[Request interrupted by user]')).toBe('');
+  });
+
+  it('strips interruption message but keeps surrounding content', () => {
+    expect(stripSystemXmlContent('[Request interrupted by user for tool use] Fix bug')).toBe(
+      'Fix bug',
+    );
+  });
+});
+
+describe('interruption message filtering in parser', () => {
+  it('skips interruption-only user messages in parseClaudeCodeSession', () => {
+    const raw = [
+      makeUserRecord('[Request interrupted by user for tool use]'),
+      makeUserRecord('Real question'),
+      makeAssistantRecord([{ type: 'text', text: 'Answer' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+    const userMessages = parsed.messages.filter((m) => m.role === 'user');
+
+    expect(userMessages).toHaveLength(1);
+    expect(userMessages[0]!.content).toBe('Real question');
+  });
+
+  it('uses real message as title when first message is interruption', () => {
+    const raw = [
+      makeUserRecord('[Request interrupted by user for tool use]'),
+      makeUserRecord('Implement dark mode'),
+      makeAssistantRecord([{ type: 'text', text: 'Done' }], {
+        input_tokens: 1,
+        output_tokens: 5,
+      }),
+    ].join('\n');
+
+    const { parsed } = parseClaudeCodeSession(raw);
+    expect(parsed.title).toBe('Implement dark mode');
+  });
 });

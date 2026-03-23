@@ -107,7 +107,10 @@ export function SessionSyncModal({ isOpen, onClose, onSyncComplete }: SessionSyn
       {!isLoading && groups.length === 0 && !fetchError && projectId && (
         <div className="py-8 text-center">
           <p className="text-sm text-text-tertiary">
-            No Claude Code sessions found in ~/.claude/projects/
+            No Claude Code (CLI) sessions found in ~/.claude/projects/
+          </p>
+          <p className="mt-2 text-xs text-text-muted">
+            Not using Claude Code CLI? Use Import to upload session files (.json, .jsonl, .md).
           </p>
         </div>
       )}

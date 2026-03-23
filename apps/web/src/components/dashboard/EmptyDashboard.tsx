@@ -30,8 +30,8 @@ export function EmptyDashboard({ hasProject = false, hasSessions = false }: Empt
         </svg>
         <h2 className="text-lg font-semibold text-text-primary">Welcome to your project!</h2>
         <p className="mt-2 max-w-md text-center text-sm text-text-tertiary">
-          Your project is all set up. Sync your Claude Code sessions from the Conversations page to
-          see insights and analytics here.
+          Your project is all set up. Sync your Claude Code (CLI) sessions from the Conversations
+          page, or import sessions via file upload.
         </p>
 
         <div className="mt-6 flex items-start gap-6 text-xs text-text-tertiary">

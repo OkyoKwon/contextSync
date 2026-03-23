@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { findFirstMeaningfulTitle, generateTitle } from '../title.utils.js';
+import {
+  extractAssistantIntent,
+  findFirstMeaningfulTitle,
+  generateSessionTitle,
+  generateTitle,
+  humanizeBranchName,
+  isVagueMessage,
+  scoreTitleCandidate,
+  summarizeFilePaths,
+  UNTITLED,
+} from '../title.utils.js';
 
 describe('generateTitle', () => {
   it('should strip XML tags and their content', () => {
@@ -57,6 +67,16 @@ describe('generateTitle', () => {
     // Should not cut mid-word
     expect(result.endsWith('...')).toBe(false);
     expect(input.startsWith(result)).toBe(true);
+  });
+
+  it('should strip bracket-wrapped system interruption messages', () => {
+    expect(generateTitle('[Request interrupted by user for tool use]')).toBe('Untitled Session');
+    expect(generateTitle('[Request interrupted by user]')).toBe('Untitled Session');
+  });
+
+  it('should strip interruption message and keep real content', () => {
+    const input = '[Request interrupted by user for tool use] Fix the login bug';
+    expect(generateTitle(input)).toBe('Fix the login bug');
   });
 
   it('should return "Untitled Session" for empty input', () => {
@@ -151,5 +171,348 @@ describe('findFirstMeaningfulTitle', () => {
       'Second real message',
     ];
     expect(findFirstMeaningfulTitle(contents)).toBe('First real message');
+  });
+
+  it('should skip interruption-only messages and use the first meaningful one', () => {
+    const contents = ['[Request interrupted by user for tool use]', 'Real user question'];
+    expect(findFirstMeaningfulTitle(contents)).toBe('Real user question');
+  });
+
+  it('should return Untitled Session if all messages are interruptions', () => {
+    const contents = [
+      '[Request interrupted by user for tool use]',
+      '[Request interrupted by user]',
+    ];
+    expect(findFirstMeaningfulTitle(contents)).toBe('Untitled Session');
+  });
+});
+
+describe('isVagueMessage', () => {
+  it('detects single vague words', () => {
+    expect(isVagueMessage('yes')).toBe(true);
+    expect(isVagueMessage('y')).toBe(true);
+    expect(isVagueMessage('ok')).toBe(true);
+    expect(isVagueMessage('sure')).toBe(true);
+    expect(isVagueMessage('commit')).toBe(true);
+    expect(isVagueMessage('thanks')).toBe(true);
+    expect(isVagueMessage('lgtm')).toBe(true);
+  });
+
+  it('detects Korean vague words', () => {
+    expect(isVagueMessage('ㅇㅇ')).toBe(true);
+    expect(isVagueMessage('ㅇㅋ')).toBe(true);
+    expect(isVagueMessage('이거')).toBe(true);
+    expect(isVagueMessage('해줘')).toBe(true);
+    expect(isVagueMessage('고쳐')).toBe(true);
+    expect(isVagueMessage('확인')).toBe(true);
+  });
+
+  it('detects stack traces', () => {
+    const stackTrace = `Error: Cannot read properties of undefined
+    at Object.<anonymous> (/app/src/index.ts:42:5)
+    at Module._compile (node:internal/modules/cjs/loader:1364:14)`;
+    expect(isVagueMessage(stackTrace)).toBe(true);
+  });
+
+  it('detects short messages without verbs', () => {
+    expect(isVagueMessage('this file')).toBe(true);
+    expect(isVagueMessage('the bug')).toBe(true);
+  });
+
+  it('does not flag meaningful messages', () => {
+    expect(isVagueMessage('fix the login bug')).toBe(false);
+    expect(isVagueMessage('Add dark mode support to the settings page')).toBe(false);
+    expect(isVagueMessage('Refactor the auth middleware')).toBe(false);
+  });
+
+  it('does not flag short messages with action verbs', () => {
+    expect(isVagueMessage('fix this bug')).toBe(false);
+    expect(isVagueMessage('add tests')).toBe(false);
+  });
+
+  it('treats empty string as vague', () => {
+    expect(isVagueMessage('')).toBe(true);
+    expect(isVagueMessage('   ')).toBe(true);
+  });
+});
+
+describe('scoreTitleCandidate', () => {
+  it('gives high score to plan titles', () => {
+    const plan = 'Implement the following plan:\n\n# Plan: Auth Middleware Refactor\n\n## Context';
+    expect(scoreTitleCandidate(plan)).toBeGreaterThanOrEqual(5);
+  });
+
+  it('gives positive score to action verb messages', () => {
+    expect(scoreTitleCandidate('Fix the login validation bug')).toBeGreaterThan(0);
+    expect(scoreTitleCandidate('Add dark mode support')).toBeGreaterThan(0);
+    expect(scoreTitleCandidate('Refactor the session parser')).toBeGreaterThan(0);
+  });
+
+  it('gives bonus for good length range', () => {
+    const short = 'fix bug'; // < 15
+    const good = 'Fix the authentication middleware to handle expired tokens';
+    expect(scoreTitleCandidate(good)).toBeGreaterThan(scoreTitleCandidate(short));
+  });
+
+  it('penalizes vague messages heavily', () => {
+    expect(scoreTitleCandidate('yes')).toBeLessThan(0);
+    expect(scoreTitleCandidate('ok')).toBeLessThan(0);
+    expect(scoreTitleCandidate('ㅇㅇ')).toBeLessThan(0);
+  });
+
+  it('penalizes very long pastes', () => {
+    const longPaste = 'fix ' + 'a'.repeat(250);
+    const normalMsg = 'Fix the authentication middleware';
+    expect(scoreTitleCandidate(normalMsg)).toBeGreaterThan(scoreTitleCandidate(longPaste));
+  });
+
+  it('returns negative for untitled content', () => {
+    expect(scoreTitleCandidate('')).toBeLessThan(0);
+    expect(scoreTitleCandidate('<system-reminder>only xml</system-reminder>')).toBeLessThan(0);
+  });
+});
+
+describe('humanizeBranchName', () => {
+  it('removes feat/ prefix and humanizes', () => {
+    expect(humanizeBranchName('feat/add-dark-mode')).toBe('Add dark mode');
+  });
+
+  it('removes fix/ prefix', () => {
+    expect(humanizeBranchName('fix/login-validation')).toBe('Login validation');
+  });
+
+  it('removes refactor/ prefix', () => {
+    expect(humanizeBranchName('refactor/auth-middleware')).toBe('Auth middleware');
+  });
+
+  it('removes ticket numbers as prefix', () => {
+    expect(humanizeBranchName('feat/PROJ-123-add-dark-mode')).toBe('Add dark mode');
+  });
+
+  it('removes ticket numbers as suffix', () => {
+    expect(humanizeBranchName('feat/add-dark-mode-PROJ-456')).toBe('Add dark mode');
+  });
+
+  it('returns null for default branches', () => {
+    expect(humanizeBranchName('main')).toBeNull();
+    expect(humanizeBranchName('master')).toBeNull();
+    expect(humanizeBranchName('develop')).toBeNull();
+    expect(humanizeBranchName('dev')).toBeNull();
+  });
+
+  it('handles underscores', () => {
+    expect(humanizeBranchName('feat/add_dark_mode')).toBe('Add dark mode');
+  });
+
+  it('returns null for empty string', () => {
+    expect(humanizeBranchName('')).toBeNull();
+    expect(humanizeBranchName('  ')).toBeNull();
+  });
+
+  it('handles branch without prefix', () => {
+    expect(humanizeBranchName('add-dark-mode')).toBe('Add dark mode');
+  });
+});
+
+describe('extractAssistantIntent', () => {
+  it('extracts "I\'ll" pattern', () => {
+    expect(extractAssistantIntent("I'll fix the authentication middleware for you.")).toBe(
+      'Fix the authentication middleware for you',
+    );
+  });
+
+  it('extracts "Let me" pattern', () => {
+    expect(extractAssistantIntent('Let me refactor the session parser.')).toBe(
+      'Refactor the session parser',
+    );
+  });
+
+  it('extracts "I\'m going to" pattern', () => {
+    expect(extractAssistantIntent("I'm going to add dark mode support.")).toBe(
+      'Add dark mode support',
+    );
+  });
+
+  it('returns null for non-matching text', () => {
+    expect(extractAssistantIntent('The code looks good.')).toBeNull();
+    expect(extractAssistantIntent('Here is the result.')).toBeNull();
+  });
+
+  it('returns null for empty text', () => {
+    expect(extractAssistantIntent('')).toBeNull();
+  });
+
+  it('only uses first sentence (stops at period)', () => {
+    expect(extractAssistantIntent("I'll fix the bug. Then I'll add tests.")).toBe('Fix the bug');
+  });
+
+  it('only uses first line (stops at newline)', () => {
+    expect(extractAssistantIntent('Let me check the code\nFirst, I need to read the file')).toBe(
+      'Check the code',
+    );
+  });
+});
+
+describe('summarizeFilePaths', () => {
+  it('returns null for empty array', () => {
+    expect(summarizeFilePaths([])).toBeNull();
+  });
+
+  it('returns last 2 segments for single file', () => {
+    expect(summarizeFilePaths(['src/modules/auth/login.ts'])).toBe('auth/login.ts');
+  });
+
+  it('summarizes multiple files in same module', () => {
+    const paths = [
+      'src/modules/auth/login.ts',
+      'src/modules/auth/register.ts',
+      'src/modules/auth/middleware.ts',
+    ];
+    expect(summarizeFilePaths(paths)).toBe('3 files in auth');
+  });
+
+  it('summarizes files across modules', () => {
+    const paths = [
+      'src/modules/auth/login.ts',
+      'src/modules/auth/register.ts',
+      'src/modules/sessions/parser.ts',
+      'src/modules/sessions/service.ts',
+      'src/components/layout/Sidebar.tsx',
+    ];
+    expect(summarizeFilePaths(paths)).toBe('5 files across auth, sessions');
+  });
+
+  it('handles component paths', () => {
+    const paths = [
+      'src/components/settings/IntegrationsTab.tsx',
+      'src/components/settings/ProfileTab.tsx',
+    ];
+    expect(summarizeFilePaths(paths)).toBe('2 files in settings');
+  });
+
+  it('handles files with no recognized module pattern', () => {
+    const paths = ['README.md', 'package.json', 'tsconfig.json'];
+    expect(summarizeFilePaths(paths)).toBe('3 files');
+  });
+});
+
+describe('generateSessionTitle', () => {
+  it('uses good first user message directly', () => {
+    const result = generateSessionTitle({
+      userMessages: ['Fix the authentication middleware'],
+      assistantMessages: ["I'll fix the auth middleware."],
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe('Fix the authentication middleware');
+  });
+
+  it('picks best scoring message when first is vague', () => {
+    const result = generateSessionTitle({
+      userMessages: ['yes', 'Fix the login validation bug'],
+      assistantMessages: [],
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe('Fix the login validation bug');
+  });
+
+  it('falls back to assistant intent when all user messages are vague', () => {
+    const result = generateSessionTitle({
+      userMessages: ['yes', 'ok', 'sure'],
+      assistantMessages: ["I'll refactor the session parser."],
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe('Refactor the session parser');
+  });
+
+  it('falls back to branch name when all messages are vague and no assistant intent', () => {
+    const result = generateSessionTitle({
+      userMessages: ['yes'],
+      assistantMessages: ['Done.'],
+      branch: 'feat/add-dark-mode',
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe('Add dark mode');
+  });
+
+  it('returns Untitled Session as final fallback', () => {
+    const result = generateSessionTitle({
+      userMessages: ['yes'],
+      assistantMessages: ['Done.'],
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe(UNTITLED);
+  });
+
+  it('adds file path suffix for short titles', () => {
+    const result = generateSessionTitle({
+      userMessages: ['Fix the bug'],
+      assistantMessages: [],
+      filePaths: ['src/modules/auth/login.ts', 'src/modules/auth/middleware.ts'],
+      toolNames: [],
+    });
+    expect(result).toContain('Fix the bug');
+    expect(result).toContain('auth');
+  });
+
+  it('does not add suffix when title would exceed max length', () => {
+    const longTitle = 'Implement comprehensive authentication system with OAuth2 support';
+    const result = generateSessionTitle({
+      userMessages: [longTitle],
+      assistantMessages: [],
+      filePaths: ['src/modules/auth/very-long-path/some-deeply-nested-file.ts'],
+      toolNames: [],
+    });
+    // Should still contain the title, may or may not have suffix depending on length
+    expect(result.length).toBeLessThanOrEqual(100);
+  });
+
+  it('handles plan titles with high priority', () => {
+    const result = generateSessionTitle({
+      userMessages: [
+        'Implement the following plan:\n\n# Plan: Auth Middleware Refactor\n\n## Context',
+      ],
+      assistantMessages: [],
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe('Auth Middleware Refactor');
+  });
+
+  it('handles empty user messages', () => {
+    const result = generateSessionTitle({
+      userMessages: [],
+      assistantMessages: ["I'll help you."],
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe('Help you');
+  });
+
+  it('handles branch fallback with file suffix', () => {
+    const result = generateSessionTitle({
+      userMessages: ['ok'],
+      assistantMessages: ['Done.'],
+      branch: 'fix/login-bug',
+      filePaths: ['src/modules/auth/login.ts'],
+      toolNames: [],
+    });
+    expect(result).toContain('Login bug');
+    expect(result).toContain('auth/login.ts');
+  });
+
+  it('skips default branches for fallback', () => {
+    const result = generateSessionTitle({
+      userMessages: ['yes'],
+      assistantMessages: ['OK.'],
+      branch: 'main',
+      filePaths: [],
+      toolNames: [],
+    });
+    expect(result).toBe(UNTITLED);
   });
 });

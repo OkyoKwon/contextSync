@@ -1,4 +1,4 @@
-import { findFirstMeaningfulTitle, stripSystemXmlContent } from './title.utils.js';
+import { generateSessionTitle, stripSystemXmlContent } from './title.utils.js';
 
 interface ClaudeUsage {
   readonly input_tokens?: number;
@@ -74,6 +74,7 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
   const lines = raw.trim().split('\n').filter(Boolean);
   const messages: TimestampedMessage[] = [];
   const filePaths = new Set<string>();
+  const allToolNames: string[] = [];
   let model: string | undefined;
   let branch: string | undefined;
   let lastTimestamp: string = new Date(0).toISOString();
@@ -83,6 +84,10 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
 
   const flushPendingTurn = () => {
     if (!pendingTurn) return;
+
+    if (pendingTurn.toolNames.length > 0) {
+      allToolNames.push(...pendingTurn.toolNames);
+    }
 
     const content =
       pendingTurn.textParts.length > 0
@@ -186,8 +191,13 @@ export function parseClaudeCodeSessionWithTimestamps(raw: string): TimestampedPa
 
   flushPendingTurn();
 
-  const userContents = messages.filter((m) => m.role === 'user').map((m) => m.content);
-  const title = findFirstMeaningfulTitle(userContents);
+  const title = generateSessionTitle({
+    userMessages: messages.filter((m) => m.role === 'user').map((m) => m.content),
+    assistantMessages: messages.filter((m) => m.role === 'assistant').map((m) => m.content),
+    branch,
+    filePaths: [...filePaths],
+    toolNames: allToolNames,
+  });
 
   return {
     title,

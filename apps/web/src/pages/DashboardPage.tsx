@@ -113,20 +113,32 @@ export function DashboardPage() {
         <TokenUsagePanel />
       </div>
 
-      <div className="mt-6 grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <div className="mb-3">
-            <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
+      {isTeam ? (
+        <div className="mt-6 grid grid-cols-3 gap-6">
+          <div className="col-span-2">
+            <div className="mb-3">
+              <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
+            </div>
+            <Timeline entries={entries} isLoading={timelineLoading} />
           </div>
-          <Timeline entries={entries} isLoading={timelineLoading} />
+          <div className="space-y-4">
+            <TeamActivityPanel />
+            <ActiveConflictsSidebar />
+            {stats && <HotFiles hotFilePaths={stats.hotFilePaths} />}
+            <ActivityFeed />
+          </div>
         </div>
-        <div className="space-y-4">
-          {isTeam && <TeamActivityPanel />}
-          {isTeam && <ActiveConflictsSidebar />}
+      ) : (
+        <div className="mt-6 space-y-6">
           {stats && <HotFiles hotFilePaths={stats.hotFilePaths} />}
-          {isTeam && <ActivityFeed />}
+          <div>
+            <div className="mb-3">
+              <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
+            </div>
+            <Timeline entries={entries} isLoading={timelineLoading} />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

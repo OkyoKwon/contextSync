@@ -19,6 +19,16 @@ function formatFileSize(bytes: number): string {
 export function PlanViewer({ plan, onDelete, isDeleting }: PlanViewerProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const handleDownload = () => {
+    const blob = new Blob([plan.content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = plan.filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDelete = () => {
     onDelete(plan.filename);
     setShowConfirm(false);
@@ -56,12 +66,20 @@ export function PlanViewer({ plan, onDelete, isDeleting }: PlanViewerProps) {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10"
-            >
-              Delete
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownload}
+                className="rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-interactive-hover"
+              >
+                Download
+              </button>
+              <button
+                onClick={() => setShowConfirm(true)}
+                className="rounded-lg border border-border-default px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-500/10"
+              >
+                Delete
+              </button>
+            </div>
           )}
         </div>
       </div>

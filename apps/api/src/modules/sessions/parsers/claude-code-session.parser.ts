@@ -1,6 +1,6 @@
 import type { SessionImportData } from '@context-sync/shared';
 import {
-  findFirstMeaningfulTitle,
+  generateSessionTitle,
   generateTitle,
   stripSystemXmlContent,
   UNTITLED,
@@ -75,6 +75,7 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
   const lines = raw.trim().split('\n').filter(Boolean);
   const messages: SessionImportData['messages'][number][] = [];
   const filePaths = new Set<string>();
+  const allToolNames: string[] = [];
   let model: string | undefined;
   let branch: string | undefined;
 
@@ -84,6 +85,10 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
 
   const flushPendingTurn = () => {
     if (!pendingTurn) return;
+
+    if (pendingTurn.toolNames.length > 0) {
+      allToolNames.push(...pendingTurn.toolNames);
+    }
 
     const content =
       pendingTurn.textParts.length > 0
@@ -195,8 +200,13 @@ export function parseClaudeCodeSession(raw: string): ClaudeCodeParseResult {
     throw new Error('No conversation messages found in Claude Code session');
   }
 
-  const userContents = messages.filter((m) => m.role === 'user').map((m) => m.content);
-  const title = findFirstMeaningfulTitle(userContents);
+  const title = generateSessionTitle({
+    userMessages: messages.filter((m) => m.role === 'user').map((m) => m.content),
+    assistantMessages: messages.filter((m) => m.role === 'assistant').map((m) => m.content),
+    branch,
+    filePaths: [...filePaths],
+    toolNames: allToolNames,
+  });
 
   return {
     parsed: {

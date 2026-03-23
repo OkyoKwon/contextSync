@@ -34,9 +34,12 @@ export function DirectoryGuidance({ onOpenDirectoryModal }: DirectoryGuidancePro
           </svg>
           <h2 className="text-lg font-semibold text-text-primary">Link your working directory</h2>
           <p className="mt-2 text-sm text-text-tertiary">
-            Claude Code stores session data in{' '}
+            Claude Code (CLI) stores session data in{' '}
             <code className="font-mono text-text-secondary">~/.claude/projects/</code>. Link your
             project directory to automatically discover and sync sessions.
+          </p>
+          <p className="mt-2 text-xs text-text-muted">
+            Using another AI tool? You can upload session files directly via the Import button.
           </p>
         </div>
 

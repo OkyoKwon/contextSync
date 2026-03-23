@@ -38,7 +38,7 @@ export const ko: TranslationKeys = {
   'features.sectionLabel': '// Features',
   'features.hero.0.title': 'Session Archive & Sync',
   'features.hero.0.description': '세션을 팀의 지식 자산으로',
-  'features.hero.0.detail.0': 'Claude Code 세션 자동 수집 및 아카이브',
+  'features.hero.0.detail.0': 'Claude Code (CLI) 세션 자동 수집 및 아카이브',
   'features.hero.0.detail.1': '프로젝트별 세션 그룹핑 및 타임라인',
   'features.hero.0.detail.2': '메시지 단위 전문 검색 (Full-text search)',
   'features.hero.0.detail.3': '토큰 사용량 및 비용 분석 대시보드',
@@ -59,7 +59,7 @@ export const ko: TranslationKeys = {
   'howItWorks.sectionLabel': '// How It Works',
   'howItWorks.step.0.title': 'Import',
   'howItWorks.step.0.description':
-    '로컬 Claude Code 세션을 프로젝트에 동기화합니다. 자동 프로젝트 매칭으로 원클릭 업로드.',
+    '로컬 Claude Code (CLI) 세션을 프로젝트에 동기화하거나, 다른 AI 도구의 세션 파일을 직접 업로드합니다.',
   'howItWorks.step.1.title': 'Analyze',
   'howItWorks.step.1.description':
     '충돌 감지, PRD 달성률 분석, 토큰 사용량 추적을 자동으로 수행합니다.',
@@ -84,7 +84,7 @@ export const ko: TranslationKeys = {
   'docs.hero.title': 'ContextSync 활용법을 알아보세요',
   'docs.hero.subtitle': '팀의 Claude Code 세션을 아카이브 · 동기화 · 검색 · 충돌 감지',
   'docs.hero.highlight.0.title': 'Session Sync',
-  'docs.hero.highlight.0.desc': 'Claude Code 세션을 자동으로 가져오고 아카이브',
+  'docs.hero.highlight.0.desc': 'Claude Code (CLI) 세션을 자동으로 가져오고 아카이브',
   'docs.hero.highlight.1.title': 'Conflict Detection',
   'docs.hero.highlight.1.desc': '머지 지옥이 되기 전에 파일 충돌을 감지',
   'docs.hero.highlight.2.title': 'Full-Text Search',
@@ -111,9 +111,9 @@ export const ko: TranslationKeys = {
   'docs.features.learnMore': '자세히 보기',
   'docs.features.0.title': 'Session Sync',
   'docs.features.0.summary':
-    '로컬 .claude/ 디렉토리에서 세션을 스캔합니다. 자동/수동 가져오기와 동기화 상태 추적을 지원합니다.',
+    '로컬 .claude/ 디렉토리에서 Claude Code (CLI) 세션을 스캔합니다. 다른 AI 도구는 수동 파일 임포트도 지원합니다.',
   'docs.features.0.detail':
-    '세션 동기화는 로컬 Claude Code 세션 파일을 읽어 대화와 파일 변경사항을 추출하고 프로젝트에 업로드합니다. 수동 스캔을 트리거하거나 자동 감지를 사용할 수 있습니다. 각 동기화는 상태(대기, 동기화 중, 완료, 실패)를 표시합니다.',
+    '세션 동기화는 로컬 Claude Code (CLI) 세션 파일을 읽어 대화와 파일 변경사항을 추출하고 프로젝트에 업로드합니다. 수동 스캔을 트리거하거나 자동 감지를 사용할 수 있습니다. 다른 도구(claude.ai 웹, Cursor, Windsurf 등)는 Import 버튼으로 세션 파일을 직접 업로드할 수 있습니다. 각 동기화는 상태(대기, 동기화 중, 완료, 실패)를 표시합니다.',
   'docs.features.1.title': 'Conflict Detection',
   'docs.features.1.summary':
     '여러 팀원이 같은 파일을 편집할 때 자동 감지합니다. 심각도 배지(info, warning, critical)와 상태 흐름 추적.',
@@ -165,7 +165,7 @@ export const ko: TranslationKeys = {
     '세션 제목, 대화 메시지, 파일 경로를 검색할 수 있습니다. PostgreSQL 전문 검색 인덱스를 사용하므로 자연어 쿼리와 부분 매칭을 지원합니다.',
   'docs.faq.5.q': '로컬 세션은 어디에 저장되나요?',
   'docs.faq.5.a':
-    'Claude Code는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 명시적으로 동기화하기 전까지 데이터는 로컬에 남아있습니다.',
+    'Claude Code (CLI)는 프로젝트 루트의 .claude/ 디렉토리에 세션 데이터를 저장합니다. 세션 스캔을 트리거하면 이 디렉토리에서 읽습니다. 다른 AI 도구(claude.ai 웹, Cursor, Windsurf 등)의 세션은 Import 버튼으로 수동 업로드할 수 있습니다.',
 
   // Hero (auto login)
   'hero.cta.start': '바로 시작하기',
