@@ -1,3 +1,5 @@
+export type DatabaseMode = 'local' | 'remote';
+
 export interface Project {
   readonly id: string;
   readonly ownerId: string;
@@ -6,6 +8,7 @@ export interface Project {
   readonly repoUrl: string | null;
   readonly localDirectory: string | null;
   readonly joinCode: string | null;
+  readonly databaseMode: DatabaseMode;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -15,6 +18,7 @@ export interface CreateProjectInput {
   readonly description?: string;
   readonly repoUrl?: string;
   readonly localDirectory?: string;
+  readonly databaseMode?: DatabaseMode;
 }
 
 export interface UpdateProjectInput {

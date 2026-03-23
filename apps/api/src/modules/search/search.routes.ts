@@ -17,9 +17,9 @@ export const searchRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/search',
     async (request, reply) => {
-      await assertProjectAccess(app.db, request.params.projectId, request.user.userId);
+      const db = await app.resolveDb(request.params.projectId);
+      await assertProjectAccess(app.localDb, request.params.projectId, request.user.userId);
 
-      const db = app.db;
       const { q, type, page, limit } = searchQuerySchema.parse(request.query);
       const result = await searchInProject(db, request.params.projectId, q, type, page, limit);
 

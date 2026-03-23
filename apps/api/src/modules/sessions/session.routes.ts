@@ -9,6 +9,8 @@ import {
   tokenUsageQuerySchema,
 } from './session.schema.js';
 import * as tokenUsageService from './token-usage.service.js';
+import { findSessionById } from './session.repository.js';
+import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 
 export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -16,7 +18,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/sessions/export/markdown',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const { markdown, projectName } = await exportProjectAsMarkdown(
         db,
         request.params.projectId,
@@ -43,7 +45,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
       const buffer = await file.toBuffer();
       const content = buffer.toString('utf-8');
 
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const result = await importSession(
         db,
         request.params.projectId,
@@ -59,7 +61,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/sessions',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const filter = sessionFilterSchema.parse(request.query);
       const result = await sessionService.getSessionsByProject(
         db,
@@ -74,37 +76,55 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   );
 
   app.get<{ Params: { sessionId: string } }>('/sessions/:sessionId', async (request, reply) => {
-    const session = await sessionService.getSessionDetail(
-      app.db,
-      request.params.sessionId,
-      request.user.userId,
-    );
-    return reply.send(ok(session));
+    const { sessionId } = request.params;
+    let db = app.localDb;
+    let session = await findSessionById(db, sessionId);
+    if (!session && app.remoteDb) {
+      db = app.remoteDb;
+      session = await findSessionById(db, sessionId);
+    }
+    if (!session) throw new NotFoundError('Session');
+
+    const detail = await sessionService.getSessionDetail(db, sessionId, request.user.userId);
+    return reply.send(ok(detail));
   });
 
   app.patch<{ Params: { sessionId: string }; Body: unknown }>(
     '/sessions/:sessionId',
     async (request, reply) => {
+      const { sessionId } = request.params;
+      let db = app.localDb;
+      let session = await findSessionById(db, sessionId);
+      if (!session && app.remoteDb) {
+        db = app.remoteDb;
+        session = await findSessionById(db, sessionId);
+      }
+      if (!session) throw new NotFoundError('Session');
+
       const input = updateSessionSchema.parse(request.body);
-      const session = await sessionService.updateSession(
-        app.db,
-        request.params.sessionId,
-        request.user.userId,
-        input,
-      );
-      return reply.send(ok(session));
+      const updated = await sessionService.updateSession(db, sessionId, request.user.userId, input);
+      return reply.send(ok(updated));
     },
   );
 
   app.delete<{ Params: { sessionId: string } }>('/sessions/:sessionId', async (request, reply) => {
-    await sessionService.deleteSession(app.db, request.params.sessionId, request.user.userId);
+    const { sessionId } = request.params;
+    let db = app.localDb;
+    let session = await findSessionById(db, sessionId);
+    if (!session && app.remoteDb) {
+      db = app.remoteDb;
+      session = await findSessionById(db, sessionId);
+    }
+    if (!session) throw new NotFoundError('Session');
+
+    await sessionService.deleteSession(db, sessionId, request.user.userId);
     return reply.send(ok({ deleted: true }));
   });
 
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/timeline',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const filter = sessionFilterSchema.parse(request.query);
       const result = await sessionService.getTimeline(
         db,
@@ -121,7 +141,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/stats',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const stats = await sessionService.getDashboardStats(
         db,
         request.params.projectId,
@@ -134,7 +154,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/team-stats',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const stats = await sessionService.getTeamStats(
         db,
         request.params.projectId,
@@ -147,7 +167,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/token-usage',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const { period } = tokenUsageQuerySchema.parse(request.query);
       const stats = await tokenUsageService.getTokenUsageStats(
         db,

@@ -4,7 +4,7 @@ import type { Env } from './config/env.js';
 import { registerCors } from './plugins/cors.plugin.js';
 import { registerErrorHandler } from './plugins/error-handler.plugin.js';
 import { registerJwt } from './plugins/auth.plugin.js';
-import { createDb } from './database/client.js';
+import { createDb, type Db } from './database/client.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { projectRoutes } from './modules/projects/project.routes.js';
 import { sessionRoutes } from './modules/sessions/session.routes.js';
@@ -27,12 +27,45 @@ export async function buildApp(env: Env) {
     logger: env.NODE_ENV !== 'test',
   });
 
-  const db = createDb({
+  const localDb = createDb({
     connectionString: env.DATABASE_URL,
     ssl: env.DATABASE_SSL,
     sslCaPath: env.DATABASE_SSL_CA,
   });
-  app.decorate('db', db);
+  const remoteDb = env.REMOTE_DATABASE_URL
+    ? createDb({
+        connectionString: env.REMOTE_DATABASE_URL,
+        ssl: env.REMOTE_DATABASE_SSL,
+        sslCaPath: env.REMOTE_DATABASE_SSL_CA,
+      })
+    : null;
+
+  // projectId → databaseMode cache (TTL 5 min)
+  const dbModeCache = new Map<string, { readonly mode: string; readonly expiry: number }>();
+  const CACHE_TTL = 5 * 60 * 1000;
+
+  async function resolveDb(projectId: string): Promise<Db> {
+    const cached = dbModeCache.get(projectId);
+    if (cached && cached.expiry > Date.now()) {
+      return cached.mode === 'remote' && remoteDb ? remoteDb : localDb;
+    }
+
+    const project = await localDb
+      .selectFrom('projects')
+      .select('database_mode')
+      .where('id', '=', projectId)
+      .executeTakeFirst();
+
+    const mode = project?.database_mode ?? 'local';
+    dbModeCache.set(projectId, { mode, expiry: Date.now() + CACHE_TTL });
+    return mode === 'remote' && remoteDb ? remoteDb : localDb;
+  }
+
+  // Backward compat: app.db = localDb (routes can migrate incrementally)
+  app.decorate('db', localDb);
+  app.decorate('localDb', localDb);
+  app.decorate('remoteDb', remoteDb);
+  app.decorate('resolveDb', resolveDb);
   app.decorate('env', env);
 
   await registerCors(app, env.FRONTEND_URL);
@@ -59,7 +92,7 @@ export async function buildApp(env: Env) {
   app.get('/api/health', async () => ({ status: 'ok' }));
 
   if (env.RUN_MIGRATIONS) {
-    const result = await runMigrations(db);
+    const result = await runMigrations(localDb);
     for (const name of result.applied) {
       app.log.info(`Migration "${name}" applied`);
     }
@@ -73,7 +106,10 @@ export async function buildApp(env: Env) {
 
 declare module 'fastify' {
   interface FastifyInstance {
-    db: ReturnType<typeof createDb>;
+    db: Db;
+    localDb: Db;
+    remoteDb: Db | null;
+    resolveDb: (projectId: string) => Promise<Db>;
     env: Env;
   }
 }

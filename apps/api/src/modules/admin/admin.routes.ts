@@ -6,23 +6,23 @@ export const adminRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
 
   app.get('/admin/status', async (request, reply) => {
-    const user = await getUserWithRole(app.db, request.user.userId);
+    const user = await getUserWithRole(app.localDb, request.user.userId);
     adminService.assertOwnerRole(user.role);
 
-    const status = await adminService.getAdminStatus(app.db);
+    const status = await adminService.getAdminStatus(app.localDb);
     return reply.send(ok(status));
   });
 
   app.post('/admin/migrations/run', async (request, reply) => {
-    const user = await getUserWithRole(app.db, request.user.userId);
+    const user = await getUserWithRole(app.localDb, request.user.userId);
     adminService.assertOwnerRole(user.role);
 
-    const result = await adminService.runMigrations(app.db);
+    const result = await adminService.runMigrations(app.localDb);
     return reply.send(ok(result));
   });
 
   app.get('/admin/config', async (request, reply) => {
-    const user = await getUserWithRole(app.db, request.user.userId);
+    const user = await getUserWithRole(app.localDb, request.user.userId);
     adminService.assertOwnerRole(user.role);
 
     const config = adminService.getAdminConfig(app.env);

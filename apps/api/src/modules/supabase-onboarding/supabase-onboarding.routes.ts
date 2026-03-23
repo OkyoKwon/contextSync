@@ -10,12 +10,16 @@ import {
 
 export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
   app.get('/supabase/projects', { preHandler: [app.authenticate] }, async (request, reply) => {
-    const projects = await getProjectsForUser(app.db, request.user.userId, app.env.JWT_SECRET);
+    const projects = await getProjectsForUser(app.localDb, request.user.userId, app.env.JWT_SECRET);
     return reply.send(ok(projects));
   });
 
   app.get('/supabase/organizations', { preHandler: [app.authenticate] }, async (request, reply) => {
-    const orgs = await getOrganizationsForUser(app.db, request.user.userId, app.env.JWT_SECRET);
+    const orgs = await getOrganizationsForUser(
+      app.localDb,
+      request.user.userId,
+      app.env.JWT_SECRET,
+    );
     return reply.send(ok(orgs));
   });
 
@@ -27,7 +31,7 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
     }
 
     const result = await autoSetupExisting(
-      app.db,
+      app.localDb,
       request.user.userId,
       app.env.JWT_SECRET,
       parsed.data,
@@ -46,7 +50,7 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
       }
 
       const result = await createAndSetup(
-        app.db,
+        app.localDb,
         request.user.userId,
         app.env.JWT_SECRET,
         parsed.data,

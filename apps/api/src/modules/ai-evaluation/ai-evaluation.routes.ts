@@ -15,7 +15,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { projectId: string }; Body: unknown }>(
     '/projects/:projectId/ai-evaluation/evaluate',
     async (request, reply) => {
-      const userApiKey = await getUserApiKey(app.db, request.user.userId);
+      const userApiKey = await getUserApiKey(app.localDb, request.user.userId);
       const apiKey = userApiKey ?? app.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
         return reply
@@ -25,7 +25,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
           );
       }
 
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const input = triggerEvaluationSchema.parse(request.body);
       const result = await evaluationService.triggerEvaluation(
         db,
@@ -43,7 +43,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/ai-evaluation/latest',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const query = latestEvaluationQuerySchema.parse(request.query);
       const result = await evaluationService.getLatestEvaluation(
         db,
@@ -59,7 +59,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/ai-evaluation/history',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const query = evaluationHistoryQuerySchema.parse(request.query);
       const result = await evaluationService.getEvaluationHistory(
         db,
@@ -78,7 +78,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string; evaluationId: string } }>(
     '/projects/:projectId/ai-evaluation/:evaluationId',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const result = await evaluationService.getEvaluationDetail(
         db,
         request.params.projectId,
@@ -93,7 +93,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/ai-evaluation/summary',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const result = await evaluationService.getTeamSummary(
         db,
         request.params.projectId,

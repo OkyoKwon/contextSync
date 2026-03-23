@@ -9,7 +9,7 @@ export const activityRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/activity',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const { page, limit } = activityQuerySchema.parse(request.query);
       const result = await activityService.getProjectActivity(
         db,

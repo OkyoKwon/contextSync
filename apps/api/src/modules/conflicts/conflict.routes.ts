@@ -7,6 +7,8 @@ import {
   assignReviewerSchema,
   reviewNotesSchema,
 } from './conflict.schema.js';
+import { findConflictById } from './conflict.repository.js';
+import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 
 export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -14,7 +16,7 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/conflicts',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const filter = conflictFilterSchema.parse(request.query);
       const result = await conflictService.getConflictsByProject(
         db,
@@ -29,53 +31,85 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
   );
 
   app.get<{ Params: { conflictId: string } }>('/conflicts/:conflictId', async (request, reply) => {
-    const conflict = await conflictService.getConflictDetail(
-      app.db,
-      request.params.conflictId,
-      request.user.userId,
-    );
-    return reply.send(ok(conflict));
+    const { conflictId } = request.params;
+    let db = app.localDb;
+    let conflict = await findConflictById(db, conflictId);
+    if (!conflict && app.remoteDb) {
+      db = app.remoteDb;
+      conflict = await findConflictById(db, conflictId);
+    }
+    if (!conflict) throw new NotFoundError('Conflict');
+
+    const detail = await conflictService.getConflictDetail(db, conflictId, request.user.userId);
+    return reply.send(ok(detail));
   });
 
   app.patch<{ Params: { conflictId: string }; Body: unknown }>(
     '/conflicts/:conflictId',
     async (request, reply) => {
+      const { conflictId } = request.params;
+      let db = app.localDb;
+      let conflict = await findConflictById(db, conflictId);
+      if (!conflict && app.remoteDb) {
+        db = app.remoteDb;
+        conflict = await findConflictById(db, conflictId);
+      }
+      if (!conflict) throw new NotFoundError('Conflict');
+
       const input = updateConflictSchema.parse(request.body);
-      const conflict = await conflictService.updateConflictStatus(
-        app.db,
-        request.params.conflictId,
+      const updated = await conflictService.updateConflictStatus(
+        db,
+        conflictId,
         request.user.userId,
         input.status,
       );
-      return reply.send(ok(conflict));
+      return reply.send(ok(updated));
     },
   );
 
   app.patch<{ Params: { conflictId: string }; Body: unknown }>(
     '/conflicts/:conflictId/assign',
     async (request, reply) => {
+      const { conflictId } = request.params;
+      let db = app.localDb;
+      let conflict = await findConflictById(db, conflictId);
+      if (!conflict && app.remoteDb) {
+        db = app.remoteDb;
+        conflict = await findConflictById(db, conflictId);
+      }
+      if (!conflict) throw new NotFoundError('Conflict');
+
       const { reviewerId } = assignReviewerSchema.parse(request.body);
-      const conflict = await conflictService.assignReviewer(
-        app.db,
-        request.params.conflictId,
+      const updated = await conflictService.assignReviewer(
+        db,
+        conflictId,
         request.user.userId,
         reviewerId,
       );
-      return reply.send(ok(conflict));
+      return reply.send(ok(updated));
     },
   );
 
   app.patch<{ Params: { conflictId: string }; Body: unknown }>(
     '/conflicts/:conflictId/review-notes',
     async (request, reply) => {
+      const { conflictId } = request.params;
+      let db = app.localDb;
+      let conflict = await findConflictById(db, conflictId);
+      if (!conflict && app.remoteDb) {
+        db = app.remoteDb;
+        conflict = await findConflictById(db, conflictId);
+      }
+      if (!conflict) throw new NotFoundError('Conflict');
+
       const { reviewNotes } = reviewNotesSchema.parse(request.body);
-      const conflict = await conflictService.addReviewNotes(
-        app.db,
-        request.params.conflictId,
+      const updated = await conflictService.addReviewNotes(
+        db,
+        conflictId,
         request.user.userId,
         reviewNotes,
       );
-      return reply.send(ok(conflict));
+      return reply.send(ok(updated));
     },
   );
 };

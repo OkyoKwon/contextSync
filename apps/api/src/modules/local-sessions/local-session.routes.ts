@@ -37,7 +37,7 @@ export const localSessionRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send(fail('projectId is required'));
       }
       const isActiveOnly = activeOnly !== 'false';
-      const sessions = await listLocalSessions(app.db, projectId, isActiveOnly);
+      const sessions = await listLocalSessions(app.localDb, projectId, isActiveOnly);
       return reply.send(ok(sessions));
     },
   );
@@ -77,7 +77,7 @@ export const localSessionRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { projectId: string } }>(
     '/projects/:projectId/sessions/recalculate-tokens',
     async (request, reply) => {
-      const db = app.db;
+      const db = app.localDb;
       const result = await recalculateTokenUsage(db, request.params.projectId, request.user.userId);
       return reply.send(ok(result));
     },
@@ -91,7 +91,7 @@ export const localSessionRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send(fail('sessionIds must be a non-empty array'));
       }
 
-      const db = app.db;
+      const db = app.localDb;
       const result = await syncSessions(
         db,
         request.params.projectId,

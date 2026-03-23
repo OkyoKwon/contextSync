@@ -12,6 +12,8 @@ import * as collabRepo from './collaborator.repository.js';
 import { logActivity } from '../activity/activity.service.js';
 import { assertPermission } from './permission.helper.js';
 import { generateJoinCode as generateCode } from '../../lib/join-code.js';
+import { findUserById } from '../auth/auth.service.js';
+import { syncUserToRemote } from '../../lib/user-sync.js';
 
 export async function createProject(
   db: Db,
@@ -214,7 +216,12 @@ export async function deleteJoinCode(db: Db, projectId: string, userId: string):
   await projectRepo.updateJoinCode(db, projectId, null);
 }
 
-export async function joinByCode(db: Db, code: string, userId: string): Promise<Project> {
+export async function joinByCode(
+  db: Db,
+  code: string,
+  userId: string,
+  remoteDb?: Db | null,
+): Promise<Project> {
   const project = await projectRepo.findProjectByJoinCode(db, code);
   if (!project) throw new NotFoundError('Invalid join code');
 
@@ -228,6 +235,18 @@ export async function joinByCode(db: Db, code: string, userId: string): Promise<
   }
 
   await collabRepo.addCollaborator(db, project.id, userId, 'member');
+
+  // Sync user to remote DB for team projects (FK integrity)
+  if (project.databaseMode === 'remote' && remoteDb) {
+    const user = await findUserById(db, userId);
+    if (user) {
+      try {
+        await syncUserToRemote(remoteDb, user);
+      } catch {
+        // Non-fatal: user sync failure shouldn't block join
+      }
+    }
+  }
 
   logActivity(db, {
     projectId: project.id,

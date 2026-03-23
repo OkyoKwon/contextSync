@@ -5,6 +5,7 @@ export const createProjectSchema = z.object({
   description: z.string().max(2000).optional(),
   repoUrl: z.string().url().optional(),
   localDirectory: z.string().max(1024).optional(),
+  databaseMode: z.enum(['local', 'remote']).default('local'),
 });
 
 export const updateProjectSchema = z.object({

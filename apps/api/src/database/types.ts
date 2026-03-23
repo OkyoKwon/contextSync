@@ -44,6 +44,7 @@ export interface ProjectsTable {
   repo_url: string | null;
   local_directory: string | null;
   join_code: ColumnType<string | null>;
+  database_mode: Generated<string>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }

@@ -15,7 +15,7 @@ export async function runMigrations(options: MigrationOptions): Promise<void> {
 
   const sslConfig = sslEnabled
     ? {
-        rejectUnauthorized: true,
+        rejectUnauthorized: !!sslCaPath,
         ...(sslCaPath ? { ca: readFileSync(sslCaPath, 'utf-8') } : {}),
       }
     : false;

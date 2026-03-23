@@ -7,13 +7,13 @@ export const planRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
 
   app.get('/plans/local', async (_request, reply) => {
-    const plans = await planService.listPlans(app.db);
+    const plans = await planService.listPlans(app.localDb);
     return reply.send(ok(plans));
   });
 
   app.get<{ Params: { filename: string } }>('/plans/local/:filename', async (request, reply) => {
     const filename = planFilenameSchema.parse(request.params.filename);
-    const plan = await planService.getPlanDetail(app.db, filename);
+    const plan = await planService.getPlanDetail(app.localDb, filename);
     return reply.send(ok(plan));
   });
 

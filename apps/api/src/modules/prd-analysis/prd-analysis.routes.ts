@@ -7,6 +7,8 @@ import {
   startAnalysisSchema,
   analysisHistoryQuerySchema,
 } from './prd-analysis.schema.js';
+import { findPrdDocumentById, findPrdAnalysisById } from './prd-analysis.repository.js';
+import { NotFoundError } from '../../plugins/error-handler.plugin.js';
 import { SUPPORTED_PRD_EXTENSIONS, MAX_PRD_FILE_SIZE } from '@context-sync/shared';
 import { extname } from 'node:path';
 
@@ -47,7 +49,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
 
       const parsedInput = uploadPrdSchema.parse({ title });
 
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const document = await prdService.uploadPrdDocument(
         db,
         request.params.projectId,
@@ -65,7 +67,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/prd/documents',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const documents = await prdService.listPrdDocuments(
         db,
         request.params.projectId,
@@ -79,7 +81,16 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { documentId: string } }>(
     '/prd/documents/:documentId',
     async (request, reply) => {
-      await prdService.deletePrdDocument(app.db, request.params.documentId, request.user.userId);
+      const { documentId } = request.params;
+      let db = app.localDb;
+      let doc = await findPrdDocumentById(db, documentId);
+      if (!doc && app.remoteDb) {
+        db = app.remoteDb;
+        doc = await findPrdDocumentById(db, documentId);
+      }
+      if (!doc) throw new NotFoundError('PRD Document');
+
+      await prdService.deletePrdDocument(db, documentId, request.user.userId);
       return reply.send(ok(null));
     },
   );
@@ -88,7 +99,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { projectId: string }; Body: unknown }>(
     '/projects/:projectId/prd/analyze',
     async (request, reply) => {
-      const userApiKey = await getUserApiKey(app.db, request.user.userId);
+      const userApiKey = await getUserApiKey(app.localDb, request.user.userId);
       const apiKey = userApiKey ?? app.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
         return reply
@@ -98,7 +109,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
           );
       }
 
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const input = startAnalysisSchema.parse(request.body);
       const result = await prdService.startAnalysis(
         db,
@@ -116,7 +127,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string } }>(
     '/projects/:projectId/prd/analysis/latest',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const analysis = await prdService.getLatestAnalysis(
         db,
         request.params.projectId,
@@ -130,7 +141,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/prd/analysis/history',
     async (request, reply) => {
-      const db = app.db;
+      const db = await app.resolveDb(request.params.projectId);
       const query = analysisHistoryQuerySchema.parse(request.query);
       const result = await prdService.getAnalysisHistory(
         db,
@@ -148,12 +159,17 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
   app.get<{ Params: { analysisId: string } }>(
     '/prd/analysis/:analysisId',
     async (request, reply) => {
-      const analysis = await prdService.getAnalysisDetail(
-        app.db,
-        request.params.analysisId,
-        request.user.userId,
-      );
-      return reply.send(ok(analysis));
+      const { analysisId } = request.params;
+      let db = app.localDb;
+      let analysis = await findPrdAnalysisById(db, analysisId);
+      if (!analysis && app.remoteDb) {
+        db = app.remoteDb;
+        analysis = await findPrdAnalysisById(db, analysisId);
+      }
+      if (!analysis) throw new NotFoundError('PRD Analysis');
+
+      const detail = await prdService.getAnalysisDetail(db, analysisId, request.user.userId);
+      return reply.send(ok(detail));
     },
   );
 };

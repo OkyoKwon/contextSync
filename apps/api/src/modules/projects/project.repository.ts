@@ -5,7 +5,13 @@ import type { Project, ProjectWithTeamInfo } from '@context-sync/shared';
 export async function createProject(
   db: Db,
   ownerId: string,
-  input: { name: string; description?: string; repoUrl?: string; localDirectory?: string },
+  input: {
+    name: string;
+    description?: string;
+    repoUrl?: string;
+    localDirectory?: string;
+    databaseMode?: string;
+  },
 ): Promise<Project> {
   const row = await db
     .insertInto('projects')
@@ -15,6 +21,7 @@ export async function createProject(
       description: input.description ?? null,
       repo_url: input.repoUrl ?? null,
       local_directory: input.localDirectory ?? null,
+      database_mode: input.databaseMode ?? 'local',
     })
     .returningAll()
     .executeTakeFirstOrThrow();
@@ -45,6 +52,7 @@ export async function findProjectsWithTeamInfo(
       'projects.repo_url',
       'projects.local_directory',
       'projects.join_code',
+      'projects.database_mode',
       'projects.created_at',
       'projects.updated_at',
       sql<number>`COALESCE(collab_counts.cnt, 0)`.as('collaborator_count'),
@@ -88,6 +96,7 @@ export async function findProjectByIdWithTeamInfo(
       'projects.repo_url',
       'projects.local_directory',
       'projects.join_code',
+      'projects.database_mode',
       'projects.created_at',
       'projects.updated_at',
       sql<number>`COALESCE(collab_counts.cnt, 0)`.as('collaborator_count'),
@@ -159,6 +168,7 @@ function toProject(row: {
   repo_url: string | null;
   local_directory: string | null;
   join_code: string | null;
+  database_mode: string;
   created_at: Date;
   updated_at: Date;
 }): Project {
@@ -170,6 +180,7 @@ function toProject(row: {
     repoUrl: row.repo_url,
     localDirectory: row.local_directory,
     joinCode: row.join_code,
+    databaseMode: (row.database_mode as 'local' | 'remote') ?? 'local',
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
   };
@@ -183,6 +194,7 @@ function toProjectWithTeamInfo(row: {
   repo_url: string | null;
   local_directory: string | null;
   join_code: string | null;
+  database_mode: string;
   created_at: Date;
   updated_at: Date;
   collaborator_count: number;
@@ -196,6 +208,7 @@ function toProjectWithTeamInfo(row: {
     repoUrl: row.repo_url,
     localDirectory: row.local_directory,
     joinCode: row.join_code,
+    databaseMode: (row.database_mode as 'local' | 'remote') ?? 'local',
     createdAt: row.created_at.toISOString(),
     updatedAt: row.updated_at.toISOString(),
     collaboratorCount: count,

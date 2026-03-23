@@ -14,18 +14,18 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
   // Project CRUD
   app.post('/projects', async (request, reply) => {
     const input = createProjectSchema.parse(request.body);
-    const project = await projectService.createProject(app.db, request.user.userId, input);
+    const project = await projectService.createProject(app.localDb, request.user.userId, input);
     return reply.status(201).send(ok(project));
   });
 
   app.get('/projects', async (request, reply) => {
-    const projects = await projectService.getProjects(app.db, request.user.userId);
+    const projects = await projectService.getProjects(app.localDb, request.user.userId);
     return reply.send(ok(projects));
   });
 
   app.get<{ Params: { projectId: string } }>('/projects/:projectId', async (request, reply) => {
     const project = await projectService.getProject(
-      app.db,
+      app.localDb,
       request.params.projectId,
       request.user.userId,
     );
@@ -37,7 +37,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const input = updateProjectSchema.parse(request.body);
       const project = await projectService.updateProject(
-        app.db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
         input,
@@ -47,7 +47,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
   );
 
   app.delete<{ Params: { projectId: string } }>('/projects/:projectId', async (request, reply) => {
-    await projectService.deleteProject(app.db, request.params.projectId, request.user.userId);
+    await projectService.deleteProject(app.localDb, request.params.projectId, request.user.userId);
     return reply.send(ok(null));
   });
 
@@ -57,7 +57,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const { localDirectory } = setMyDirectorySchema.parse(request.body);
       await projectService.setMyDirectory(
-        app.db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
         localDirectory,
@@ -71,7 +71,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     '/projects/:projectId/collaborators',
     async (request, reply) => {
       const collaborators = await projectService.getCollaborators(
-        app.db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
       );
@@ -84,7 +84,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     { preHandler: [app.authenticateIdentified] },
     async (request, reply) => {
       await projectService.removeCollaborator(
-        app.db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
         request.params.userId,
@@ -98,7 +98,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     '/projects/:projectId/join-code',
     async (request, reply) => {
       const project = await projectService.generateProjectJoinCode(
-        app.db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
       );
@@ -110,7 +110,7 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     '/projects/:projectId/join-code/regenerate',
     async (request, reply) => {
       const project = await projectService.regenerateJoinCode(
-        app.db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
       );
@@ -121,14 +121,23 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
   app.delete<{ Params: { projectId: string } }>(
     '/projects/:projectId/join-code',
     async (request, reply) => {
-      await projectService.deleteJoinCode(app.db, request.params.projectId, request.user.userId);
+      await projectService.deleteJoinCode(
+        app.localDb,
+        request.params.projectId,
+        request.user.userId,
+      );
       return reply.send(ok(null));
     },
   );
 
   app.post('/projects/join', async (request, reply) => {
     const { code } = joinProjectSchema.parse(request.body);
-    const project = await projectService.joinByCode(app.db, code, request.user.userId);
+    const project = await projectService.joinByCode(
+      app.localDb,
+      code,
+      request.user.userId,
+      app.remoteDb,
+    );
     return reply.send(ok(project));
   });
 };
