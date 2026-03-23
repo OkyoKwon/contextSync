@@ -46,7 +46,7 @@ services:
       - '${DB_EXTERNAL_PORT:-5432}:5432'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required for team-host}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-contextsync}
     volumes:
       - pgdata-team:/var/lib/postgresql/data
