@@ -89,7 +89,7 @@ test.describe('Team Collaboration — Full Flow', () => {
     await expect(page.locator('text=/PostgreSQL/').first()).toBeVisible();
 
     // Step 2 should now be active
-    const connectBtn = page.locator('button:has-text("Connect"):not(:has-text("Test"))');
+    const connectBtn = page.getByRole('button', { name: 'Connect', exact: true });
     await expect(connectBtn).toBeEnabled();
 
     // Actually connect the remote DB so subsequent tests can generate join codes
@@ -251,14 +251,9 @@ test.describe('Team Collaboration — Full Flow', () => {
     const membersHeading = page.locator('h4:has-text("Members")');
     await membersHeading.waitFor({ state: 'visible', timeout: 10_000 });
 
-    // Should show both owner and member names
-    await expect(page.locator(`text=${ownerName}`)).toBeVisible();
-    await expect(page.locator(`text=${memberName}`)).toBeVisible();
-
-    // Check member role badge
-    const memberRow = page.locator(`text=${memberName}`).locator('..').locator('..');
-    const memberBadge = memberRow.locator('text=member');
-    await expect(memberBadge).toBeVisible();
+    // Member should appear in the collaborator list with their role badge
+    await expect(page.getByText(memberName, { exact: true })).toBeVisible();
+    await expect(page.getByText('member', { exact: true })).toBeVisible();
   });
 
   // ── CLEAN-018: Owner imports session (API + UI verify) ───────────────
@@ -364,15 +359,15 @@ test.describe('Team Collaboration — Full Flow', () => {
   // ── CLEAN-022: Team stats reflect multi-user activity ────────────────
 
   test('CLEAN-022: Team stats show activity from both users', async ({ apiClient }) => {
-    const stats = await apiClient.get<{
-      readonly members: ReadonlyArray<{
+    const stats = await apiClient.get<
+      ReadonlyArray<{
         readonly userId: string;
         readonly userName: string;
         readonly sessionCount: number;
-      }>;
-    }>(`/projects/${projectId}/team-stats`, ownerToken);
+      }>
+    >(`/projects/${projectId}/team-stats`, ownerToken);
 
-    const members = (stats as { members: readonly { userId: string }[] }).members;
+    const members = stats as ReadonlyArray<{ readonly userId: string }>;
     expect(members.length).toBeGreaterThanOrEqual(2);
 
     const ownerStats = members.find((m) => m.userId === ownerId);

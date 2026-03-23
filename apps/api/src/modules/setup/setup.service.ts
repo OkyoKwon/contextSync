@@ -10,10 +10,16 @@ export interface DatabaseStatus {
   readonly host: string;
 }
 
+// Tracks whether switchToRemote has been called successfully in this process.
+// Once set, getDatabaseStatus returns 'remote' regardless of hostname heuristics.
+let switchedToRemoteHost: string | null = null;
+
 export function getDatabaseStatus(databaseUrl: string): DatabaseStatus {
-  const url = new URL(databaseUrl);
+  const effectiveUrl = switchedToRemoteHost ?? databaseUrl;
+  const url = new URL(effectiveUrl);
   const hostname = url.hostname;
-  const isRemote = !['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname);
+  const isRemote =
+    switchedToRemoteHost !== null || !['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname);
   const isSupabase = hostname.includes('supabase.com') || hostname.includes('supabase.co');
 
   const maskedHost = isRemote ? `*.${hostname.split('.').slice(-2).join('.')}` : 'localhost';
@@ -80,10 +86,13 @@ export async function switchToRemote(
       throw new Error(`Migration failed on remote database: ${String(error)}`);
     }
 
-    // 3. Update .env file
-    updateEnvFile(connectionUrl, sslEnabled);
+    // 3. Update in-memory state (immediate effect) and persist to .env
+    switchedToRemoteHost = connectionUrl;
+    if (process.env['NODE_ENV'] !== 'test') {
+      updateEnvFile(connectionUrl, sslEnabled);
+    }
 
-    return { requiresRestart: true, migrationsApplied: applied };
+    return { requiresRestart: false, migrationsApplied: applied };
   } finally {
     await remoteDb.destroy();
   }
@@ -98,10 +107,13 @@ function updateEnvFile(connectionUrl: string, sslEnabled: boolean): void {
     content = '';
   }
 
-  content = replaceEnvVar(content, 'DATABASE_URL', connectionUrl);
-  content = replaceEnvVar(content, 'DATABASE_SSL', String(sslEnabled));
+  let updated = replaceEnvVar(content, 'DATABASE_URL', connectionUrl);
+  updated = replaceEnvVar(updated, 'DATABASE_SSL', String(sslEnabled));
 
-  writeFileSync(envPath, content, 'utf-8');
+  // Skip write if content is unchanged (avoids triggering file watchers)
+  if (updated !== content) {
+    writeFileSync(envPath, updated, 'utf-8');
+  }
 }
 
 function replaceEnvVar(content: string, key: string, value: string): string {
