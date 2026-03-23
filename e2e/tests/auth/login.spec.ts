@@ -2,16 +2,13 @@ import { test, expect } from '../../fixtures/auth.fixture.js';
 import { buildUser, buildProject } from '../../helpers/test-data.js';
 import { waitForAppReady } from '../../helpers/wait-for.js';
 
-test.describe('Login Flow', () => {
-  test('new user login → onboarding → dashboard', async ({ page }) => {
-    await page.goto('/login');
+test.describe('Identify Flow', () => {
+  test('new user identify → onboarding → dashboard', async ({ page }) => {
+    await page.goto('/identify');
     await waitForAppReady(page);
 
-    // Use truly unique email to avoid collision with parallel test workers
     const name = `New User ${Date.now()}`;
-    const email = `newuser-${Date.now()}-${Math.random().toString(36).slice(2)}@e2e.test`;
-    await page.fill('input[placeholder="Name"]', name);
-    await page.fill('input[placeholder="Email"]', email);
+    await page.fill('input[placeholder="Enter your name"]', name);
     await page.click('button[type="submit"]');
 
     // Should go to onboarding for new user or dashboard for existing
@@ -50,16 +47,15 @@ test.describe('Login Flow', () => {
     expect(page.url()).toContain('/dashboard');
   });
 
-  test('existing user login → dashboard directly', async ({ page, apiClient }) => {
+  test('existing user identify → dashboard directly', async ({ page, apiClient }) => {
     const { name, email } = buildUser();
     const { token } = await apiClient.login(name, email);
     await apiClient.createProject(token, buildProject());
 
-    await page.goto('/login');
+    await page.goto('/identify');
     await waitForAppReady(page);
 
-    await page.fill('input[placeholder="Name"]', name);
-    await page.fill('input[placeholder="Email"]', email);
+    await page.fill('input[placeholder="Enter your name"]', name);
     await page.click('button[type="submit"]');
 
     await page.waitForURL('**/dashboard', { timeout: 15_000 });
@@ -67,21 +63,28 @@ test.describe('Login Flow', () => {
   });
 
   test('empty field submission is blocked', async ({ page }) => {
-    await page.goto('/login');
+    await page.goto('/identify');
     await waitForAppReady(page);
 
-    await page.click('button[type="submit"]');
-    // Should stay on login page
-    expect(page.url()).toContain('/login');
+    // Submit button should be disabled when name field is empty
+    const submitButton = page.locator('button[type="submit"]');
+    await expect(submitButton).toBeDisabled();
+    expect(page.url()).toContain('/identify');
   });
 
-  test('authenticated user visiting /login redirects to dashboard', async ({
+  test('authenticated user visiting /identify redirects to dashboard', async ({
     authenticatedPage,
   }) => {
-    await authenticatedPage.goto('/login');
-    await authenticatedPage.waitForURL((url) => !url.pathname.includes('/login'), {
+    await authenticatedPage.goto('/identify');
+    await authenticatedPage.waitForURL((url) => !url.pathname.includes('/identify'), {
       timeout: 10_000,
     });
     expect(authenticatedPage.url()).toContain('/dashboard');
+  });
+
+  test('/login redirects to /identify', async ({ page }) => {
+    await page.goto('/login');
+    await page.waitForURL('**/identify', { timeout: 10_000 });
+    expect(page.url()).toContain('/identify');
   });
 });

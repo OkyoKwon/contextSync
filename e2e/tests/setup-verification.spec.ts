@@ -3,8 +3,8 @@ import { sql } from 'kysely';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const EXPECTED_MIGRATION_COUNT = 25;
-const LAST_MIGRATION_NAME = '025_simplify_collaboration';
+const EXPECTED_MIGRATION_COUNT = 27;
+const LAST_MIGRATION_NAME = '027_add_project_database_mode';
 
 const EXPECTED_TABLES = [
   'users',

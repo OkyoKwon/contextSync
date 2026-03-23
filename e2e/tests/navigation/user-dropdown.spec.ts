@@ -53,7 +53,7 @@ test.describe('User Dropdown', () => {
     await authenticatedPage.waitForURL(
       (url) => {
         const pathname = url.pathname;
-        return pathname === '/' || pathname.includes('/login');
+        return pathname === '/' || pathname.includes('/login') || pathname.includes('/identify');
       },
       { timeout: 10_000 },
     );

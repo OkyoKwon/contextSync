@@ -36,7 +36,7 @@ export default defineConfig({
             if (r.rows.length === 0) return c.query('CREATE DATABASE contextsync_test');
           })
         ).then(() => c.end()).then(() => process.exit(0)).catch(e => { console.error(e); process.exit(1); });
-      " && DATABASE_URL=${TEST_DB_URL} PORT=${TEST_API_PORT} NODE_ENV=test pnpm --filter @context-sync/api dev`,
+      " && DATABASE_URL=${TEST_DB_URL} DATABASE_SSL=false PORT=${TEST_API_PORT} NODE_ENV=test pnpm --filter @context-sync/api dev`,
       url: `http://localhost:${TEST_API_PORT}/api/health`,
       reuseExistingServer: !isCI,
       timeout: 60_000,

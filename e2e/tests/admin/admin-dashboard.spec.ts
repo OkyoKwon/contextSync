@@ -6,8 +6,8 @@ test.describe('Admin Dashboard', () => {
     await authenticatedPage.goto('/admin');
     await waitForAppReady(authenticatedPage);
 
-    // Should render the admin page (or redirect if not admin)
-    expect(authenticatedPage.url()).toMatch(/admin|dashboard/);
+    // Should render the admin page (or redirect to settings/dashboard)
+    expect(authenticatedPage.url()).toMatch(/admin|dashboard|settings/);
   });
 
   test('regular user cannot access admin API', async ({ apiClient, testUser }) => {

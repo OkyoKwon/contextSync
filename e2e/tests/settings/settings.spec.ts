@@ -44,41 +44,30 @@ test.describe('Settings Page', () => {
   });
 
   test('delete project section exists', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/settings');
+    await authenticatedPage.goto('/settings?tab=danger-zone');
     await waitForAppReady(authenticatedPage);
 
     if (!authenticatedPage.url().includes('/settings')) return;
 
-    await expect(authenticatedPage.locator('text=/Delete Project|Delete/i').first()).toBeVisible({
+    await expect(authenticatedPage.locator('h3:has-text("Delete Project")')).toBeVisible({
       timeout: 10_000,
     });
   });
 
-  test('collaborators section exists', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/settings');
+  test('team section exists', async ({ authenticatedPage }) => {
+    await authenticatedPage.goto('/settings?tab=team');
     await waitForAppReady(authenticatedPage);
 
     if (!authenticatedPage.url().includes('/settings')) return;
 
-    // Wait for the Collaborators heading to appear (it loads asynchronously)
-    await expect(authenticatedPage.locator('h3:has-text("Collaborators")')).toBeVisible({
+    // Wait for the Team heading to appear (it loads asynchronously)
+    await expect(authenticatedPage.locator('h3:has-text("Team")')).toBeVisible({
       timeout: 15_000,
     });
   });
 
-  test('collaboration section exists', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/settings');
-    await waitForAppReady(authenticatedPage);
-
-    if (!authenticatedPage.url().includes('/settings')) return;
-
-    await expect(authenticatedPage.locator('h3:has-text("Collaboration")')).toBeVisible({
-      timeout: 10_000,
-    });
-  });
-
   test('generate join code button visible for owner', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/settings');
+    await authenticatedPage.goto('/settings?tab=team');
     await waitForAppReady(authenticatedPage);
 
     if (!authenticatedPage.url().includes('/settings')) return;
