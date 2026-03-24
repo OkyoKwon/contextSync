@@ -36,6 +36,7 @@ export function ProjectPage() {
   const projectId = useAuthStore((s) => s.currentProjectId);
   const { data: projectData } = useCurrentProject();
   const currentProject = projectData?.data ?? null;
+  const userName = useAuthStore((s) => s.user?.name);
 
   const [exporting, setExporting] = useState(false);
 
@@ -244,6 +245,7 @@ export function ProjectPage() {
               onSelectProject={handleSelectProject}
               onSyncProject={handleSyncProject}
               isSyncing={syncMutation.isPending}
+              currentUserName={currentProject?.isTeam ? userName : undefined}
             />
           </div>
 

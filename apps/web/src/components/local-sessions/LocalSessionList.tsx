@@ -10,6 +10,7 @@ import {
   sortSessions,
   type FilterType,
   type SortType,
+  type OwnerInfo,
 } from './SessionFilters';
 
 function formatTokenCount(tokens: number): string {
@@ -34,6 +35,7 @@ interface LocalSessionListProps {
   readonly onSelectProject: (projectPath: string) => void;
   readonly onSyncProject: (group: LocalProjectGroup) => void;
   readonly isSyncing: boolean;
+  readonly currentUserName?: string;
 }
 
 export function LocalSessionList({
@@ -42,15 +44,34 @@ export function LocalSessionList({
   selectedProjectPath,
   onSelectSession,
   onSelectProject,
+  currentUserName,
 }: LocalSessionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [sort, setSort] = useState<SortType>('recent');
+  const [ownerFilter, setOwnerFilter] = useState<string | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
+
+  const uniqueOwners = useMemo((): readonly OwnerInfo[] => {
+    const seen = new Map<string, OwnerInfo>();
+    for (const group of groups) {
+      if (group.ownerName && !seen.has(group.ownerName)) {
+        seen.set(group.ownerName, {
+          name: group.ownerName,
+          avatarUrl: group.ownerAvatarUrl ?? null,
+        });
+      }
+    }
+    return [...seen.values()];
+  }, [groups]);
 
   const filteredGroups = useMemo(() => {
     const query = searchQuery.toLowerCase();
     return groups
+      .filter((group) => {
+        if (!ownerFilter) return true;
+        return group.ownerName === ownerFilter;
+      })
       .map((group) => {
         const matchesPath = !query || shortPath(group.projectPath).toLowerCase().includes(query);
         const filtered = group.sessions
@@ -66,7 +87,7 @@ export function LocalSessionList({
         } as LocalProjectGroup;
       })
       .filter((g): g is LocalProjectGroup => g !== null);
-  }, [groups, searchQuery, filter, sort]);
+  }, [groups, searchQuery, filter, sort, ownerFilter]);
 
   const flatItems = useMemo(() => {
     const items: VirtualItem[] = [];
@@ -106,6 +127,10 @@ export function LocalSessionList({
             activeSort={sort}
             onFilterChange={setFilter}
             onSortChange={setSort}
+            owners={uniqueOwners}
+            activeOwner={ownerFilter}
+            currentUserName={currentUserName}
+            onOwnerChange={setOwnerFilter}
           />
         </div>
       </div>

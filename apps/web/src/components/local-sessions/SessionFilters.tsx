@@ -8,6 +8,10 @@ interface SessionFiltersProps {
   readonly activeSort: SortType;
   readonly onFilterChange: (filter: FilterType) => void;
   readonly onSortChange: (sort: SortType) => void;
+  readonly owners?: readonly OwnerInfo[];
+  readonly activeOwner?: string | null;
+  readonly currentUserName?: string;
+  readonly onOwnerChange?: (ownerName: string | null) => void;
 }
 
 const FILTERS: readonly { readonly value: FilterType; readonly label: string }[] = [
@@ -29,7 +33,13 @@ export function SessionFilters({
   activeSort,
   onFilterChange,
   onSortChange,
+  owners,
+  activeOwner,
+  currentUserName,
+  onOwnerChange,
 }: SessionFiltersProps) {
+  const showOwnerDropdown = owners && owners.length >= 2 && currentUserName && onOwnerChange;
+
   return (
     <div className="flex items-center gap-2">
       <div className="flex flex-wrap gap-1">
@@ -48,17 +58,36 @@ export function SessionFilters({
           </button>
         ))}
       </div>
-      <select
-        value={activeSort}
-        onChange={(e) => onSortChange(e.target.value as SortType)}
-        className="ml-auto rounded-md border border-border-input bg-page px-2 py-1 text-xs text-text-secondary"
-      >
-        {SORTS.map((s) => (
-          <option key={s.value} value={s.value}>
-            {s.label}
-          </option>
-        ))}
-      </select>
+      <div className="ml-auto flex items-center gap-1.5">
+        {showOwnerDropdown && (
+          <select
+            value={activeOwner ?? ''}
+            onChange={(e) => onOwnerChange(e.target.value || null)}
+            className="rounded-md border border-border-input bg-page px-2 py-1 text-xs text-text-secondary"
+          >
+            <option value="">Everyone</option>
+            <option value={currentUserName}>Mine</option>
+            {owners
+              .filter((o) => o.name !== currentUserName)
+              .map((o) => (
+                <option key={o.name} value={o.name}>
+                  {o.name}
+                </option>
+              ))}
+          </select>
+        )}
+        <select
+          value={activeSort}
+          onChange={(e) => onSortChange(e.target.value as SortType)}
+          className="rounded-md border border-border-input bg-page px-2 py-1 text-xs text-text-secondary"
+        >
+          {SORTS.map((s) => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }
@@ -79,6 +108,11 @@ export function filterSession(
     case 'this-week':
       return isThisWeek(new Date(session.lastModifiedAt));
   }
+}
+
+export interface OwnerInfo {
+  readonly name: string;
+  readonly avatarUrl: string | null;
 }
 
 export function sortSessions<
