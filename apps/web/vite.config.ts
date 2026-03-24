@@ -20,7 +20,7 @@ export default defineConfig({
     },
   },
   server: {
-    host: '0.0.0.0',
+    host: '::',
     port: parseInt(process.env['VITE_PORT'] ?? '5173', 10),
     proxy: {
       '/api': {
