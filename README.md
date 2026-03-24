@@ -71,13 +71,12 @@ Daily usage charts and 7-day activity stats — session counts, token usage, hot
 
 ## Quick Start
 
-> **Prerequisites:** Node.js 22+, pnpm (`corepack enable`), Docker
+> **Prerequisites:** Docker (Node.js 22 is auto-installed if missing)
 
 ```bash
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
-corepack enable
-pnpm bootstrap    # Docker up → DB migration → seed data
-pnpm dev          # API :3001, Web :5173
+bash scripts/setup.sh    # Node 22 auto-install → Docker → DB migration → seed
+pnpm dev                 # API :3001, Web :5173
 ```
 
 Open [http://localhost:5173](http://localhost:5173) and enter your name to get started.
@@ -92,7 +91,7 @@ Open [http://localhost:5173](http://localhost:5173) and enter your name to get s
 
 | Mode            | Setup Command                                       | Docker | Use Case                                 |
 | --------------- | --------------------------------------------------- | ------ | ---------------------------------------- |
-| **Personal**    | `pnpm bootstrap && pnpm dev`                        | Yes    | Solo dev, local DB                       |
+| **Personal**    | `bash scripts/setup.sh && pnpm dev`                  | Yes    | Solo dev, local DB                       |
 | **Team Host**   | [Setup guide →](docs/setup-guide.md#team-host-mode) | Yes    | Admin hosting shared DB (local + remote) |
 | **Team Member** | `pnpm setup:team && pnpm dev:profile <name>`        | No     | Join existing team project               |
 

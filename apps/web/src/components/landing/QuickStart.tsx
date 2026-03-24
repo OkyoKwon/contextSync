@@ -4,11 +4,13 @@ import { TerminalWindow } from './TerminalWindow';
 import { useInView } from './use-in-view';
 
 const COMMANDS = `git clone https://github.com/OkyoKwon/contextSync.git
-cd contextSync && pnpm bootstrap
+cd contextSync
+bash scripts/setup.sh
 pnpm dev`;
 
 const TERMINAL_CONTENT = `$ git clone https://github.com/OkyoKwon/contextSync.git
-$ cd contextSync && pnpm bootstrap
+$ cd contextSync
+$ bash scripts/setup.sh
 $ pnpm dev
 
 ✓ API  → http://localhost:3001

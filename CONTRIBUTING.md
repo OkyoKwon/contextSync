@@ -15,8 +15,8 @@ Thank you for your interest in contributing to ContextSync! This guide will help
 git clone https://github.com/<your-username>/contextSync.git
 cd contextSync
 
-# 2. One-command setup (installs deps, starts DB, runs migrations, seeds data)
-pnpm bootstrap
+# 2. One-command setup (Node 22 auto-install → Docker → DB migration → seed)
+bash scripts/setup.sh
 
 # 3. Start dev servers
 pnpm dev
@@ -24,7 +24,7 @@ pnpm dev
 # Web → http://localhost:5173
 ```
 
-> **Tip:** Run `bash scripts/setup.sh` (without `--defaults`) for an interactive setup wizard with deployment mode selection.
+> **Tip:** If you already have Node 22+, you can use `pnpm bootstrap` instead. Run `bash scripts/setup.sh` without `--defaults` for an interactive setup wizard with deployment mode selection.
 
 Sign in with your name and email at `http://localhost:5173`.
 

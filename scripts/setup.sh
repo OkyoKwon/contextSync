@@ -218,16 +218,53 @@ EOF
   echo "apps/api/.env created successfully"
   echo ""
 
+  # Install dependencies
+  echo "Installing dependencies..."
+  pnpm install
+
   if [ "$mode_choice" = "1" ]; then
-    echo "Next steps:"
-    echo "  nvm use 22                                # if not already active"
-    echo "  docker compose up -d"
-    echo "  pnpm --filter @context-sync/api migrate"
-    echo "  pnpm dev"
+    # Docker check + start
+    if command -v docker &>/dev/null; then
+      echo "Starting PostgreSQL with Docker..."
+      docker compose up -d postgres
+      echo "Waiting for PostgreSQL to be ready..."
+      for i in $(seq 1 30); do
+        if docker compose exec -T postgres pg_isready -U postgres &>/dev/null 2>&1; then
+          echo "PostgreSQL is ready."
+          break
+        fi
+        if [ "$i" -eq 30 ]; then
+          echo "WARNING: PostgreSQL health check timed out. Continuing anyway..."
+        fi
+        sleep 1
+      done
+    else
+      echo "WARNING: Docker not found. Make sure PostgreSQL is running at $DATABASE_URL"
+    fi
+
+    # Migrations + seed
+    echo "Running migrations..."
+    pnpm --filter @context-sync/api migrate
+    echo "Loading seed data..."
+    pnpm --filter @context-sync/api seed
+
+    echo ""
+    echo "Setup complete!"
+    echo ""
+    echo "  Start dev server:"
+    echo "    pnpm dev"
+    echo ""
+    echo "  API  → http://localhost:3001"
+    echo "  Web  → http://localhost:5173"
   else
-    echo "Next steps:"
-    echo "  nvm use 22                                # if not already active"
-    echo "  pnpm --filter @context-sync/api migrate"
-    echo "  pnpm dev"
+    # Team mode: migrations only (no Docker needed, seed skipped — not meaningful for remote DB)
+    echo "Running migrations..."
+    pnpm --filter @context-sync/api migrate
+
+    echo ""
+    echo "Setup complete!"
+    echo ""
+    echo "  Start dev server:"
+    echo "    pnpm dev"
   fi
 fi

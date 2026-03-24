@@ -21,9 +21,8 @@ brew install nvm && nvm install 22 && brew install --cask docker && corepack ena
 
 ```bash
 git clone <repo> && cd contextSync
-corepack enable
-pnpm bootstrap
-pnpm dev
+bash scripts/setup.sh    # Node 22 auto-install → Docker → DB migration → seed
+pnpm dev                 # API :3001, Web :5173
 ```
 
 Manual setup:

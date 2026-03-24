@@ -72,12 +72,12 @@ pnpm dev                                    # API :3001, Web :5173
 Or use the one-command bootstrap:
 
 ```bash
-corepack enable
-pnpm bootstrap    # Docker up → DB migration → seed data
+bash scripts/setup.sh    # Node 22 auto-install → Docker → DB migration → seed
 pnpm dev
 ```
 
-> `pnpm bootstrap` runs `scripts/setup.sh --defaults`. For an interactive wizard with deployment mode selection, run `bash scripts/setup.sh` directly.
+> `bash scripts/setup.sh` runs interactive mode. Add `--defaults` for non-interactive personal mode.
+> If you already have Node 22+, you can use `pnpm bootstrap` instead.
 
 ### Team Host Mode
 
@@ -180,6 +180,27 @@ If `nvm` is not recognized after installation, ensure the init script is in your
 echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
 echo '[ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"' >> ~/.zshrc
 source ~/.zshrc
+```
+
+### ERR_PNPM_UNSUPPORTED_ENGINE
+
+```
+ERR_PNPM_UNSUPPORTED_ENGINE  Unsupported environment (bad pnpm and/or Node.js version)
+Expected version: >=22.0.0
+Got: v20.x.x
+```
+
+Node.js 22 미만에서 `pnpm bootstrap`을 실행하면 발생합니다. `setup.sh`를 직접 실행하면 Node 22를 자동 설치합니다:
+
+```bash
+bash scripts/setup.sh
+```
+
+또는 수동으로 Node 22를 설치 후 재시도:
+
+```bash
+nvm install 22 && nvm use 22
+pnpm bootstrap
 ```
 
 ### Bootstrap Fails

@@ -34,29 +34,12 @@ git clone "$REPO_URL" "$WORK_DIR/contextSync"
 cd "$WORK_DIR/contextSync"
 echo "  ✓ Clone complete"
 
-# ── S-2: corepack enable ────────────────────────────────────────────────
-echo "[S-2] corepack enable..."
-if command -v corepack &>/dev/null; then
-  corepack enable
-  echo "  ✓ Corepack enabled"
-elif command -v pnpm &>/dev/null; then
-  echo "  ⊘ corepack not found, but pnpm already available — skipping"
-else
-  echo "FAIL: Neither corepack nor pnpm found. Install Node.js 22+ and run: corepack enable"
-  exit 1
-fi
-
-# ── S-3: pnpm install ───────────────────────────────────────────────────
-echo "[S-3] pnpm install..."
-pnpm install
+# ── S-2: bash scripts/setup.sh ─────────────────────────────────────────
+echo "[S-2] bash scripts/setup.sh --defaults..."
+bash scripts/setup.sh --defaults
 [ -d node_modules ] || { echo "FAIL: node_modules not created"; exit 1; }
-echo "  ✓ Dependencies installed"
-
-# ── S-4: pnpm bootstrap ─────────────────────────────────────────────────
-echo "[S-4] pnpm bootstrap..."
-pnpm bootstrap
 [ -f apps/api/.env ] || { echo "FAIL: .env not created"; exit 1; }
-echo "  ✓ Bootstrap complete, .env exists"
+echo "  ✓ Setup complete, node_modules and .env exist"
 
 # Docker postgres 확인
 if ! docker compose exec -T postgres pg_isready -U postgres &>/dev/null; then
