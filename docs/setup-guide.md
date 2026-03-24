@@ -182,7 +182,7 @@ echo '[ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"' >
 source ~/.zshrc
 ```
 
-### ERR_PNPM_UNSUPPORTED_ENGINE
+### ERR_PNPM_UNSUPPORTED_ENGINE (Node Version Mismatch)
 
 ```
 ERR_PNPM_UNSUPPORTED_ENGINE  Unsupported environment (bad pnpm and/or Node.js version)
@@ -190,18 +190,14 @@ Expected version: >=22.0.0
 Got: v20.x.x
 ```
 
-Node.js 22 미만에서 `pnpm bootstrap`을 실행하면 발생합니다. `setup.sh`를 직접 실행하면 Node 22를 자동 설치합니다:
+`setup.sh`가 nvm으로 Node 22를 설치했지만, 변경이 스크립트 서브셸 안에서만 적용되어 현재 터미널에는 이전 Node 버전이 남아있을 때 발생합니다.
 
 ```bash
-bash scripts/setup.sh
+nvm use 22        # 현재 터미널에서 Node 22 활성화
+pnpm dev          # 정상 동작
 ```
 
-또는 수동으로 Node 22를 설치 후 재시도:
-
-```bash
-nvm install 22 && nvm use 22
-pnpm bootstrap
-```
+또는 새 터미널을 열면 됩니다 — setup 중 nvm default alias가 22로 설정됩니다.
 
 ### Bootstrap Fails
 

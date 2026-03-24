@@ -2,6 +2,7 @@
 set -euo pipefail
 
 DEFAULTS=false
+NODE_CHANGED=false
 for arg in "$@"; do
   case $arg in
     --defaults) DEFAULTS=true ;;
@@ -63,6 +64,7 @@ ensure_node_22() {
   nvm install 22
   nvm use 22
   nvm alias default 22
+  NODE_CHANGED=true
 
   # Re-activate corepack for the new Node version
   corepack enable
@@ -87,6 +89,18 @@ for port in 5173 3001; do
     kill "$pid" 2>/dev/null || true
   fi
 done
+
+print_node_warning() {
+  if [ "$NODE_CHANGED" = true ]; then
+    echo ""
+    echo "NOTE: Node.js 22 was installed inside this script's subshell."
+    echo "  Before running pnpm dev, activate it in your current terminal:"
+    echo ""
+    echo "    nvm use 22"
+    echo ""
+    echo "  Or simply open a new terminal (default alias was set to 22)."
+  fi
+}
 
 # Check pnpm
 if ! command -v pnpm &>/dev/null; then
@@ -162,6 +176,8 @@ EOF
   echo "Loading seed data..."
   pnpm --filter @context-sync/api seed
 
+  print_node_warning
+
   echo ""
   echo "Setup complete!"
   echo ""
@@ -221,6 +237,8 @@ EOF
   # Install dependencies
   echo "Installing dependencies..."
   pnpm install
+
+  print_node_warning
 
   if [ "$mode_choice" = "1" ]; then
     # Docker check + start
