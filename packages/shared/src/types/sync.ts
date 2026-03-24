@@ -23,6 +23,8 @@ export interface LocalProjectGroup {
   readonly totalMessages: number;
   readonly totalSessionCount: number;
   readonly isActive: boolean;
+  readonly ownerName?: string;
+  readonly ownerAvatarUrl?: string | null;
 }
 
 export interface SyncSessionResult {

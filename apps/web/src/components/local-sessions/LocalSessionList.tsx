@@ -219,10 +219,24 @@ function GroupHeader({
             </Badge>
           )}
         </div>
-        <span className="text-xs text-text-muted">
-          {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} ·{' '}
-          {group.totalMessages} msgs
-        </span>
+        <div className="flex items-center gap-1.5 text-xs text-text-muted">
+          {group.ownerName && (
+            <span className="flex items-center gap-1">
+              <span
+                className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-500/20 text-[10px] font-medium text-blue-400"
+                title={group.ownerName}
+              >
+                {group.ownerName.charAt(0).toUpperCase()}
+              </span>
+              <span className="truncate max-w-[80px]">{group.ownerName}</span>
+              <span className="text-text-muted">·</span>
+            </span>
+          )}
+          <span>
+            {group.totalSessionCount} session{group.totalSessionCount > 1 ? 's' : ''} ·{' '}
+            {group.totalMessages} msgs
+          </span>
+        </div>
       </div>
     </button>
   );

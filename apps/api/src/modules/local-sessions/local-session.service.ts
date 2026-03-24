@@ -16,7 +16,7 @@ import {
   parseClaudeCodeSession,
   parseClaudeCodeSessionWithTimestamps,
 } from '../sessions/parsers/claude-code-session.parser.js';
-import { getProjectSessionFiles } from './local-session.sync.js';
+import { getProjectSessionFiles, getProjectDirectoryOwners } from './local-session.sync.js';
 
 const CLAUDE_PROJECTS_DIR = join(homedir(), '.claude', 'projects');
 
@@ -119,6 +119,8 @@ export async function listLocalSessions(
 
   if (sessionFiles.length === 0) return [];
 
+  const directoryOwners = await getProjectDirectoryOwners(db, projectId);
+
   const now = Date.now();
 
   // Get already-synced session IDs for this project
@@ -176,12 +178,15 @@ export async function listLocalSessions(
     // Determine which sessions to include in the list
     const displaySessions = activeOnly ? sorted.filter((s) => s.isActive) : sorted;
 
+    const owner = directoryOwners.get(projectPath);
+
     return {
       projectPath,
       sessions: displaySessions,
       totalMessages,
       totalSessionCount,
       isActive: sorted.some((s) => s.isActive),
+      ...(owner ? { ownerName: owner.name, ownerAvatarUrl: owner.avatarUrl } : {}),
     };
   });
 

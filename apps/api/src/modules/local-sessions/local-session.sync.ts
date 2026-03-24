@@ -50,6 +50,53 @@ function encodeProjectPath(absolutePath: string): string {
   return absolutePath.replace(/\//g, '-');
 }
 
+export interface DirectoryOwner {
+  readonly name: string;
+  readonly avatarUrl: string | null;
+}
+
+export async function getProjectDirectoryOwners(
+  db: Db,
+  projectId: string,
+): Promise<ReadonlyMap<string, DirectoryOwner>> {
+  const owners = new Map<string, DirectoryOwner>();
+
+  // Owner's directory
+  const ownerRow = await db
+    .selectFrom('projects')
+    .innerJoin('users', 'users.id', 'projects.owner_id')
+    .select(['projects.local_directory', 'users.name', 'users.avatar_url'])
+    .where('projects.id', '=', projectId)
+    .executeTakeFirst();
+
+  if (ownerRow?.local_directory) {
+    owners.set(ownerRow.local_directory, {
+      name: ownerRow.name,
+      avatarUrl: ownerRow.avatar_url,
+    });
+  }
+
+  // Collaborators' directories
+  const collabRows = await db
+    .selectFrom('project_collaborators')
+    .innerJoin('users', 'users.id', 'project_collaborators.user_id')
+    .select(['project_collaborators.local_directory', 'users.name', 'users.avatar_url'])
+    .where('project_collaborators.project_id', '=', projectId)
+    .where('project_collaborators.local_directory', 'is not', null)
+    .execute();
+
+  for (const row of collabRows) {
+    if (row.local_directory) {
+      owners.set(row.local_directory, {
+        name: row.name,
+        avatarUrl: row.avatar_url,
+      });
+    }
+  }
+
+  return owners;
+}
+
 export async function syncSessions(
   db: Db,
   projectId: string,
