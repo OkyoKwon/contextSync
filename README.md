@@ -1,36 +1,34 @@
+<div align="center">
+
 # ContextSync
+
+**Stop losing AI development context.**
+
+Session archive · Conflict detection · Team dashboard
+for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) teams and solo developers.
 
 [![CI](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml/badge.svg)](https://github.com/OkyoKwon/contextSync/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-22-green.svg)](https://nodejs.org/)
-[![pnpm](https://img.shields.io/badge/pnpm-9+-orange.svg)](https://pnpm.io/)
 
-**[Project Site](https://okyokwon.github.io/contextSync/)**
+[Quick Start](#quick-start) · [Project Site](https://okyokwon.github.io/contextSync/) · [Documentation](docs/architecture.md)
 
-**AI development context hub** — manage sessions, PRD analysis, and plans in one place with AI-powered evaluation — solo or with your team.
+<br/>
 
-The problem developers and teams face with Claude Code: sessions are scattered across local machines, past context gets lost, and PRDs and plans live separately from code. ContextSync unifies sessions, PRD analysis, and plans in one place, preserving development context with AI evaluation and conflict detection.
+<img src="apps/web/public/screenshots/dashboard-full.png" alt="ContextSync Dashboard" width="800" />
 
-<p align="center">
-  <img src="apps/web/public/screenshots/dashboard-full.png" alt="ContextSync Dashboard" width="800" />
-</p>
+</div>
 
 ---
 
-## Table of Contents
+## Why ContextSync?
 
-- [Key Features](#key-features)
-- [Getting Started](#getting-started)
-- [Deployment Modes](#deployment-modes)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Scripts](#scripts)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Community](#community)
-- [Acknowledgements](#acknowledgements)
-- [License](#license)
+| Problem                | Without ContextSync                             | With ContextSync                                     |
+| ---------------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| **Lost context**       | Claude sessions scattered across local machines | Centralized archive with full-text search            |
+| **Work conflicts**     | Discover file clashes at merge time             | Real-time conflict detection by severity             |
+| **Invisible progress** | "What did the team build today?"                | Dashboard with daily usage charts and activity stats |
 
 ---
 
@@ -38,188 +36,65 @@ The problem developers and teams face with Claude Code: sessions are scattered a
 
 ### Session Archive & Sync
 
-Automatically scans local Claude Code sessions (`~/.claude/projects/`) and syncs them to the web dashboard. Active sessions are shown by default, grouped by project.
+Scans local Claude Code sessions (`~/.claude/projects/`) and syncs to the web dashboard. Active sessions grouped by project.
 
 <img src="apps/web/public/screenshots/session-conversation.png" alt="Session conversation" width="720" />
 
 ### Conflict Detection
 
-Detects when multiple team members modify the same files simultaneously and classifies conflicts by severity.
+Detects simultaneous file modifications across team members. Classifies by severity (info / warning / critical) with review workflow.
 
 <img src="apps/web/public/screenshots/conflicts-list.png" alt="Conflict detection" width="720" />
 
 ### Dashboard & Analytics
 
-Real-time timeline and stats showing your entire team's AI activity at a glance — session counts, token usage charts, hot files, and weekly trends.
+Daily usage charts and 7-day activity stats — session counts, token usage, hot files, and team member activity at a glance.
 
 <img src="apps/web/public/screenshots/dashboard-stats.png" alt="Dashboard analytics" width="720" />
 
-### PRD Analysis
-
-Upload PRD documents and let Claude analyze requirement fulfillment across your sessions. Track per-requirement status and overall scores.
-
-<img src="apps/web/public/screenshots/prd-analysis.png" alt="PRD analysis" width="720" />
-
-### Plans
-
-Create structured markdown plans and link them to projects for organized development workflows.
-
-<img src="apps/web/public/screenshots/session-detail.png" alt="Plans" width="720" />
-
-### Full-text Search
-
-PostgreSQL tsvector-based search across session titles, message content, file paths, and tags.
-
-<img src="apps/web/public/screenshots/search-overlay.png" alt="Full-text search" width="720" />
-
-### AI Evaluation
-
-Score team members' AI utilization across sessions with multi-dimensional analysis and evidence tracking.
-
-<img src="apps/web/public/screenshots/ai-evaluation.png" alt="AI evaluation" width="720" />
-
-### Team Collaboration
-
-Role-based access control (Owner / Member). Invite teammates and share projects with simple permissions.
-
-<img src="apps/web/public/screenshots/settings-team.png" alt="Team settings" width="720" />
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- **Homebrew** — macOS package manager
-- **Node.js 22+** — JavaScript runtime
-- **pnpm** — package manager (via `corepack enable` or `npm install -g pnpm`)
-- **Docker** — for PostgreSQL container (not needed for team-member mode)
-
 <details>
-<summary>macOS one-command install</summary>
+<summary><strong>More features</strong></summary>
 
-```bash
-# 1. Homebrew (skip if already installed)
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+<br/>
 
-# 2. nvm (Node Version Manager)
-brew install nvm
-echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.zshrc
-echo '[ -s "$(brew --prefix nvm)/nvm.sh" ] && . "$(brew --prefix nvm)/nvm.sh"' >> ~/.zshrc
-source ~/.zshrc
-
-# 3. Node.js 22 (project uses .nvmrc)
-nvm install 22
-nvm use 22
-
-# 4. Docker Desktop
-brew install --cask docker
-
-# 5. Enable pnpm
-corepack enable
-```
-
-> After installing Docker Desktop, launch the app once to activate the `docker` CLI.
-> `node -v` 로 v22 이상인지 확인하세요.
+| Feature                | Description                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| **PRD Analysis**       | Upload PRDs and track requirement fulfillment with Claude-powered analysis |
+| **Plans**              | Structured markdown plans linked to projects from `~/.claude/plans/`       |
+| **Full-text Search**   | PostgreSQL tsvector search across sessions, messages, file paths, and tags |
+| **AI Evaluation**      | Multi-dimensional scoring of AI utilization with proficiency tiers         |
+| **Team Collaboration** | Role-based access (Owner / Member) with project sharing and invitations    |
 
 </details>
 
-### Quick Setup (One Command)
+---
+
+## Quick Start
+
+> **Prerequisites:** Node.js 22+, pnpm (`corepack enable`), Docker
 
 ```bash
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
 corepack enable
-pnpm bootstrap
-pnpm dev
+pnpm bootstrap    # Docker up → DB migration → seed data
+pnpm dev          # API :3001, Web :5173
 ```
 
-> `corepack`이 없으면 `npm install -g pnpm`으로 대체 가능합니다.
+Open [http://localhost:5173](http://localhost:5173) and enter your name to get started.
 
-> `pnpm bootstrap` runs the full bootstrap: Docker Compose up → DB migration → seed data.
-> Or run `bash scripts/setup.sh` (without `--defaults`) for an interactive wizard with deployment mode selection.
-
-Open `http://localhost:5173` and enter your name. API runs at `http://localhost:3001`.
-
-### Manual Setup
-
-<details>
-<summary>Personal mode (default — solo, local DB)</summary>
-
-```bash
-pnpm install
-docker compose up -d
-cp apps/api/.env.example apps/api/.env    # JWT_SECRET has dev default
-pnpm --filter @context-sync/api migrate
-pnpm --filter @context-sync/api seed      # Optional: sample data
-pnpm dev
-```
-
-</details>
-
-<details>
-<summary>Team Host (admin hosting shared DB)</summary>
-
-```bash
-pnpm install
-# Place SSL certs in certs/ directory
-docker compose --profile team-host up -d
-cp apps/api/.env.example apps/api/.env
-# Set DATABASE_SSL=true, REMOTE_DATABASE_URL for team sharing
-pnpm --filter @context-sync/api migrate
-pnpm dev
-```
-
-</details>
-
-<details>
-<summary>Team Member (connecting to remote DB)</summary>
-
-```bash
-pnpm install
-pnpm setup:team    # Interactive: DB URL + name + Join Code
-pnpm dev
-```
-
-No Docker required. Runs interactive setup that configures remote DB connection and joins the team project.
-
-</details>
-
-### Environment Variables
-
-Only `DATABASE_URL` is required. All others have sensible defaults.
-
-<details>
-<summary>Full environment variable reference</summary>
-
-| Variable                 | Required | Description                                                        |
-| ------------------------ | -------- | ------------------------------------------------------------------ |
-| `DATABASE_URL`           | Yes      | PostgreSQL connection string                                       |
-| `JWT_SECRET`             | No       | JWT signing key (min 32 chars, dev default built-in)               |
-| `JWT_EXPIRES_IN`         | No       | Token expiry (default: `7d`)                                       |
-| `HOST`                   | No       | Server host (default: `0.0.0.0`)                                   |
-| `NODE_ENV`               | No       | `development` (default), `production`, or `test`                   |
-| `FRONTEND_URL`           | No       | Frontend URL (default: `http://localhost:5173`)                    |
-| `ANTHROPIC_API_KEY`      | No       | For PRD analysis feature                                           |
-| `ANTHROPIC_MODEL`        | No       | Claude model ID (default: `claude-sonnet-4-20250514`)              |
-| `SLACK_WEBHOOK_URL`      | No       | Slack notification webhook                                         |
-| `DATABASE_SSL`           | No       | Enable SSL for DB connection (default: `false`)                    |
-| `DATABASE_SSL_CA`        | No       | Path to CA certificate for self-signed certs                       |
-| `RUN_MIGRATIONS`         | No       | Auto-run migrations (default: `true`, set `false` for team-member) |
-| `REMOTE_DATABASE_URL`    | No       | Remote PostgreSQL URL for dual-pool routing                        |
-| `REMOTE_DATABASE_SSL`    | No       | Enable SSL for remote DB (default: `false`)                        |
-| `REMOTE_DATABASE_SSL_CA` | No       | Path to CA certificate for remote DB SSL                           |
-
-</details>
+> Joining an existing team? Run `pnpm setup:team` instead — no Docker required.
+>
+> For manual setup, prerequisites install, and environment variables, see the **[Setup Guide](docs/setup-guide.md)**.
 
 ---
 
 ## Deployment Modes
 
-| Mode        | Docker? | DB             | Use Case                                                                                          |
-| ----------- | ------- | -------------- | ------------------------------------------------------------------------------------------------- |
-| Personal    | Yes     | Local          | Solo dev archiving sessions locally. Simplest setup, everything on one machine.                   |
-| Team Host   | Yes     | Local + Remote | Admin hosting a shared project. Local DB for metadata, remote DB (e.g. Supabase) for shared data. |
-| Team Member | No      | Remote         | Developer joining a team project via `pnpm setup:team`. No Docker needed.                         |
+| Mode            | Setup Command                                       | Docker | Use Case                                 |
+| --------------- | --------------------------------------------------- | ------ | ---------------------------------------- |
+| **Personal**    | `pnpm bootstrap && pnpm dev`                        | Yes    | Solo dev, local DB                       |
+| **Team Host**   | [Setup guide →](docs/setup-guide.md#team-host-mode) | Yes    | Admin hosting shared DB (local + remote) |
+| **Team Member** | `pnpm setup:team && pnpm dev`                       | No     | Join existing team project               |
 
 ---
 
@@ -277,13 +152,26 @@ apps/api/src/modules/
 
 ```bash
 pnpm dev              # Start all services (API + Web)
-pnpm setup:team       # Team member interactive setup
 pnpm build            # Build all packages
 pnpm test             # Run tests
 pnpm test:coverage    # Run tests with coverage (80% threshold)
 pnpm typecheck        # Type check all packages
 pnpm lint             # Lint all packages
+pnpm setup:team       # Team member interactive setup
 ```
+
+---
+
+## Contributing
+
+Key conventions — [full guide in CONTRIBUTING.md](CONTRIBUTING.md):
+
+- **Module pattern:** `routes → service → repository → schema` ([4-file structure](CONTRIBUTING.md#backend-module-pattern))
+- **Immutability:** always return new objects, never mutate existing ones
+- **Testing:** 80% coverage required — `pnpm test:coverage`
+
+Looking for a place to start? Check out [**good first issues**](https://github.com/OkyoKwon/contextSync/labels/good%20first%20issue).
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ---
 
@@ -300,42 +188,17 @@ Have an idea? [Open a feature request](https://github.com/OkyoKwon/contextSync/i
 
 ---
 
-## Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding guidelines, and PR process.
-
-Looking for a place to start? Check out issues labeled [**good first issue**](https://github.com/OkyoKwon/contextSync/labels/good%20first%20issue).
-
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
-
----
-
 ## Community
 
-- [GitHub Issues](https://github.com/OkyoKwon/contextSync/issues) — Bug reports and feature requests
-- [GitHub Discussions](https://github.com/OkyoKwon/contextSync/discussions) — Questions, ideas, and general discussion
-
----
-
-## Acknowledgements
-
-Built with these excellent open-source projects:
-
-- [Fastify](https://fastify.dev/) — Fast and low-overhead web framework
-- [Kysely](https://kysely.dev/) — Type-safe SQL query builder
-- [React](https://react.dev/) — UI library
-- [Vite](https://vite.dev/) — Frontend build tool
-- [Tailwind CSS](https://tailwindcss.com/) — Utility-first CSS
-- [Turborepo](https://turbo.build/) — Monorepo build system
-
----
+- [GitHub Issues](https://github.com/OkyoKwon/contextSync/issues) — Bug reports & feature requests
+- [GitHub Discussions](https://github.com/OkyoKwon/contextSync/discussions) — Questions & ideas
 
 ## Security
 
-Found a vulnerability? Please see [SECURITY.md](SECURITY.md) for reporting instructions. Do not open public issues for security vulnerabilities.
+Found a vulnerability? See [SECURITY.md](SECURITY.md) for reporting instructions.
 
 ---
 
-## License
+Built with [Fastify](https://fastify.dev/) · [React](https://react.dev/) · [Kysely](https://kysely.dev/) · [Vite](https://vite.dev/) · [Tailwind CSS](https://tailwindcss.com/) · [Turborepo](https://turbo.build/)
 
-[MIT](LICENSE)
+[MIT License](LICENSE)
