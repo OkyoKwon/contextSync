@@ -3,6 +3,7 @@ import { useLocalSessions, useSyncSessions } from '../hooks/use-session-sync';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { LocalSessionList } from '../components/local-sessions/LocalSessionList';
 import { LocalSessionConversation } from '../components/local-sessions/LocalSessionConversation';
+import { RemoteSessionConversation } from '../components/local-sessions/RemoteSessionConversation';
 import { ProjectConversationPanel } from '../components/local-sessions/ProjectConversationPanel';
 import { DirectoryGuidance } from '../components/local-sessions/DirectoryGuidance';
 import { SyncStatusIndicator } from '../components/local-sessions/SyncStatusIndicator';
@@ -24,7 +25,7 @@ import { SessionUploadModal } from '../components/sessions/SessionUploadModal';
 
 type Selection =
   | { readonly type: 'none' }
-  | { readonly type: 'session'; readonly sessionId: string }
+  | { readonly type: 'session'; readonly sessionId: string; readonly dbSessionId?: string }
   | { readonly type: 'project'; readonly projectPath: string };
 
 export function ProjectPage() {
@@ -115,8 +116,8 @@ export function ProjectPage() {
     await syncMutation.mutateAsync([sessionId]);
   };
 
-  const handleSelectSession = useCallback((sessionId: string) => {
-    setSelection({ type: 'session', sessionId });
+  const handleSelectSession = useCallback((sessionId: string, dbSessionId?: string) => {
+    setSelection({ type: 'session', sessionId, dbSessionId });
   }, []);
 
   const handleSelectProject = useCallback((projectPath: string) => {
@@ -321,10 +322,18 @@ export function ProjectPage() {
             {selection.type === 'project' && (
               <div className="flex h-full flex-col">
                 <div className="flex-1 overflow-y-auto">
-                  <ProjectConversationPanel
-                    projectPath={selection.projectPath}
-                    onSelectSession={handleSelectSession}
-                  />
+                  {selection.projectPath.startsWith('@') ? (
+                    <div className="flex h-full items-center justify-center">
+                      <p className="text-sm text-text-muted">
+                        Select a session from the left panel to view the conversation.
+                      </p>
+                    </div>
+                  ) : (
+                    <ProjectConversationPanel
+                      projectPath={selection.projectPath}
+                      onSelectSession={handleSelectSession}
+                    />
+                  )}
                 </div>
 
                 {/* Synced sessions for this project */}
@@ -352,7 +361,9 @@ export function ProjectPage() {
                           <button
                             key={session.sessionId}
                             type="button"
-                            onClick={() => handleSelectSession(session.sessionId)}
+                            onClick={() =>
+                              handleSelectSession(session.sessionId, session.dbSessionId)
+                            }
                             className="flex w-full items-center justify-between rounded-lg border border-border-default bg-surface px-4 py-3 text-left transition-colors hover:border-border-input hover:bg-surface-hover"
                           >
                             <div className="min-w-0 flex-1">
@@ -372,14 +383,17 @@ export function ProjectPage() {
                 )}
               </div>
             )}
-            {selection.type === 'session' && (
-              <LocalSessionConversation
-                sessionId={selection.sessionId}
-                isSynced={isSelectedSessionSynced}
-                isSyncing={syncMutation.isPending}
-                onSync={handleSingleSync}
-              />
-            )}
+            {selection.type === 'session' &&
+              (selection.dbSessionId ? (
+                <RemoteSessionConversation sessionId={selection.dbSessionId} />
+              ) : (
+                <LocalSessionConversation
+                  sessionId={selection.sessionId}
+                  isSynced={isSelectedSessionSynced}
+                  isSyncing={syncMutation.isPending}
+                  onSync={handleSingleSync}
+                />
+              ))}
             {selection.type === 'none' && (
               <div className="flex h-full items-center justify-center">
                 <p className="text-sm text-text-muted">

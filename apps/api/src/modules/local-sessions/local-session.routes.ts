@@ -37,7 +37,12 @@ export const localSessionRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send(fail('projectId is required'));
       }
       const isActiveOnly = activeOnly !== 'false';
-      const sessions = await listLocalSessions(app.localDb, projectId, isActiveOnly);
+      const sessions = await listLocalSessions(
+        app.localDb,
+        projectId,
+        isActiveOnly,
+        request.user.userId,
+      );
       return reply.send(ok(sessions));
     },
   );

@@ -73,7 +73,7 @@ apps/
     src/
       config/       env.ts (Zod validation), database.ts
       database/     client.ts (Kysely), types.ts, migrations/
-      plugins/      auth, cors, error-handler
+      plugins/      auth, cors, error-handler, auto-sync
       lib/          api-response.ts (ok, fail, paginated)
       modules/      auth, projects, sessions, conflicts, search, notifications, prd-analysis, activity, plans, ai-evaluation, admin, local-sessions, supabase-onboarding, setup, quota
   web/          # React 19 SPA (Vite 6)
@@ -173,7 +173,7 @@ Managed in `apps/api/.env`. `config/env.ts` validates at startup using Zod.
 
 Required: `DATABASE_URL`
 
-With defaults: `JWT_SECRET` (built-in dev default, must override in production), `FRONTEND_URL`, `JWT_EXPIRES_IN` (`'7d'`), `ANTHROPIC_MODEL` (`'claude-sonnet-4-20250514'`), `DATABASE_SSL` (`'false'`), `RUN_MIGRATIONS` (`'true'`)
+With defaults: `JWT_SECRET` (built-in dev default, must override in production), `FRONTEND_URL`, `JWT_EXPIRES_IN` (`'7d'`), `ANTHROPIC_MODEL` (`'claude-sonnet-4-20250514'`), `DATABASE_SSL` (`'false'`), `RUN_MIGRATIONS` (`'true'`), `AUTO_SYNC_INTERVAL_MS` (`30000`, set `0` to disable)
 
 Optional: `ANTHROPIC_API_KEY` (PRD analysis / AI evaluation), `SLACK_WEBHOOK_URL`, `DATABASE_SSL_CA`, `REMOTE_DATABASE_URL` (remote DB for dual-pool routing), `REMOTE_DATABASE_SSL` (`'false'`), `REMOTE_DATABASE_SSL_CA`
 

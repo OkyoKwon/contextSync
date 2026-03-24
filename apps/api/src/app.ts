@@ -21,6 +21,7 @@ import { supabaseOnboardingRoutes } from './modules/supabase-onboarding/supabase
 import { localSessionRoutes } from './modules/local-sessions/local-session.routes.js';
 import { quotaRoutes } from './modules/quota/quota.routes.js';
 import { runMigrations } from './modules/admin/admin.service.js';
+import { autoSyncPlugin } from './plugins/auto-sync.plugin.js';
 
 export async function buildApp(env: Env) {
   const app = Fastify({
@@ -67,11 +68,22 @@ export async function buildApp(env: Env) {
   app.decorate('remoteDb', remoteDb);
   app.decorate('resolveDb', resolveDb);
   app.decorate('env', env);
+  app.decorate('lastAuthUserId', null as string | null);
 
   await registerCors(app, env.FRONTEND_URL);
   registerErrorHandler(app);
   await registerJwt(app, env.JWT_SECRET);
   await app.register(multipart, { limits: { fileSize: 10 * 1024 * 1024 } });
+
+  // Track last authenticated user for background auto-sync
+  app.addHook('onRequest', async (request) => {
+    try {
+      await request.jwtVerify();
+      app.lastAuthUserId = request.user.userId;
+    } catch {
+      // Not authenticated — skip silently
+    }
+  });
 
   await app.register(authRoutes, { prefix: '/api/auth' });
   await app.register(projectRoutes, { prefix: '/api' });
@@ -101,6 +113,8 @@ export async function buildApp(env: Env) {
     }
   }
 
+  await app.register(autoSyncPlugin);
+
   return app;
 }
 
@@ -111,5 +125,6 @@ declare module 'fastify' {
     remoteDb: Db | null;
     resolveDb: (projectId: string) => Promise<Db>;
     env: Env;
+    lastAuthUserId: string | null;
   }
 }

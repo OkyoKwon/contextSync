@@ -30,7 +30,7 @@ interface LocalSessionListProps {
   readonly groups: readonly LocalProjectGroup[];
   readonly selectedSessionId: string | null;
   readonly selectedProjectPath: string | null;
-  readonly onSelectSession: (sessionId: string) => void;
+  readonly onSelectSession: (sessionId: string, dbSessionId?: string) => void;
   readonly onSelectProject: (projectPath: string) => void;
   readonly onSyncProject: (group: LocalProjectGroup) => void;
   readonly isSyncing: boolean;
@@ -161,7 +161,9 @@ export function LocalSessionList({
                     <SessionRow
                       session={item.session}
                       isSelected={item.session.sessionId === selectedSessionId}
-                      onSelect={() => onSelectSession(item.session.sessionId)}
+                      onSelect={() =>
+                        onSelectSession(item.session.sessionId, item.session.dbSessionId)
+                      }
                     />
                   )}
                 </div>
@@ -270,7 +272,12 @@ function SessionRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="truncate text-sm font-medium text-text-primary">{session.firstMessage}</p>
-          {session.isSynced && (
+          {session.isRemote && (
+            <Badge variant="default" title="Synced from team member">
+              Team
+            </Badge>
+          )}
+          {!session.isRemote && session.isSynced && (
             <Badge variant="success" title="Saved to database">
               Synced
             </Badge>

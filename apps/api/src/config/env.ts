@@ -33,6 +33,8 @@ const envSchema = z.object({
     .enum(['true', 'false'])
     .default('true')
     .transform((v) => v === 'true'),
+
+  AUTO_SYNC_INTERVAL_MS: z.coerce.number().min(0).default(30000),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { sql } from 'kysely';
 import type { Db } from '../../database/client.js';
 import type {
   SyncSessionResult,
@@ -131,7 +132,12 @@ export async function syncSessions(
           external_session_id: sessionId,
           source_path: file.fullPath,
         })
-        .onConflict((oc) => oc.columns(['project_id', 'external_session_id']).doNothing())
+        .onConflict((oc) =>
+          oc.columns(['project_id', 'external_session_id']).doUpdateSet({
+            synced_at: sql`NOW()`,
+            source_path: file.fullPath,
+          }),
+        )
         .execute();
 
       results.push({
@@ -214,4 +220,51 @@ export async function recalculateTokenUsage(
   }
 
   return { updatedSessions, updatedMessages, skipped, errors };
+}
+
+export async function updateSyncedSession(
+  db: Db,
+  internalSessionId: string,
+  file: SessionFile,
+): Promise<{ readonly messageCount: number }> {
+  const content = await readFile(file.fullPath, 'utf-8');
+  const { parsed, filePaths } = parseClaudeCodeSession(content);
+
+  // Delete old messages and re-insert from re-parsed content
+  await db.deleteFrom('messages').where('session_id', '=', internalSessionId).execute();
+
+  const values = parsed.messages.map((msg, index) => ({
+    session_id: internalSessionId,
+    role: msg.role,
+    content: msg.content,
+    content_type: msg.contentType ?? 'prompt',
+    tokens_used: msg.tokensUsed ?? null,
+    model_used: msg.modelUsed ?? null,
+    sort_order: index,
+    ...(msg.timestamp ? { created_at: new Date(msg.timestamp) } : {}),
+  }));
+
+  if (values.length > 0) {
+    await db.insertInto('messages').values(values).execute();
+  }
+
+  // Update session metadata (title, file_paths) if changed
+  await db
+    .updateTable('sessions')
+    .set({
+      title: parsed.title,
+      file_paths: (filePaths as string[]) ?? [],
+      updated_at: new Date(),
+    })
+    .where('id', '=', internalSessionId)
+    .execute();
+
+  // Update synced_at timestamp
+  await db
+    .updateTable('synced_sessions')
+    .set({ synced_at: sql`NOW()` })
+    .where('session_id', '=', internalSessionId)
+    .execute();
+
+  return { messageCount: values.length };
 }

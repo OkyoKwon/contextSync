@@ -15,6 +15,10 @@ export interface LocalSessionInfo {
   readonly totalTokens: number;
   readonly isSynced: boolean;
   readonly isActive: boolean;
+  /** True if this session is from the DB (synced by another team member), not a local file */
+  readonly isRemote?: boolean;
+  /** Internal DB session ID for remote sessions */
+  readonly dbSessionId?: string;
 }
 
 export interface LocalProjectGroup {

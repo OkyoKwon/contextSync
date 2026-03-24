@@ -114,10 +114,9 @@ export async function listLocalSessions(
   db: Db,
   projectId: string,
   activeOnly = true,
+  currentUserId?: string,
 ): Promise<readonly LocalProjectGroup[]> {
   const sessionFiles = await getProjectSessionFiles(db, projectId);
-
-  if (sessionFiles.length === 0) return [];
 
   const directoryOwners = await getProjectDirectoryOwners(db, projectId);
 
@@ -132,7 +131,7 @@ export async function listLocalSessions(
 
   const syncedIds = new Set(syncedRows.map((r) => r.external_session_id));
 
-  // Read ALL files to get accurate total counts
+  // Read ALL local files to get accurate total counts
   const allSessions: LocalSessionInfo[] = [];
 
   for (const file of sessionFiles) {
@@ -190,6 +189,12 @@ export async function listLocalSessions(
     };
   });
 
+  // Include DB sessions from other team members
+  if (currentUserId) {
+    const teamGroups = await getTeamDbSessionGroups(db, projectId, currentUserId, syncedIds);
+    groups.push(...teamGroups);
+  }
+
   // Active groups first, then sort by most recent session
   groups.sort((a, b) => {
     if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
@@ -199,6 +204,107 @@ export async function listLocalSessions(
   });
 
   return groups;
+}
+
+/**
+ * Fetch sessions synced by other team members from the DB and return as LocalProjectGroup[].
+ * Excludes sessions that already appear in local file groups (by external_session_id).
+ */
+async function getTeamDbSessionGroups(
+  db: Db,
+  projectId: string,
+  currentUserId: string,
+  localSyncedIds: ReadonlySet<string>,
+): Promise<LocalProjectGroup[]> {
+  // Get sessions from DB that belong to OTHER users in this project
+  const dbSessions = await db
+    .selectFrom('sessions')
+    .innerJoin('users', 'users.id', 'sessions.user_id')
+    .leftJoin('synced_sessions', (join) =>
+      join
+        .onRef('synced_sessions.session_id', '=', 'sessions.id')
+        .on('synced_sessions.project_id', '=', projectId),
+    )
+    .select([
+      'sessions.id',
+      'sessions.user_id',
+      'sessions.title',
+      'sessions.created_at',
+      'sessions.updated_at',
+      'users.name as user_name',
+      'users.avatar_url as user_avatar_url',
+      'synced_sessions.external_session_id',
+      db.fn.count('messages.id').as('message_count'),
+    ])
+    .leftJoin('messages', 'messages.session_id', 'sessions.id')
+    .where('sessions.project_id', '=', projectId)
+    .where('sessions.user_id', '!=', currentUserId)
+    .groupBy([
+      'sessions.id',
+      'sessions.user_id',
+      'sessions.title',
+      'sessions.created_at',
+      'sessions.updated_at',
+      'users.name',
+      'users.avatar_url',
+      'synced_sessions.external_session_id',
+    ])
+    .orderBy('sessions.created_at', 'desc')
+    .execute();
+
+  if (dbSessions.length === 0) return [];
+
+  // Filter out sessions that are already visible as local files
+  const filtered = dbSessions.filter((s) => {
+    if (!s.external_session_id) return true;
+    return !localSyncedIds.has(s.external_session_id);
+  });
+
+  if (filtered.length === 0) return [];
+
+  // Group by user
+  const userGroupMap = new Map<
+    string,
+    { sessions: LocalSessionInfo[]; userName: string; userAvatarUrl: string | null }
+  >();
+
+  for (const row of filtered) {
+    const userId = row.user_id;
+    const existing = userGroupMap.get(userId) ?? {
+      sessions: [],
+      userName: row.user_name,
+      userAvatarUrl: row.user_avatar_url,
+    };
+
+    existing.sessions.push({
+      sessionId: row.id,
+      projectPath: `@${row.user_name}`,
+      firstMessage: row.title,
+      messageCount: Number(row.message_count),
+      totalTokens: 0,
+      startedAt: (row.created_at as Date).toISOString(),
+      lastModifiedAt: (row.updated_at as Date).toISOString(),
+      isSynced: true,
+      isActive: false,
+      isRemote: true,
+      dbSessionId: row.id,
+    });
+
+    userGroupMap.set(userId, existing);
+  }
+
+  return [...userGroupMap.entries()].map(([, group]) => {
+    const totalMessages = group.sessions.reduce((sum, s) => sum + s.messageCount, 0);
+    return {
+      projectPath: `@${group.userName}`,
+      sessions: group.sessions,
+      totalMessages,
+      totalSessionCount: group.sessions.length,
+      isActive: false,
+      ownerName: group.userName,
+      ownerAvatarUrl: group.userAvatarUrl,
+    };
+  });
 }
 
 export async function getLocalSessionDetail(sessionId: string): Promise<LocalSessionDetail> {
