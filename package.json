@@ -4,9 +4,12 @@
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
+    "build": "bash scripts/check-node.sh && turbo build",
+    "dev": "bash scripts/check-node.sh && turbo dev",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",

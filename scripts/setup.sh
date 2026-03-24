@@ -62,6 +62,7 @@ ensure_node_22() {
   echo "Installing Node.js 22 via nvm..."
   nvm install 22
   nvm use 22
+  nvm alias default 22
 
   # Re-activate corepack for the new Node version
   corepack enable
@@ -77,6 +78,15 @@ ensure_node_22() {
 }
 
 ensure_node_22
+
+# ── Kill stale dev servers on default ports ─────────────────────────────
+for port in 5173 3001; do
+  pid=$(lsof -ti :"$port" 2>/dev/null || true)
+  if [ -n "$pid" ]; then
+    echo "Killing stale process on port $port (PID: $pid)"
+    kill "$pid" 2>/dev/null || true
+  fi
+done
 
 # Check pnpm
 if ! command -v pnpm &>/dev/null; then
@@ -153,7 +163,15 @@ EOF
   pnpm --filter @context-sync/api seed
 
   echo ""
-  echo "Setup complete! Run: pnpm dev"
+  echo "Setup complete!"
+  echo ""
+  echo "  Node.js 22 has been set as nvm default."
+  echo "  If this terminal still uses an older version, run:"
+  echo "    nvm use 22"
+  echo ""
+  echo "  Start dev server:"
+  echo "    pnpm dev"
+  echo ""
   echo "  API  → http://localhost:3001"
   echo "  Web  → http://localhost:5173"
 
@@ -202,11 +220,13 @@ EOF
 
   if [ "$mode_choice" = "1" ]; then
     echo "Next steps:"
+    echo "  nvm use 22                                # if not already active"
     echo "  docker compose up -d"
     echo "  pnpm --filter @context-sync/api migrate"
     echo "  pnpm dev"
   else
     echo "Next steps:"
+    echo "  nvm use 22                                # if not already active"
     echo "  pnpm --filter @context-sync/api migrate"
     echo "  pnpm dev"
   fi

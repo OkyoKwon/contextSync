@@ -84,19 +84,23 @@ for i in $(seq 1 60); do
   sleep 1
 done
 
-# Web 서버 대기 (최대 30초)
+# Web 서버 대기 (최대 30초, 포트 fallback 대응)
 echo "  Waiting for Web server..."
+WEB_PORT=""
 for i in $(seq 1 30); do
-  if curl -sf http://localhost:5173 >/dev/null 2>&1; then
-    echo "  ✓ Web ready (http://localhost:5173)"
-    break
-  fi
+  for port in 5173 5174 5175; do
+    if curl -sf "http://localhost:$port" >/dev/null 2>&1; then
+      WEB_PORT=$port
+      break 2
+    fi
+  done
   if [ "$i" -eq 30 ]; then
     echo "FAIL: Web server timeout (30s)"
     exit 1
   fi
   sleep 1
 done
+echo "  ✓ Web ready (http://localhost:$WEB_PORT)"
 
 echo ""
 echo "=== Phase 1 Complete — All servers running ==="
