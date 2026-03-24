@@ -27,4 +27,19 @@ API_PID=$!
 pnpm --filter @context-sync/web dev &
 WEB_PID=$!
 
+# Wait for Vite to respond, then open browser
+(
+  for i in $(seq 1 30); do
+    if curl --max-time 1 -s -o /dev/null http://localhost:5173 2>/dev/null; then
+      if command -v open &>/dev/null; then
+        open http://localhost:5173
+      elif command -v xdg-open &>/dev/null; then
+        xdg-open http://localhost:5173
+      fi
+      exit 0
+    fi
+    sleep 1
+  done
+) &
+
 wait $API_PID $WEB_PID
