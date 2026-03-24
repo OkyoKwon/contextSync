@@ -109,37 +109,29 @@ start_dev_server() {
   echo "Setup complete! Starting dev server..."
   echo ""
 
-  pnpm dev &
-  DEV_PID=$!
-  trap 'kill $DEV_PID 2>/dev/null; exit' INT TERM
-
-  # Wait for Vite HTTP server to actually respond (not just port open)
-  echo "Waiting for dev server to be ready..."
-  for i in $(seq 1 60); do
-    if curl --max-time 1 -s -o /dev/null http://127.0.0.1:5173 2>/dev/null; then
-      echo ""
-      echo "  API  → http://127.0.0.1:3001"
-      echo "  Web  → http://127.0.0.1:5173"
-      echo ""
-      # Open browser
-      if command -v open &>/dev/null; then
-        open http://127.0.0.1:5173
-      elif command -v xdg-open &>/dev/null; then
-        xdg-open http://127.0.0.1:5173
+  # Background subshell: wait for Vite HTTP server to actually respond, then open browser
+  (
+    for i in $(seq 1 60); do
+      if curl --max-time 1 -s -o /dev/null http://127.0.0.1:5173 2>/dev/null; then
+        echo ""
+        echo "  API  → http://127.0.0.1:3001"
+        echo "  Web  → http://127.0.0.1:5173"
+        echo ""
+        # Open browser
+        if command -v open &>/dev/null; then
+          open http://127.0.0.1:5173
+        elif command -v xdg-open &>/dev/null; then
+          xdg-open http://127.0.0.1:5173
+        fi
+        exit 0
       fi
-      break
-    fi
-    if ! kill -0 $DEV_PID 2>/dev/null; then
-      echo "ERROR: Dev server exited unexpectedly. Run 'pnpm dev' manually to see errors."
-      exit 1
-    fi
-    if [ "$i" -eq 60 ]; then
-      echo "WARNING: Dev server not ready after 60s. Check 'pnpm dev' output above."
-    fi
-    sleep 1
-  done
+      sleep 1
+    done
+    echo "WARNING: Dev server not ready after 60s. Check 'pnpm dev' output."
+  ) &
 
-  wait $DEV_PID
+  # Replace this shell with pnpm dev — no trap/kill issues, Ctrl+C goes directly to dev server
+  exec pnpm dev
 }
 
 # Check pnpm
