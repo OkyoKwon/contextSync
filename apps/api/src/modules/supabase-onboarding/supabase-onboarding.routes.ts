@@ -11,17 +11,29 @@ import { updateDatabaseMode } from '../projects/project.repository.js';
 
 export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
   app.get('/supabase/projects', { preHandler: [app.authenticate] }, async (request, reply) => {
-    const projects = await getProjectsForUser(app.localDb, request.user.userId, app.env.JWT_SECRET);
-    return reply.send(ok(projects));
+    try {
+      const projects = await getProjectsForUser(
+        app.localDb,
+        request.user.userId,
+        app.env.JWT_SECRET,
+      );
+      return reply.send(ok(projects));
+    } catch {
+      return reply.send(ok([]));
+    }
   });
 
   app.get('/supabase/organizations', { preHandler: [app.authenticate] }, async (request, reply) => {
-    const orgs = await getOrganizationsForUser(
-      app.localDb,
-      request.user.userId,
-      app.env.JWT_SECRET,
-    );
-    return reply.send(ok(orgs));
+    try {
+      const orgs = await getOrganizationsForUser(
+        app.localDb,
+        request.user.userId,
+        app.env.JWT_SECRET,
+      );
+      return reply.send(ok(orgs));
+    } catch {
+      return reply.send(ok([]));
+    }
   });
 
   app.post('/supabase/auto-setup', { preHandler: [app.authenticate] }, async (request, reply) => {

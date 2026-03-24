@@ -19,11 +19,18 @@ async function main() {
 
       if (env.REMOTE_DATABASE_URL) {
         console.log('Running remote DB migrations...');
-        await runMigrations({
-          connectionString: env.REMOTE_DATABASE_URL,
-          sslEnabled: env.REMOTE_DATABASE_SSL,
-          sslCaPath: env.REMOTE_DATABASE_SSL_CA,
-        });
+        try {
+          await runMigrations({
+            connectionString: env.REMOTE_DATABASE_URL,
+            sslEnabled: env.REMOTE_DATABASE_SSL,
+            sslCaPath: env.REMOTE_DATABASE_SSL_CA,
+          });
+        } catch (remoteErr) {
+          console.warn(
+            'Remote DB migration failed (non-fatal):',
+            remoteErr instanceof Error ? remoteErr.message : remoteErr,
+          );
+        }
       }
     } catch (error) {
       console.error('Auto-migration failed:', error);
