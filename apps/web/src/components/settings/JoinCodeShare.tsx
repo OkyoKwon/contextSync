@@ -25,7 +25,7 @@ function buildSetupGuide(joinCode: string, projectName: string, repoUrl?: string
   const dirName = repoUrl ? extractDirName(repoUrl) : 'contextSync';
   const profileName = toProfileName(projectName);
 
-  const cloneUrl = repoUrl || '<your-repo-url>';
+  const cloneUrl = repoUrl || 'https://github.com/OkyoKwon/contextSync.git';
   const cloneStep = `   git clone ${cloneUrl} && cd ${dirName} && pnpm install`;
 
   return [
