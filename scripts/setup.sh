@@ -121,11 +121,11 @@ start_dev_server() {
       echo "  API  → http://localhost:3001"
       echo "  Web  → http://localhost:5173"
       echo ""
-      # Open browser
+      # Open browser (use 127.0.0.1 to avoid IPv6 resolution issues)
       if command -v open &>/dev/null; then
-        open http://localhost:5173
+        open http://127.0.0.1:5173
       elif command -v xdg-open &>/dev/null; then
-        xdg-open http://localhost:5173
+        xdg-open http://127.0.0.1:5173
       fi
       break
     fi
