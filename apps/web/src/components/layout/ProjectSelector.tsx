@@ -39,7 +39,7 @@ export function ProjectSelector() {
                   isSelected(project.id) ? 'shrink-0 text-blue-400' : 'shrink-0 text-text-muted'
                 }
               />
-              <span className="truncate">{project.name}</span>
+              <span className="min-w-0 shrink truncate">{project.name}</span>
               <Badge
                 variant={project.databaseMode === 'remote' ? 'success' : 'default'}
                 className="shrink-0"
