@@ -113,15 +113,15 @@ start_dev_server() {
   DEV_PID=$!
   trap 'kill $DEV_PID 2>/dev/null; exit' INT TERM
 
-  # Wait for Vite to be ready (use lsof to avoid IPv4/IPv6 mismatch with curl)
+  # Wait for Vite HTTP server to actually respond (not just port open)
   echo "Waiting for dev server to be ready..."
   for i in $(seq 1 60); do
-    if lsof -ti :5173 >/dev/null 2>&1; then
+    if curl --max-time 1 -s -o /dev/null http://127.0.0.1:5173 2>/dev/null; then
       echo ""
-      echo "  API  → http://localhost:3001"
-      echo "  Web  → http://localhost:5173"
+      echo "  API  → http://127.0.0.1:3001"
+      echo "  Web  → http://127.0.0.1:5173"
       echo ""
-      # Open browser (use 127.0.0.1 to avoid IPv6 resolution issues)
+      # Open browser
       if command -v open &>/dev/null; then
         open http://127.0.0.1:5173
       elif command -v xdg-open &>/dev/null; then
