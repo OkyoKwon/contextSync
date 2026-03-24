@@ -93,22 +93,53 @@ for port in 5173 3001; do
 done
 
 start_dev_server() {
-  echo ""
   if [ "$NO_START" = true ]; then
+    echo ""
     echo "Setup complete!"
     echo ""
     echo "  Start dev server:"
     echo "    pnpm dev"
-  else
-    echo "Setup complete! Starting dev server..."
+    echo ""
+    echo "  API  → http://localhost:3001"
+    echo "  Web  → http://localhost:5173"
+    return
   fi
+
   echo ""
-  echo "  API  → http://localhost:3001"
-  echo "  Web  → http://localhost:5173"
+  echo "Setup complete! Starting dev server..."
   echo ""
-  if [ "$NO_START" = false ]; then
-    exec pnpm dev
-  fi
+
+  pnpm dev &
+  DEV_PID=$!
+  trap 'kill $DEV_PID 2>/dev/null; exit' INT TERM
+
+  # Wait for Vite to be ready
+  echo "Waiting for dev server to be ready..."
+  for i in $(seq 1 30); do
+    if curl -s -o /dev/null http://localhost:5173 2>/dev/null; then
+      echo ""
+      echo "  API  → http://localhost:3001"
+      echo "  Web  → http://localhost:5173"
+      echo ""
+      # Open browser
+      if command -v open &>/dev/null; then
+        open http://localhost:5173
+      elif command -v xdg-open &>/dev/null; then
+        xdg-open http://localhost:5173
+      fi
+      break
+    fi
+    if ! kill -0 $DEV_PID 2>/dev/null; then
+      echo "ERROR: Dev server exited unexpectedly. Run 'pnpm dev' manually to see errors."
+      exit 1
+    fi
+    if [ "$i" -eq 30 ]; then
+      echo "WARNING: Dev server not ready after 30s. Check 'pnpm dev' output above."
+    fi
+    sleep 1
+  done
+
+  wait $DEV_PID
 }
 
 # Check pnpm
