@@ -22,10 +22,11 @@ brew install nvm && nvm install 22 && brew install --cask docker && corepack ena
 ```bash
 git clone <repo> && cd contextSync
 bash scripts/setup.sh
+pnpm dev
 ```
 
-`setup.sh`은 Node 22 자동 설치, Docker 기동, DB 마이그레이션, 시드 데이터 로드, 그리고 dev 서버 자동 시작까지 수행합니다.
-API는 :3001, Web은 :5173 포트에서 접근 가능합니다.
+`setup.sh`은 Node 22 자동 설치, Docker 기동, DB 마이그레이션, 시드 데이터 로드까지 수행합니다.
+이후 `pnpm dev`로 서버를 시작합니다. API는 :3001, Web은 :5173 포트에서 접근 가능합니다.
 
 Manual setup:
 

@@ -76,10 +76,11 @@ Daily usage charts and 7-day activity stats — session counts, token usage, hot
 ```bash
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
 bash scripts/setup.sh
+pnpm dev
 ```
 
-`setup.sh` auto-installs Node 22, starts Docker, runs DB migrations, seeds sample data, and starts the dev server.
-Open [http://localhost:5173](http://localhost:5173) and enter your name to get started.
+`setup.sh` auto-installs Node 22, starts Docker, runs DB migrations, and seeds sample data.
+Then run `pnpm dev` to start the dev server. Open [http://localhost:5173](http://localhost:5173) and enter your name to get started.
 
 > Joining an existing team? Run `pnpm setup:team` instead — no Docker required.
 >
