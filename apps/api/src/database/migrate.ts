@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { readFileSync } from 'node:fs';
 import path from 'path';
+import { pathToFileURL } from 'node:url';
 import { Kysely, Migrator, FileMigrationProvider, PostgresDialect } from 'kysely';
 import pg from 'pg';
 
@@ -72,4 +73,6 @@ async function main() {
   }
 }
 
-main();
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main();
+}
