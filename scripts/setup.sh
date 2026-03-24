@@ -93,30 +93,15 @@ for port in 5173 3001; do
 done
 
 start_dev_server() {
-  if [ "$NO_START" = true ]; then
-    echo ""
-    echo "Setup complete!"
-    echo ""
-    echo "  Start dev server:"
-    echo "    pnpm dev"
-    echo ""
-    echo "  API  → http://localhost:3001"
-    echo "  Web  → http://localhost:5173"
-    return
-  fi
-
   echo ""
-  echo "Setup complete! Starting dev server..."
+  echo "✅ Setup complete!"
+  echo ""
+  echo "  Start the dev server:"
+  echo "    pnpm dev"
   echo ""
   echo "  API  → http://localhost:3001"
   echo "  Web  → http://localhost:5173"
   echo ""
-
-  # Run Node.js version check before exec
-  bash scripts/check-node.sh || exit 1
-
-  # exec turbo directly — bypass pnpm's sh -c wrapper that kills Vite
-  exec npx turbo dev
 }
 
 # Check pnpm
