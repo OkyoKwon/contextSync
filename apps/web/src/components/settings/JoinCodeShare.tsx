@@ -25,9 +25,8 @@ function buildSetupGuide(joinCode: string, projectName: string, repoUrl?: string
   const dirName = repoUrl ? extractDirName(repoUrl) : 'contextSync';
   const profileName = toProfileName(projectName);
 
-  const cloneStep = repoUrl
-    ? `   git clone ${repoUrl} && cd ${dirName} && pnpm install`
-    : `   Clone the ContextSync repo, then:\n   cd ${dirName} && pnpm install`;
+  const cloneUrl = repoUrl || '<your-repo-url>';
+  const cloneStep = `   git clone ${cloneUrl} && cd ${dirName} && pnpm install`;
 
   return [
     `Join "${projectName}" on ContextSync`,
@@ -95,21 +94,21 @@ export function JoinCodeShare({
         </Button>
       </div>
 
-      {/* Owner hint — DATABASE_URL sharing */}
+      {/* Owner hint — REMOTE_DATABASE_URL sharing */}
       <div className="space-y-1.5">
         <p className="text-xs font-medium uppercase tracking-wider text-text-tertiary">
           For project owner
         </p>
         <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2">
           <p className="text-sm text-blue-300">
-            Your DATABASE_URL is in{' '}
+            Your REMOTE_DATABASE_URL is in{' '}
             <code className="rounded bg-blue-500/10 px-1 font-mono text-xs">apps/api/.env</code>{' '}
             &mdash; share it securely with team members.
           </p>
           <p className="mt-1 text-xs text-blue-400/70">
             Run{' '}
             <code className="rounded bg-blue-500/10 px-1 font-mono">
-              grep DATABASE_URL apps/api/.env
+              grep REMOTE_DATABASE_URL apps/api/.env
             </code>{' '}
             in your terminal to view it.
           </p>
