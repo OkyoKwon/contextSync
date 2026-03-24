@@ -18,10 +18,10 @@ export function ProjectSelector() {
   const isSelected = (projectId: string) => currentProjectId === projectId;
 
   const selectedClass =
-    'relative flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors bg-blue-500/10 font-medium text-blue-400 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-blue-400';
+    'relative flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-md px-3 py-2 text-left text-sm transition-colors bg-blue-500/10 font-medium text-blue-400 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-blue-400';
 
   const unselectedClass =
-    'relative flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors text-text-secondary hover:bg-interactive-hover hover:text-text-primary';
+    'relative flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-md px-3 py-2 text-left text-sm transition-colors text-text-secondary hover:bg-interactive-hover hover:text-text-primary';
 
   return (
     <div className="max-h-48 overflow-y-auto">
@@ -52,7 +52,7 @@ export function ProjectSelector() {
                 </Badge>
               )}
               {isSelected(project.id) && (
-                <CheckCircleIcon size={16} className="ml-auto shrink-0 text-blue-400" />
+                <CheckCircleIcon size={16} className="shrink-0 text-blue-400" />
               )}
             </button>
           ))}
