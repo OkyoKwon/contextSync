@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "bash scripts/check-node.sh && turbo build",
-    "dev": "bash scripts/check-node.sh && turbo dev",
+    "dev": "bash scripts/dev.sh",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
