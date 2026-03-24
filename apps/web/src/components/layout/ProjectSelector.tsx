@@ -18,10 +18,10 @@ export function ProjectSelector() {
   const isSelected = (projectId: string) => currentProjectId === projectId;
 
   const selectedClass =
-    'relative flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-md px-3 py-2 text-left text-sm transition-colors bg-blue-500/10 font-medium text-blue-400 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-blue-400';
+    'relative flex w-full flex-col gap-1 rounded-md px-3 py-2 text-left text-sm transition-colors bg-blue-500/10 font-medium text-blue-400 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-0.5 before:rounded-full before:bg-blue-400';
 
   const unselectedClass =
-    'relative flex min-w-0 w-full items-center gap-2.5 overflow-hidden rounded-md px-3 py-2 text-left text-sm transition-colors text-text-secondary hover:bg-interactive-hover hover:text-text-primary';
+    'relative flex w-full flex-col gap-1 rounded-md px-3 py-2 text-left text-sm transition-colors text-text-secondary hover:bg-interactive-hover hover:text-text-primary';
 
   return (
     <div className="max-h-48 overflow-y-auto">
@@ -33,27 +33,31 @@ export function ProjectSelector() {
               onClick={() => handleSelect(project.id)}
               className={isSelected(project.id) ? selectedClass : unselectedClass}
             >
-              <FolderIcon
-                size={16}
-                className={
-                  isSelected(project.id) ? 'shrink-0 text-blue-400' : 'shrink-0 text-text-muted'
-                }
-              />
-              <span className="min-w-0 shrink truncate">{project.name}</span>
-              <Badge
-                variant={project.databaseMode === 'remote' ? 'success' : 'default'}
-                className="shrink-0"
-              >
-                {project.databaseMode === 'remote' ? 'Remote' : 'Local'}
-              </Badge>
-              {project.isTeam && (
-                <Badge variant="info" className="shrink-0">
-                  Team
+              <div className="flex w-full items-center gap-2.5">
+                <FolderIcon
+                  size={16}
+                  className={
+                    isSelected(project.id) ? 'shrink-0 text-blue-400' : 'shrink-0 text-text-muted'
+                  }
+                />
+                <span className="min-w-0 flex-1 truncate">{project.name}</span>
+                {isSelected(project.id) && (
+                  <CheckCircleIcon size={16} className="shrink-0 text-blue-400" />
+                )}
+              </div>
+              <div className="flex items-center gap-1.5 pl-[26px]">
+                <Badge
+                  variant={project.databaseMode === 'remote' ? 'success' : 'default'}
+                  className="shrink-0"
+                >
+                  {project.databaseMode === 'remote' ? 'Remote' : 'Local'}
                 </Badge>
-              )}
-              {isSelected(project.id) && (
-                <CheckCircleIcon size={16} className="shrink-0 text-blue-400" />
-              )}
+                {project.isTeam && (
+                  <Badge variant="info" className="shrink-0">
+                    Team
+                  </Badge>
+                )}
+              </div>
             </button>
           ))}
         </div>
