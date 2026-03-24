@@ -113,10 +113,10 @@ start_dev_server() {
   DEV_PID=$!
   trap 'kill $DEV_PID 2>/dev/null; exit' INT TERM
 
-  # Wait for Vite to be ready
+  # Wait for Vite to be ready (use lsof to avoid IPv4/IPv6 mismatch with curl)
   echo "Waiting for dev server to be ready..."
-  for i in $(seq 1 30); do
-    if curl -s -o /dev/null http://localhost:5173 2>/dev/null; then
+  for i in $(seq 1 60); do
+    if lsof -ti :5173 >/dev/null 2>&1; then
       echo ""
       echo "  API  → http://localhost:3001"
       echo "  Web  → http://localhost:5173"
@@ -133,8 +133,8 @@ start_dev_server() {
       echo "ERROR: Dev server exited unexpectedly. Run 'pnpm dev' manually to see errors."
       exit 1
     fi
-    if [ "$i" -eq 30 ]; then
-      echo "WARNING: Dev server not ready after 30s. Check 'pnpm dev' output above."
+    if [ "$i" -eq 60 ]; then
+      echo "WARNING: Dev server not ready after 60s. Check 'pnpm dev' output above."
     fi
     sleep 1
   done
