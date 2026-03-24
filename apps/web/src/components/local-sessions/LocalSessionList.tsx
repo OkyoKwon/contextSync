@@ -10,7 +10,6 @@ import {
   sortSessions,
   type FilterType,
   type SortType,
-  type OwnerInfo,
 } from './SessionFilters';
 
 function formatTokenCount(tokens: number): string {
@@ -35,7 +34,7 @@ interface LocalSessionListProps {
   readonly onSelectProject: (projectPath: string) => void;
   readonly onSyncProject: (group: LocalProjectGroup) => void;
   readonly isSyncing: boolean;
-  readonly currentUserName?: string;
+  readonly ownerFilter?: string | null;
 }
 
 export function LocalSessionList({
@@ -44,26 +43,12 @@ export function LocalSessionList({
   selectedProjectPath,
   onSelectSession,
   onSelectProject,
-  currentUserName,
+  ownerFilter,
 }: LocalSessionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
   const [sort, setSort] = useState<SortType>('recent');
-  const [ownerFilter, setOwnerFilter] = useState<string | null>(null);
   const parentRef = useRef<HTMLDivElement>(null);
-
-  const uniqueOwners = useMemo((): readonly OwnerInfo[] => {
-    const seen = new Map<string, OwnerInfo>();
-    for (const group of groups) {
-      if (group.ownerName && !seen.has(group.ownerName)) {
-        seen.set(group.ownerName, {
-          name: group.ownerName,
-          avatarUrl: group.ownerAvatarUrl ?? null,
-        });
-      }
-    }
-    return [...seen.values()];
-  }, [groups]);
 
   const filteredGroups = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -127,10 +112,6 @@ export function LocalSessionList({
             activeSort={sort}
             onFilterChange={setFilter}
             onSortChange={setSort}
-            owners={uniqueOwners}
-            activeOwner={ownerFilter}
-            currentUserName={currentUserName}
-            onOwnerChange={setOwnerFilter}
           />
         </div>
       </div>

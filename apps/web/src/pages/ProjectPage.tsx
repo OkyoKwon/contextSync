@@ -39,6 +39,7 @@ export function ProjectPage() {
   const userName = useAuthStore((s) => s.user?.name);
 
   const [exporting, setExporting] = useState(false);
+  const [ownerFilter, setOwnerFilter] = useState<string | null>(null);
 
   const { data, isLoading } = useLocalSessions(false);
   const syncMutation = useSyncSessions();
@@ -64,6 +65,22 @@ export function ProjectPage() {
   }, [projectId, exporting]);
 
   const groups = useMemo(() => data?.data ?? [], [data]);
+
+  const uniqueOwners = useMemo(() => {
+    const seen = new Map<string, { readonly name: string; readonly avatarUrl: string | null }>();
+    for (const group of groups) {
+      if (group.ownerName && !seen.has(group.ownerName)) {
+        seen.set(group.ownerName, {
+          name: group.ownerName,
+          avatarUrl: group.ownerAvatarUrl ?? null,
+        });
+      }
+    }
+    return [...seen.values()];
+  }, [groups]);
+
+  const isTeamProject = !!currentProject?.isTeam;
+  const showOwnerDropdown = isTeamProject && uniqueOwners.length >= 2 && !!userName;
 
   // Auto-select the project path when there's exactly one group
   const autoSelectedRef = useRef(false);
@@ -179,6 +196,44 @@ export function ProjectPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          {showOwnerDropdown && (
+            <div className="flex items-center gap-1 rounded-lg border border-border-default bg-bg-secondary p-1">
+              <button
+                type="button"
+                onClick={() => setOwnerFilter(null)}
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  ownerFilter === null
+                    ? 'bg-blue-500/20 text-blue-400'
+                    : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary'
+                }`}
+              >
+                All
+              </button>
+              {uniqueOwners.map((owner) => (
+                <button
+                  key={owner.name}
+                  type="button"
+                  onClick={() => setOwnerFilter(owner.name)}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                    ownerFilter === owner.name
+                      ? 'bg-blue-500/20 text-blue-400'
+                      : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary'
+                  }`}
+                >
+                  <span
+                    className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-medium ${
+                      ownerFilter === owner.name
+                        ? 'bg-blue-500/30 text-blue-400'
+                        : 'bg-zinc-600/50 text-text-muted'
+                    }`}
+                  >
+                    {owner.name.charAt(0).toUpperCase()}
+                  </span>
+                  {owner.name === userName ? 'Mine' : owner.name}
+                </button>
+              ))}
+            </div>
+          )}
           <button
             onClick={() => setShowUploadModal(true)}
             className="flex items-center gap-1.5 rounded-md border border-border-primary bg-bg-secondary px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-tertiary disabled:opacity-50"
@@ -245,7 +300,7 @@ export function ProjectPage() {
               onSelectProject={handleSelectProject}
               onSyncProject={handleSyncProject}
               isSyncing={syncMutation.isPending}
-              currentUserName={currentProject?.isTeam ? userName : undefined}
+              ownerFilter={ownerFilter}
             />
           </div>
 
