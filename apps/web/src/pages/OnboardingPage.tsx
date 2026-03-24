@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useCallback, useRef, useMemo } from 'react';
+import { lazy, Suspense, useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/auth.store';
@@ -39,6 +39,19 @@ export function OnboardingPage() {
 
   const directories = useMemo(() => dirData?.data ?? [], [dirData?.data]);
   const hasDirectories = directories.length > 0;
+
+  const { data: existingProjectsData, isLoading: isCheckingExisting } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => projectsApi.list(),
+    enabled: !!token && !currentProjectId,
+  });
+
+  useEffect(() => {
+    const projects = existingProjectsData?.data ?? [];
+    if (projects.length > 0 && projects[0] && !currentProjectId) {
+      setCurrentProject(projects[0].id);
+    }
+  }, [existingProjectsData?.data, currentProjectId, setCurrentProject]);
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -104,7 +117,7 @@ export function OnboardingPage() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (checkingProjects) {
+  if (checkingProjects || (token && !currentProjectId && isCheckingExisting)) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
