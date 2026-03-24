@@ -21,22 +21,21 @@ brew install nvm && nvm install 22 && brew install --cask docker && corepack ena
 
 ```bash
 git clone <repo> && cd contextSync
-bash scripts/setup.sh   # Node 22 auto-install → Docker → DB migration → seed
-pnpm dev                # → API :3001, Web :5173
+bash scripts/setup.sh
 ```
 
-> **Note:** 각 명령어를 한 줄씩 복사-붙여넣기 하세요. 전체 블록을 한 번에 붙여넣으면
-> `INTERACTIVE_COMMENTS`가 꺼진 쉘(기본 zsh 등)에서 인라인 주석이 인자로 전달될 수 있습니다.
+`setup.sh`은 Node 22 자동 설치, Docker 기동, DB 마이그레이션, 시드 데이터 로드, 그리고 dev 서버 자동 시작까지 수행합니다.
+API는 :3001, Web은 :5173 포트에서 접근 가능합니다.
 
 Manual setup:
 
 ```bash
 pnpm install
-docker compose up -d                        # PostgreSQL 16
-cp apps/api/.env.example apps/api/.env      # JWT_SECRET has built-in dev default
-pnpm --filter @context-sync/api migrate     # Run DB migrations
-pnpm --filter @context-sync/api seed        # Optional: sample data
-pnpm dev                                    # API :3001, Web :5173
+docker compose up -d
+cp apps/api/.env.example apps/api/.env
+pnpm --filter @context-sync/api migrate
+pnpm --filter @context-sync/api seed
+pnpm dev
 ```
 
 ### Team Setup (for team members joining an existing project)

@@ -2,10 +2,12 @@
 set -euo pipefail
 
 DEFAULTS=false
+NO_START=false
 NODE_CHANGED=false
 for arg in "$@"; do
   case $arg in
     --defaults) DEFAULTS=true ;;
+    --no-start) NO_START=true ;;
   esac
 done
 
@@ -90,15 +92,22 @@ for port in 5173 3001; do
   fi
 done
 
-print_node_warning() {
-  if [ "$NODE_CHANGED" = true ]; then
+start_dev_server() {
+  echo ""
+  if [ "$NO_START" = true ]; then
+    echo "Setup complete!"
     echo ""
-    echo "NOTE: Node.js 22 was installed inside this script's subshell."
-    echo "  Before running pnpm dev, activate it in your current terminal:"
-    echo ""
-    echo "    nvm use 22"
-    echo ""
-    echo "  Or simply open a new terminal (default alias was set to 22)."
+    echo "  Start dev server:"
+    echo "    pnpm dev"
+  else
+    echo "Setup complete! Starting dev server..."
+  fi
+  echo ""
+  echo "  API  → http://localhost:3001"
+  echo "  Web  → http://localhost:5173"
+  echo ""
+  if [ "$NO_START" = false ]; then
+    exec pnpm dev
   fi
 }
 
@@ -176,20 +185,7 @@ EOF
   echo "Loading seed data..."
   pnpm --filter @context-sync/api seed
 
-  print_node_warning
-
-  echo ""
-  echo "Setup complete!"
-  echo ""
-  echo "  Node.js 22 has been set as nvm default."
-  echo "  If this terminal still uses an older version, run:"
-  echo "    nvm use 22"
-  echo ""
-  echo "  Start dev server:"
-  echo "    pnpm dev"
-  echo ""
-  echo "  API  → http://localhost:3001"
-  echo "  Web  → http://localhost:5173"
+  start_dev_server
 
 else
   # Interactive mode
@@ -238,8 +234,6 @@ EOF
   echo "Installing dependencies..."
   pnpm install
 
-  print_node_warning
-
   if [ "$mode_choice" = "1" ]; then
     # Docker check + start
     if command -v docker &>/dev/null; then
@@ -266,23 +260,12 @@ EOF
     echo "Loading seed data..."
     pnpm --filter @context-sync/api seed
 
-    echo ""
-    echo "Setup complete!"
-    echo ""
-    echo "  Start dev server:"
-    echo "    pnpm dev"
-    echo ""
-    echo "  API  → http://localhost:3001"
-    echo "  Web  → http://localhost:5173"
+    start_dev_server
   else
     # Team mode: migrations only (no Docker needed, seed skipped — not meaningful for remote DB)
     echo "Running migrations..."
     pnpm --filter @context-sync/api migrate
 
-    echo ""
-    echo "Setup complete!"
-    echo ""
-    echo "  Start dev server:"
-    echo "    pnpm dev"
+    start_dev_server
   fi
 fi

@@ -35,8 +35,8 @@ cd "$WORK_DIR/contextSync"
 echo "  ✓ Clone complete"
 
 # ── S-2: bash scripts/setup.sh ─────────────────────────────────────────
-echo "[S-2] bash scripts/setup.sh --defaults..."
-bash scripts/setup.sh --defaults
+echo "[S-2] bash scripts/setup.sh --defaults --no-start..."
+bash scripts/setup.sh --defaults --no-start
 [ -d node_modules ] || { echo "FAIL: node_modules not created"; exit 1; }
 [ -f apps/api/.env ] || { echo "FAIL: .env not created"; exit 1; }
 echo "  ✓ Setup complete, node_modules and .env exist"
