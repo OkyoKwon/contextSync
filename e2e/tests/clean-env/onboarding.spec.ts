@@ -3,7 +3,7 @@ import { waitForAppReady } from '../../helpers/wait-for.js';
 
 test.describe('Onboarding — First User Experience', () => {
   test('CLEAN-009: New user identify redirects to onboarding', async ({ page }) => {
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     const name = `Clean User ${Date.now()}`;
@@ -22,7 +22,7 @@ test.describe('Onboarding — First User Experience', () => {
   test('CLEAN-010: Onboarding creates first project and redirects to dashboard', async ({
     page,
   }) => {
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     const name = `Onboard User ${Date.now()}`;
@@ -64,7 +64,7 @@ test.describe('Onboarding — First User Experience', () => {
     await apiClient.createProject(token, { name: 'Existing Project' });
 
     // Now identify via UI — should skip onboarding
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     await page.fill('input[placeholder="Enter your name"]', name);
@@ -75,7 +75,7 @@ test.describe('Onboarding — First User Experience', () => {
   });
 
   test('CLEAN-012: Onboarding skip works', async ({ page }) => {
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     const name = `Skip User ${Date.now()}`;
