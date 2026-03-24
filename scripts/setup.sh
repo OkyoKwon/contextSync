@@ -11,22 +11,81 @@ done
 echo "=== ContextSync Setup ==="
 echo ""
 
-# Check Node.js version
-if ! command -v node &>/dev/null; then
-  echo "ERROR: Node.js is required. Install Node.js 22+ and try again."
-  exit 1
-fi
+# ── Node.js 22 auto-install via nvm ─────────────────────────────────────
+load_nvm() {
+  if type nvm &>/dev/null; then return 0; fi
+  local nvm_dirs=("${NVM_DIR:-}" "$HOME/.nvm")
+  if command -v brew &>/dev/null; then
+    local brew_nvm
+    brew_nvm="$(brew --prefix nvm 2>/dev/null)" && nvm_dirs+=("$brew_nvm")
+  fi
+  for dir in "${nvm_dirs[@]}"; do
+    if [ -n "$dir" ] && [ -s "$dir/nvm.sh" ]; then
+      source "$dir/nvm.sh"
+      return 0
+    fi
+  done
+  return 1
+}
 
-NODE_MAJOR=$(node -e 'console.log(process.versions.node.split(".")[0])')
-if [ "$NODE_MAJOR" -lt 22 ]; then
-  echo "ERROR: Node.js 22+ is required (found v$(node -v)). Upgrade with: nvm install 22"
-  exit 1
-fi
+install_nvm() {
+  echo "nvm not found. Installing nvm..."
+  if ! command -v curl &>/dev/null; then
+    echo "ERROR: curl is required to install nvm. Install curl and try again."
+    exit 1
+  fi
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+  export NVM_DIR="$HOME/.nvm"
+  source "$NVM_DIR/nvm.sh"
+}
+
+ensure_node_22() {
+  local need_install=false
+  if ! command -v node &>/dev/null; then
+    need_install=true
+  else
+    local major
+    major=$(node -e 'console.log(process.versions.node.split(".")[0])')
+    if [ "$major" -lt 22 ]; then
+      echo "Node.js $(node -v) detected (22+ required)."
+      need_install=true
+    fi
+  fi
+
+  if [ "$need_install" = false ]; then return 0; fi
+
+  # Load nvm, install if missing
+  if ! load_nvm; then
+    install_nvm
+  fi
+
+  echo "Installing Node.js 22 via nvm..."
+  nvm install 22
+  nvm use 22
+
+  # Re-activate corepack for the new Node version
+  corepack enable
+
+  # Verify
+  local major
+  major=$(node -e 'console.log(process.versions.node.split(".")[0])')
+  if [ "$major" -lt 22 ]; then
+    echo "ERROR: Node.js 22 installation failed. Please install manually: nvm install 22"
+    exit 1
+  fi
+  echo "Node.js $(node -v) activated."
+}
+
+ensure_node_22
 
 # Check pnpm
 if ! command -v pnpm &>/dev/null; then
-  echo "ERROR: pnpm is required. Run: corepack enable && corepack prepare pnpm@latest --activate"
-  exit 1
+  echo "Activating pnpm via corepack..."
+  corepack enable
+  if ! command -v pnpm &>/dev/null; then
+    echo "ERROR: pnpm is required. Run: corepack enable && corepack prepare pnpm@latest --activate"
+    exit 1
+  fi
 fi
 
 if [ "$DEFAULTS" = true ]; then
