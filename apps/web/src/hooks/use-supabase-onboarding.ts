@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AutoSetupExistingInput, AutoSetupNewInput } from '@context-sync/shared';
 import { supabaseOnboardingApi } from '../api/supabase-onboarding.api';
 import { authApi } from '../api/auth.api';
@@ -21,14 +21,24 @@ export function useSupabaseOrganizations(enabled: boolean = false) {
 }
 
 export function useSupabaseAutoSetup() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (input: AutoSetupExistingInput) => supabaseOnboardingApi.autoSetup(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['setup', 'status'] });
+    },
   });
 }
 
 export function useSupabaseCreateAndSetup() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (input: AutoSetupNewInput) => supabaseOnboardingApi.createAndSetup(input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['setup', 'status'] });
+    },
   });
 }
 
