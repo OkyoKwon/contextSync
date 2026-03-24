@@ -75,9 +75,13 @@ Daily usage charts and 7-day activity stats — session counts, token usage, hot
 
 ```bash
 git clone https://github.com/OkyoKwon/contextSync.git && cd contextSync
-bash scripts/setup.sh    # Node 22 auto-install → Docker → DB migration → seed
-pnpm dev                 # API :3001, Web :5173
+bash scripts/setup.sh   # Node 22 auto-install → Docker → DB migration → seed
+pnpm dev                # → API http://localhost:3001, Web http://localhost:5173
 ```
+
+> **Note:** Copy commands **one line at a time**. Pasting the entire block may cause
+> inline comments (`#…`) to be passed as arguments on shells where
+> `INTERACTIVE_COMMENTS` is off (e.g. default zsh).
 
 Open [http://localhost:5173](http://localhost:5173) and enter your name to get started.
 
@@ -91,7 +95,7 @@ Open [http://localhost:5173](http://localhost:5173) and enter your name to get s
 
 | Mode            | Setup Command                                       | Docker | Use Case                                 |
 | --------------- | --------------------------------------------------- | ------ | ---------------------------------------- |
-| **Personal**    | `bash scripts/setup.sh && pnpm dev`                  | Yes    | Solo dev, local DB                       |
+| **Personal**    | `bash scripts/setup.sh && pnpm dev`                 | Yes    | Solo dev, local DB                       |
 | **Team Host**   | [Setup guide →](docs/setup-guide.md#team-host-mode) | Yes    | Admin hosting shared DB (local + remote) |
 | **Team Member** | `pnpm setup:team && pnpm dev:profile <name>`        | No     | Join existing team project               |
 

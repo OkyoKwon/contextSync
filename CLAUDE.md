@@ -21,9 +21,12 @@ brew install nvm && nvm install 22 && brew install --cask docker && corepack ena
 
 ```bash
 git clone <repo> && cd contextSync
-bash scripts/setup.sh    # Node 22 auto-install → Docker → DB migration → seed
-pnpm dev                 # API :3001, Web :5173
+bash scripts/setup.sh   # Node 22 auto-install → Docker → DB migration → seed
+pnpm dev                # → API :3001, Web :5173
 ```
+
+> **Note:** 각 명령어를 한 줄씩 복사-붙여넣기 하세요. 전체 블록을 한 번에 붙여넣으면
+> `INTERACTIVE_COMMENTS`가 꺼진 쉘(기본 zsh 등)에서 인라인 주석이 인자로 전달될 수 있습니다.
 
 Manual setup:
 
