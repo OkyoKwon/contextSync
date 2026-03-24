@@ -109,12 +109,14 @@ start_dev_server() {
   echo "Setup complete! Starting dev server..."
   echo ""
   echo "  API  → http://localhost:3001"
-  echo "  Web  → http://localhost:5173 (auto-opens in browser)"
+  echo "  Web  → http://localhost:5173"
   echo ""
 
-  # exec replaces this shell with pnpm dev — Ctrl+C goes directly to dev server
-  # Browser auto-open is handled by Vite's server.open option
-  exec pnpm dev
+  # Run Node.js version check before exec
+  bash scripts/check-node.sh || exit 1
+
+  # exec turbo directly — bypass pnpm's sh -c wrapper that kills Vite
+  exec npx turbo dev
 }
 
 # Check pnpm
