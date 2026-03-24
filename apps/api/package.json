@@ -16,6 +16,7 @@
     "seed": "tsx --env-file-if-exists=.env src/database/seed.ts",
     "seed:marketing": "tsx --env-file-if-exists=.env src/database/seed-marketing/index.ts",
     "setup:team": "tsx src/scripts/setup-team.ts",
+    "dev:profile": "tsx src/scripts/dev-profile.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {

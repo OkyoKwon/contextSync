@@ -94,7 +94,7 @@ Open [http://localhost:5173](http://localhost:5173) and enter your name to get s
 | --------------- | --------------------------------------------------- | ------ | ---------------------------------------- |
 | **Personal**    | `pnpm bootstrap && pnpm dev`                        | Yes    | Solo dev, local DB                       |
 | **Team Host**   | [Setup guide →](docs/setup-guide.md#team-host-mode) | Yes    | Admin hosting shared DB (local + remote) |
-| **Team Member** | `pnpm setup:team && pnpm dev`                       | No     | Join existing team project               |
+| **Team Member** | `pnpm setup:team && pnpm dev:profile <name>`        | No     | Join existing team project               |
 
 ---
 

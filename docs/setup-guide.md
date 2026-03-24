@@ -114,11 +114,13 @@ Developer joining an existing team project. No Docker required.
 
 ```bash
 pnpm install
-pnpm setup:team    # Interactive: DB URL + name + Join Code
-pnpm dev
+pnpm setup:team              # Interactive: DB URL + name + Join Code
+pnpm dev:profile <name>      # Run the profile instance
 ```
 
-The interactive setup configures the remote DB connection and joins the team project automatically.
+When you join a project via Join Code, a profile is automatically created from the project name (e.g. project "Acme Team" → `.env.acme-team`). This creates a separate env file with auto-assigned ports, keeping your existing `.env` untouched.
+
+Without a Join Code, the setup writes to the default `.env` (backward compatible with `pnpm dev`).
 
 ---
 

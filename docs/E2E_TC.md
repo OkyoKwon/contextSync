@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **130 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **136 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -424,6 +424,19 @@
 | 146 | CLEAN-020 | Dashboard shows sessions from both users       | Owner Dashboard 타임라인에 양쪽 세션                                       | 두 세션 제목 + 두 유저 이름 표시                  |
 | 147 | CLEAN-021 | Conflict details include overlapping paths     | GET /projects/:id/conflicts                                                | overlappingPaths에 src/auth/login.ts 포함         |
 | 148 | CLEAN-022 | Team stats show activity from both users       | GET /projects/:id/team-stats                                               | 2명 유저 활동 데이터                              |
+
+### 20-4. Team Onboarding (Profile)
+
+**File:** `e2e/tests/clean-env/team-onboarding.spec.ts` (6 TC)
+
+| #   | TC ID     | Test Name                                     | Description                                               | Assertions                                          |
+| --- | --------- | --------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------- |
+| 149 | CLEAN-023 | Owner creates project and generates join code | 프로젝트 생성 → Join Code 발급                            | joinCode 길이 ≥ 6                                   |
+| 150 | CLEAN-024 | Member joins project via join code API        | POST /projects/join → collaborator 등록                   | 참여한 프로젝트 ID 일치, projects 목록에 포함       |
+| 151 | CLEAN-025 | Profile name derived from project name        | toProfileName() 다양한 입력 → kebab-case 변환             | 소문자, 하이픈, 30자 이내, 특수문자 제거            |
+| 152 | CLEAN-026 | Port allocation avoids conflicts              | allocatePorts() 기존 env 파일 스캔 후 충돌 없는 포트 반환 | apiPort ≥ 3101, webPort ≥ 5273, 기본 포트와 불일치  |
+| 153 | CLEAN-027 | Profile env content has correct structure     | buildEnvContent() 생성된 env 내용 검증                    | PORT, VITE_PORT, DATABASE_URL, FRONTEND_URL 등 포함 |
+| 154 | CLEAN-028 | Member sees joined project in dashboard       | Join 후 Member가 대시보드에서 프로젝트 접근               | 프로젝트 이름이 페이지에 표시                       |
 
 ---
 

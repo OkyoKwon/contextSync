@@ -25,6 +25,12 @@ function buildSetupGuide(joinCode: string, repoUrl?: string | null): string {
     '   Database URL: (ask project owner for the connection URL)',
     '   Your name: (your name)',
     `   Join Code: ${joinCode}`,
+    '',
+    '   A profile is auto-created from the project name.',
+    '   Your existing .env stays untouched.',
+    '',
+    '4. Start the dev server:',
+    '   pnpm dev:profile <project-name>',
   ].join('\n');
 }
 

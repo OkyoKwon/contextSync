@@ -40,8 +40,11 @@ pnpm dev                                    # API :3001, Web :5173
 ### Team Setup (for team members joining an existing project)
 
 ```bash
-pnpm setup:team    # Interactive: DB URL + name + Join Code
+pnpm setup:team                # Interactive: DB URL + name + Join Code
+pnpm dev:profile <name>        # Run profile instance (separate ports)
 ```
+
+Join Code로 프로젝트에 참여하면 프로젝트 이름에서 프로필이 자동 생성되어 `.env.{name}`에 별도 포트가 할당됩니다. 기존 `.env`는 건드리지 않습니다. Join Code 없이 실행하면 기존 `.env`에 작성 (하위 호환).
 
 ## Commands
 
@@ -56,6 +59,7 @@ pnpm setup:team    # Interactive: DB URL + name + Join Code
 | `pnpm clean`                              | Clean dist outputs                     |
 | `pnpm --filter @context-sync/api migrate` | Run DB migrations                      |
 | `pnpm setup:team`                         | Team member one-command setup          |
+| `pnpm dev:profile <name>`                 | Run a named profile instance           |
 
 ## Project Structure
 
