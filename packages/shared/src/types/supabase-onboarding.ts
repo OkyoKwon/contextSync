@@ -21,6 +21,7 @@ export interface CreateSupabaseProjectInput {
 export interface AutoSetupExistingInput {
   readonly supabaseProjectRef: string;
   readonly dbPassword: string;
+  readonly projectId: string;
 }
 
 export interface AutoSetupNewInput {
@@ -28,4 +29,5 @@ export interface AutoSetupNewInput {
   readonly dbPassword: string;
   readonly region: string;
   readonly organizationId: string;
+  readonly projectId: string;
 }

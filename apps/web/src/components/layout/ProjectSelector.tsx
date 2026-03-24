@@ -35,11 +35,21 @@ export function ProjectSelector() {
             >
               <FolderIcon
                 size={16}
-                className={isSelected(project.id) ? 'shrink-0 text-blue-400' : 'shrink-0 text-text-muted'}
+                className={
+                  isSelected(project.id) ? 'shrink-0 text-blue-400' : 'shrink-0 text-text-muted'
+                }
               />
               <span className="truncate">{project.name}</span>
+              <Badge
+                variant={project.databaseMode === 'remote' ? 'success' : 'default'}
+                className="shrink-0"
+              >
+                {project.databaseMode === 'remote' ? 'Remote' : 'Local'}
+              </Badge>
               {project.isTeam && (
-                <Badge variant="info" className="shrink-0">Team</Badge>
+                <Badge variant="info" className="shrink-0">
+                  Team
+                </Badge>
               )}
               {isSelected(project.id) && (
                 <CheckCircleIcon size={16} className="ml-auto shrink-0 text-blue-400" />

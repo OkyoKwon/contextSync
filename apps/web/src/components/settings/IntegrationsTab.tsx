@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../../stores/auth.store';
 import { authApi } from '../../api/auth.api';
 import { useDatabaseStatus } from '../../hooks/use-database-status';
+import { useProjects } from '../../hooks/use-projects';
 import { useCollaborators } from '../../hooks/use-collaborators';
 import { SupabaseAutoSetup } from './supabase-setup/SupabaseAutoSetup';
 import { SelfHostedSetup } from './self-hosted-setup/SelfHostedSetup';
@@ -154,10 +155,12 @@ function DatabaseRemoteSection() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [provider, setProvider] = useState<RemoteProvider>('supabase');
   const { data: dbStatus } = useDatabaseStatus();
+  const { data: projectsData } = useProjects();
   const currentProjectId = useAuthStore((s) => s.currentProjectId);
   const { data: collaboratorsData } = useCollaborators(currentProjectId ?? '');
 
-  const isRemote = dbStatus?.data?.databaseMode === 'remote' || justCompleted;
+  const currentProject = projectsData?.data?.find((p) => p.id === currentProjectId);
+  const isRemote = currentProject?.databaseMode === 'remote' || justCompleted;
   const collaborators = collaboratorsData?.data ?? [];
 
   return (
@@ -224,12 +227,18 @@ function DatabaseRemoteSection() {
                 ))}
               </div>
 
-              {provider === 'supabase' && (
-                <SupabaseAutoSetup onAutoSetupComplete={() => setJustCompleted(true)} />
+              {provider === 'supabase' && currentProjectId && (
+                <SupabaseAutoSetup
+                  projectId={currentProjectId}
+                  onAutoSetupComplete={() => setJustCompleted(true)}
+                />
               )}
 
-              {provider === 'self-hosted' && (
-                <SelfHostedSetup onSetupComplete={() => setJustCompleted(true)} />
+              {provider === 'self-hosted' && currentProjectId && (
+                <SelfHostedSetup
+                  projectId={currentProjectId}
+                  onSetupComplete={() => setJustCompleted(true)}
+                />
               )}
             </div>
           )}

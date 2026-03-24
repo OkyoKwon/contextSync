@@ -4,6 +4,7 @@ import { useCurrentProject } from '../../hooks/use-current-project';
 import { usePermissions } from '../../hooks/use-permissions';
 import { useCollaborators } from '../../hooks/use-collaborators';
 import { useDatabaseStatus } from '../../hooks/use-database-status';
+import { useProjects } from '../../hooks/use-projects';
 import {
   useGenerateJoinCode,
   useRegenerateJoinCode,
@@ -34,9 +35,11 @@ export function TeamTab({ projectId }: TeamTabProps) {
   const collaborators = collaboratorsData?.data ?? [];
 
   const { data: dbStatus } = useDatabaseStatus();
+  const { data: projectsData } = useProjects();
   const navigate = useNavigate();
 
-  const isRemoteDb = dbStatus?.data?.databaseMode === 'remote';
+  const currentProject = projectsData?.data?.find((p) => p.id === projectId);
+  const isRemoteDb = currentProject?.databaseMode === 'remote';
 
   const generateMutation = useGenerateJoinCode(projectId);
   const regenerateMutation = useRegenerateJoinCode(projectId);
@@ -115,6 +118,7 @@ export function TeamTab({ projectId }: TeamTabProps) {
               joinCode={joinCode}
               projectName={project?.name ?? ''}
               repoUrl={project?.repoUrl}
+              remoteDbUrl={dbStatus?.data?.remoteUrl}
               onRegenerate={() => regenerateMutation.mutate()}
               onDelete={() => deleteMutation.mutate()}
               isRegenerating={regenerateMutation.isPending}

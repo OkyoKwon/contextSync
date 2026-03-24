@@ -7,6 +7,7 @@ import {
   autoSetupExisting,
   createAndSetup,
 } from './supabase-onboarding.service.js';
+import { updateDatabaseMode } from '../projects/project.repository.js';
 
 export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
   app.get('/supabase/projects', { preHandler: [app.authenticate] }, async (request, reply) => {
@@ -36,6 +37,7 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
       app.env.JWT_SECRET,
       parsed.data,
     );
+    await updateDatabaseMode(app.localDb, parsed.data.projectId, 'remote');
     return reply.send(ok(result));
   });
 
@@ -64,6 +66,7 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
           );
       }
 
+      await updateDatabaseMode(app.localDb, parsed.data.projectId, 'remote');
       return reply.send(ok(result));
     },
   );

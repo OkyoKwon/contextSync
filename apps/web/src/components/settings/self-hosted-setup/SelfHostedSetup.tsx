@@ -7,10 +7,11 @@ import { Spinner } from '../../ui/Spinner';
 import { StepNumber } from '../supabase-setup/StepNumber';
 
 interface SelfHostedSetupProps {
+  readonly projectId: string;
   readonly onSetupComplete: () => void;
 }
 
-export function SelfHostedSetup({ onSetupComplete }: SelfHostedSetupProps) {
+export function SelfHostedSetup({ projectId, onSetupComplete }: SelfHostedSetupProps) {
   const [connectionUrl, setConnectionUrl] = useState('');
   const [sslEnabled, setSslEnabled] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export function SelfHostedSetup({ onSetupComplete }: SelfHostedSetupProps) {
   const handleConnect = () => {
     setError(null);
     switchMutation.mutate(
-      { connectionUrl, sslEnabled },
+      { connectionUrl, sslEnabled, projectId },
       {
         onSuccess: () => onSetupComplete(),
         onError: (err) =>

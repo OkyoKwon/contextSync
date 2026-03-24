@@ -9,13 +9,14 @@ export interface DatabaseStatus {
   readonly databaseMode: 'local' | 'remote';
   readonly provider: 'local' | 'supabase' | 'custom';
   readonly host: string;
+  readonly remoteUrl: string | null;
 }
 
 // Tracks whether switchToRemote has been called successfully in this process.
 // Once set, getDatabaseStatus returns 'remote' regardless of hostname heuristics.
 let switchedToRemoteHost: string | null = null;
 
-export function getDatabaseStatus(databaseUrl: string): DatabaseStatus {
+export function getDatabaseStatus(databaseUrl: string, remoteDbUrl?: string): DatabaseStatus {
   const effectiveUrl = switchedToRemoteHost ?? databaseUrl;
   const url = new URL(effectiveUrl);
   const hostname = url.hostname;
@@ -29,6 +30,7 @@ export function getDatabaseStatus(databaseUrl: string): DatabaseStatus {
     databaseMode: isRemote ? 'remote' : 'local',
     provider: isSupabase ? 'supabase' : isRemote ? 'custom' : 'local',
     host: maskedHost,
+    remoteUrl: remoteDbUrl ?? (isRemote ? databaseUrl : null),
   };
 }
 
@@ -110,6 +112,8 @@ function updateEnvFile(connectionUrl: string, sslEnabled: boolean): void {
 
   let updated = replaceEnvVar(content, 'DATABASE_URL', connectionUrl);
   updated = replaceEnvVar(updated, 'DATABASE_SSL', String(sslEnabled));
+  updated = replaceEnvVar(updated, 'REMOTE_DATABASE_URL', connectionUrl);
+  updated = replaceEnvVar(updated, 'REMOTE_DATABASE_SSL', String(sslEnabled));
 
   // Skip write if content is unchanged (avoids triggering file watchers)
   if (updated !== content) {

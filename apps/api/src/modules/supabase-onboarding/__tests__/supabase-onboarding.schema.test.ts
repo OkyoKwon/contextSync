@@ -7,6 +7,7 @@ describe('Supabase Onboarding Schemas', () => {
       const result = autoSetupExistingSchema.safeParse({
         supabaseProjectRef: 'abcdefghijklmnop',
         dbPassword: 'my-secure-password',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(true);
     });
@@ -15,6 +16,7 @@ describe('Supabase Onboarding Schemas', () => {
       const result = autoSetupExistingSchema.safeParse({
         supabaseProjectRef: '',
         dbPassword: 'password',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(false);
     });
@@ -23,12 +25,22 @@ describe('Supabase Onboarding Schemas', () => {
       const result = autoSetupExistingSchema.safeParse({
         supabaseProjectRef: 'ref123',
         dbPassword: '',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(false);
     });
 
     it('should reject missing fields', () => {
       const result = autoSetupExistingSchema.safeParse({});
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject invalid projectId', () => {
+      const result = autoSetupExistingSchema.safeParse({
+        supabaseProjectRef: 'ref123',
+        dbPassword: 'password',
+        projectId: 'not-a-uuid',
+      });
       expect(result.success).toBe(false);
     });
   });
@@ -40,6 +52,7 @@ describe('Supabase Onboarding Schemas', () => {
         dbPassword: 'secure-password-123',
         region: 'us-east-1',
         organizationId: 'org-abc123',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(true);
     });
@@ -50,6 +63,7 @@ describe('Supabase Onboarding Schemas', () => {
         dbPassword: 'secure-password-123',
         region: 'us-east-1',
         organizationId: 'org-abc123',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(false);
     });
@@ -60,6 +74,7 @@ describe('Supabase Onboarding Schemas', () => {
         dbPassword: '12345',
         region: 'us-east-1',
         organizationId: 'org-abc123',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(false);
     });
@@ -70,6 +85,7 @@ describe('Supabase Onboarding Schemas', () => {
         dbPassword: 'secure-password-123',
         region: '',
         organizationId: 'org-abc123',
+        projectId: '550e8400-e29b-41d4-a716-446655440000',
       });
       expect(result.success).toBe(false);
     });

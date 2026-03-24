@@ -5,6 +5,7 @@ interface JoinCodeShareProps {
   readonly joinCode: string;
   readonly projectName: string;
   readonly repoUrl?: string | null;
+  readonly remoteDbUrl?: string | null;
   readonly onRegenerate: () => void;
   readonly onDelete: () => void;
   readonly isRegenerating: boolean;
@@ -21,7 +22,12 @@ function extractDirName(repoUrl: string): string {
   return lastSegment || 'contextSync';
 }
 
-function buildSetupGuide(joinCode: string, projectName: string, repoUrl?: string | null): string {
+function buildSetupGuide(
+  joinCode: string,
+  projectName: string,
+  repoUrl?: string | null,
+  remoteDbUrl?: string | null,
+): string {
   const dirName = repoUrl ? extractDirName(repoUrl) : 'contextSync';
   const profileName = toProfileName(projectName);
 
@@ -40,7 +46,7 @@ function buildSetupGuide(joinCode: string, projectName: string, repoUrl?: string
     '   pnpm setup:team',
     '',
     '3. Enter when prompted:',
-    '   - Database URL: (provided by project owner)',
+    `   - Database URL: ${remoteDbUrl ?? '(provided by project owner)'}`,
     '   - Your name: (your name)',
     `   - Join Code: ${joinCode}`,
     '',
@@ -56,6 +62,7 @@ export function JoinCodeShare({
   joinCode,
   projectName,
   repoUrl,
+  remoteDbUrl,
   onRegenerate,
   onDelete,
   isRegenerating,
@@ -63,8 +70,9 @@ export function JoinCodeShare({
 }: JoinCodeShareProps) {
   const [codeCopied, setCodeCopied] = useState(false);
   const [guideCopied, setGuideCopied] = useState(false);
+  const [urlCopied, setUrlCopied] = useState(false);
 
-  const setupGuide = buildSetupGuide(joinCode, projectName, repoUrl);
+  const setupGuide = buildSetupGuide(joinCode, projectName, repoUrl, remoteDbUrl);
 
   const handleCopyCode = async () => {
     await navigator.clipboard.writeText(joinCode);
@@ -100,18 +108,44 @@ export function JoinCodeShare({
           For project owner
         </p>
         <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-3 py-2">
-          <p className="text-sm text-blue-300">
-            Your REMOTE_DATABASE_URL is in{' '}
-            <code className="rounded bg-blue-500/10 px-1 font-mono text-xs">apps/api/.env</code>{' '}
-            &mdash; share it securely with team members.
-          </p>
-          <p className="mt-1 text-xs text-blue-400/70">
-            Run{' '}
-            <code className="rounded bg-blue-500/10 px-1 font-mono">
-              grep REMOTE_DATABASE_URL apps/api/.env
-            </code>{' '}
-            in your terminal to view it.
-          </p>
+          {remoteDbUrl ? (
+            <>
+              <p className="text-sm text-blue-300">
+                Share this REMOTE_DATABASE_URL securely with team members.
+              </p>
+              <div className="mt-2 flex items-center gap-2">
+                <code className="flex-1 truncate rounded bg-blue-500/10 px-2 py-1 font-mono text-xs text-blue-300">
+                  {remoteDbUrl}
+                </code>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(remoteDbUrl);
+                    setUrlCopied(true);
+                    setTimeout(() => setUrlCopied(false), 2000);
+                  }}
+                >
+                  {urlCopied ? 'Copied!' : 'Copy'}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-blue-300">
+                Your REMOTE_DATABASE_URL is in{' '}
+                <code className="rounded bg-blue-500/10 px-1 font-mono text-xs">apps/api/.env</code>{' '}
+                &mdash; share it securely with team members.
+              </p>
+              <p className="mt-1 text-xs text-blue-400/70">
+                Run{' '}
+                <code className="rounded bg-blue-500/10 px-1 font-mono">
+                  grep REMOTE_DATABASE_URL apps/api/.env
+                </code>{' '}
+                in your terminal to view it.
+              </p>
+            </>
+          )}
         </div>
       </div>
 

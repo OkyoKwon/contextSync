@@ -23,12 +23,13 @@ interface RecoveryData {
 }
 
 interface SupabaseAutoSetupProps {
+  readonly projectId: string;
   readonly onAutoSetupComplete: () => void;
 }
 
 type SetupTab = 'existing' | 'new';
 
-export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProps) {
+export function SupabaseAutoSetup({ projectId, onAutoSetupComplete }: SupabaseAutoSetupProps) {
   const user = useAuthStore((s) => s.user);
   const hasToken = user?.hasSupabaseToken ?? false;
 
@@ -81,7 +82,7 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
   const handleConnectExisting = () => {
     setError(null);
     autoSetupMutation.mutate(
-      { supabaseProjectRef: selectedRef, dbPassword },
+      { supabaseProjectRef: selectedRef, dbPassword, projectId },
       {
         onSuccess: () => onAutoSetupComplete(),
         onError: (err) => setError(err instanceof Error ? err.message : 'Auto setup failed'),
@@ -93,7 +94,13 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
     setError(null);
     setRecovery(null);
     createAndSetupMutation.mutate(
-      { name: newName, dbPassword: newDbPassword, region: newRegion, organizationId: newOrgId },
+      {
+        name: newName,
+        dbPassword: newDbPassword,
+        region: newRegion,
+        organizationId: newOrgId,
+        projectId,
+      },
       {
         onSuccess: () => onAutoSetupComplete(),
         onError: (err) => {
@@ -116,7 +123,7 @@ export function SupabaseAutoSetup({ onAutoSetupComplete }: SupabaseAutoSetupProp
     setError(null);
     setRecovery(null);
     autoSetupMutation.mutate(
-      { supabaseProjectRef: recovery.projectRef, dbPassword: newDbPassword },
+      { supabaseProjectRef: recovery.projectRef, dbPassword: newDbPassword, projectId },
       {
         onSuccess: () => onAutoSetupComplete(),
         onError: (err) => setError(err instanceof Error ? err.message : 'Retry connection failed'),

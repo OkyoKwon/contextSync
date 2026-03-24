@@ -12,10 +12,18 @@ export function useSwitchToRemote() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ connectionUrl, sslEnabled }: { connectionUrl: string; sslEnabled: boolean }) =>
-      setupApi.switchToRemote(connectionUrl, sslEnabled),
+    mutationFn: ({
+      connectionUrl,
+      sslEnabled,
+      projectId,
+    }: {
+      connectionUrl: string;
+      sslEnabled: boolean;
+      projectId: string;
+    }) => setupApi.switchToRemote(connectionUrl, sslEnabled, projectId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['setup', 'status'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 }

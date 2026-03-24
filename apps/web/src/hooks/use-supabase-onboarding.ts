@@ -27,6 +27,7 @@ export function useSupabaseAutoSetup() {
     mutationFn: (input: AutoSetupExistingInput) => supabaseOnboardingApi.autoSetup(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['setup', 'status'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 }
@@ -38,6 +39,7 @@ export function useSupabaseCreateAndSetup() {
     mutationFn: (input: AutoSetupNewInput) => supabaseOnboardingApi.createAndSetup(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['setup', 'status'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     },
   });
 }

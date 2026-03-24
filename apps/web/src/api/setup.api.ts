@@ -4,6 +4,7 @@ export interface DatabaseStatus {
   readonly databaseMode: 'local' | 'remote';
   readonly provider: 'local' | 'supabase' | 'custom';
   readonly host: string;
+  readonly remoteUrl: string | null;
 }
 
 export interface ConnectionTestResult {
@@ -24,6 +25,10 @@ export const setupApi = {
   testConnection: (connectionUrl: string, sslEnabled: boolean) =>
     api.post<ConnectionTestResult>('/setup/test-connection', { connectionUrl, sslEnabled }),
 
-  switchToRemote: (connectionUrl: string, sslEnabled: boolean) =>
-    api.post<SwitchToRemoteResult>('/setup/switch-to-remote', { connectionUrl, sslEnabled }),
+  switchToRemote: (connectionUrl: string, sslEnabled: boolean, projectId: string) =>
+    api.post<SwitchToRemoteResult>('/setup/switch-to-remote', {
+      connectionUrl,
+      sslEnabled,
+      projectId,
+    }),
 };

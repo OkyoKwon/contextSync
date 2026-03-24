@@ -186,6 +186,18 @@ function toProject(row: {
   };
 }
 
+export async function updateDatabaseMode(
+  db: Db,
+  projectId: string,
+  databaseMode: 'local' | 'remote',
+): Promise<void> {
+  await db
+    .updateTable('projects')
+    .set({ database_mode: databaseMode, updated_at: new Date() })
+    .where('id', '=', projectId)
+    .execute();
+}
+
 function toProjectWithTeamInfo(row: {
   id: string;
   owner_id: string;
