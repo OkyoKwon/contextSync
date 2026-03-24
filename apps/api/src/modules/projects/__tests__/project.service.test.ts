@@ -32,9 +32,14 @@ vi.mock('../../../lib/join-code.js', () => ({
   generateJoinCode: vi.fn(() => 'ABC123'),
 }));
 
+vi.mock('../../auth/auth.service.js', () => ({
+  findUserById: vi.fn(),
+}));
+
 import * as projectRepo from '../project.repository.js';
 import * as collabRepo from '../collaborator.repository.js';
 import { assertPermission } from '../permission.helper.js';
+import { findUserById } from '../../auth/auth.service.js';
 import {
   createProject,
   getProjects,
@@ -73,6 +78,7 @@ const mockFindCollabsByProjectId = collabRepo.findCollaboratorsByProjectId as Re
 const mockAddCollaborator = collabRepo.addCollaborator as ReturnType<typeof vi.fn>;
 const mockIsCollaborator = collabRepo.isCollaborator as ReturnType<typeof vi.fn>;
 const mockUpdateCollabDir = collabRepo.updateCollaboratorDirectory as ReturnType<typeof vi.fn>;
+const mockFindUserById = findUserById as ReturnType<typeof vi.fn>;
 const mockAssertPermission = assertPermission as ReturnType<typeof vi.fn>;
 
 const db = {} as any;
@@ -249,15 +255,34 @@ describe('deleteProject', () => {
 });
 
 describe('getCollaborators', () => {
-  it('should return collaborators when user has access', async () => {
+  it('should return collaborators with owner prepended when owner is not in collaborators', async () => {
     const project = makeProject({ ownerId: 'user-1' });
     const collabs = [{ id: 'c-1', userId: 'user-2', role: 'member' }];
+    const ownerUser = { id: 'user-1', name: 'Owner', email: 'owner@test.com', avatarUrl: null };
+    mockFindProjectById.mockResolvedValue(project);
+    mockFindCollabsByProjectId.mockResolvedValue(collabs);
+    mockFindUserById.mockResolvedValue(ownerUser);
+
+    const result = await getCollaborators(db, 'proj-1', 'user-1');
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ userId: 'user-1', role: 'owner', userName: 'Owner' });
+    expect(result[1]).toEqual(collabs[0]);
+  });
+
+  it('should not duplicate owner when already in collaborators', async () => {
+    const project = makeProject({ ownerId: 'user-1' });
+    const collabs = [
+      { id: 'c-1', userId: 'user-1', role: 'owner' },
+      { id: 'c-2', userId: 'user-2', role: 'member' },
+    ];
     mockFindProjectById.mockResolvedValue(project);
     mockFindCollabsByProjectId.mockResolvedValue(collabs);
 
     const result = await getCollaborators(db, 'proj-1', 'user-1');
 
     expect(result).toEqual(collabs);
+    expect(mockFindUserById).not.toHaveBeenCalled();
   });
 
   it('should throw NotFoundError when project does not exist', async () => {

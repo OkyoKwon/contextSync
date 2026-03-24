@@ -15,6 +15,7 @@ import { shortPath } from '../lib/format';
 import { timeAgo } from '../lib/date';
 import { useAuthStore } from '../stores/auth.store';
 import { useRequireProject } from '../hooks/use-require-project';
+import { useCollaborators } from '../hooks/use-collaborators';
 import { sessionsApi } from '../api/sessions.api';
 import { showToast } from '../lib/toast';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
@@ -43,6 +44,7 @@ export function ProjectPage() {
 
   const { data, isLoading } = useLocalSessions(false);
   const syncMutation = useSyncSessions();
+  const { data: collaboratorsData } = useCollaborators(projectId);
 
   const handleExport = useCallback(async () => {
     if (!projectId || exporting) return;
@@ -66,7 +68,18 @@ export function ProjectPage() {
 
   const groups = useMemo(() => data?.data ?? [], [data]);
 
+  const isTeamProject = !!currentProject?.isTeam;
+  const collaborators = collaboratorsData?.data ?? [];
+
   const uniqueOwners = useMemo(() => {
+    if (isTeamProject && collaborators.length > 0) {
+      return collaborators
+        .filter((c) => c.userName)
+        .map((c) => ({
+          name: c.userName!,
+          avatarUrl: c.userAvatarUrl ?? null,
+        }));
+    }
     const seen = new Map<string, { readonly name: string; readonly avatarUrl: string | null }>();
     for (const group of groups) {
       if (group.ownerName && !seen.has(group.ownerName)) {
@@ -77,10 +90,9 @@ export function ProjectPage() {
       }
     }
     return [...seen.values()];
-  }, [groups]);
+  }, [isTeamProject, collaborators, groups]);
 
-  const isTeamProject = !!currentProject?.isTeam;
-  const showOwnerDropdown = isTeamProject && uniqueOwners.length >= 2 && !!userName;
+  const showOwnerDropdown = isTeamProject && uniqueOwners.length >= 1 && !!userName;
 
   // Auto-select the project path when there's exactly one group
   const autoSelectedRef = useRef(false);

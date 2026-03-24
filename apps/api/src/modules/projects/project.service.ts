@@ -91,7 +91,26 @@ export async function getCollaborators(
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
   await assertAccess(db, project, userId);
-  return collabRepo.findCollaboratorsByProjectId(db, projectId);
+  const collaborators = await collabRepo.findCollaboratorsByProjectId(db, projectId);
+
+  const ownerInList = collaborators.some((c) => c.userId === project.ownerId);
+  if (ownerInList) return collaborators;
+
+  const ownerUser = await findUserById(db, project.ownerId);
+  if (!ownerUser) return collaborators;
+
+  const ownerCollaborator: Collaborator = {
+    id: `owner-${project.id}`,
+    projectId: project.id,
+    userId: ownerUser.id,
+    role: 'owner',
+    localDirectory: project.localDirectory,
+    addedAt: project.createdAt,
+    userName: ownerUser.name,
+    userEmail: ownerUser.email,
+    userAvatarUrl: ownerUser.avatarUrl,
+  };
+  return [ownerCollaborator, ...collaborators];
 }
 
 export async function addCollaborator(
