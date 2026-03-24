@@ -108,55 +108,12 @@ start_dev_server() {
   echo ""
   echo "Setup complete! Starting dev server..."
   echo ""
+  echo "  API  → http://localhost:3001"
+  echo "  Web  → http://localhost:5173 (auto-opens in browser)"
+  echo ""
 
-  # Background subshell: wait for Vite HTTP server to actually respond, then open browser
-  (
-    for i in $(seq 1 60); do
-      HTTP_CODE=$(curl --max-time 1 -s -o /dev/null -w "%{http_code}" http://localhost:5173 2>/dev/null) || true
-      if [ "$HTTP_CODE" = "200" ]; then
-        echo ""
-        echo "  ✓ Dev server ready"
-        echo "  API  → http://localhost:3001"
-        echo "  Web  → http://localhost:5173"
-        echo ""
-        # Open browser
-        if command -v open &>/dev/null; then
-          open http://localhost:5173
-        elif command -v xdg-open &>/dev/null; then
-          xdg-open http://localhost:5173
-        fi
-        exit 0
-      fi
-      # Print progress every 10 seconds
-      if [ $((i % 10)) -eq 0 ]; then
-        echo "  [${i}s] Waiting for dev server... (curl→${HTTP_CODE:-no response})"
-        # Diagnostic: check if Vite process is still alive
-        VITE_PID=$(lsof -ti :5173 2>/dev/null || true)
-        if [ -z "$VITE_PID" ]; then
-          echo "  [${i}s] WARNING: No process listening on port 5173"
-          echo "  [${i}s] Port 3001: $(lsof -ti :3001 2>/dev/null && echo 'alive' || echo 'dead')"
-        else
-          echo "  [${i}s] Vite PID: $VITE_PID (listening on 5173)"
-        fi
-      fi
-      sleep 1
-    done
-    echo ""
-    echo "ERROR: Dev server not ready after 60s."
-    echo "  Diagnostics:"
-    echo "    Port 5173: $(lsof -ti :5173 2>/dev/null && echo "PID $(lsof -ti :5173)" || echo 'no process')"
-    echo "    Port 3001: $(lsof -ti :3001 2>/dev/null && echo "PID $(lsof -ti :3001)" || echo 'no process')"
-    echo "    curl IPv4:      $(curl --max-time 2 -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5173 2>&1)"
-    echo "    curl IPv6:      $(curl --max-time 2 -s -o /dev/null -w '%{http_code}' http://[::1]:5173 2>&1)"
-    echo "    curl localhost: $(curl --max-time 2 -s -o /dev/null -w '%{http_code}' http://localhost:5173 2>&1)"
-    echo ""
-    echo "  Possible fixes:"
-    echo "    1. Check turbo output above for Vite errors"
-    echo "    2. Try manually: pnpm --filter @context-sync/web dev"
-    echo ""
-  ) &
-
-  # Replace this shell with pnpm dev — no trap/kill issues, Ctrl+C goes directly to dev server
+  # exec replaces this shell with pnpm dev — Ctrl+C goes directly to dev server
+  # Browser auto-open is handled by Vite's server.open option
   exec pnpm dev
 }
 

@@ -22,6 +22,7 @@ export default defineConfig({
   server: {
     host: '::',
     port: parseInt(process.env['VITE_PORT'] ?? '5173', 10),
+    open: true,
     proxy: {
       '/api': {
         target: process.env['VITE_API_TARGET'] ?? 'http://127.0.0.1:3001',
