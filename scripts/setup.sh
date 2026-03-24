@@ -102,7 +102,7 @@ if [ "$DEFAULTS" = true ]; then
   echo "Installing dependencies..."
   pnpm install
 
-  # Create .env if it doesn't exist (before Docker, so it exists even if Docker fails)
+  # Create or update .env (before Docker, so it exists even if Docker fails)
   if [ ! -f apps/api/.env ]; then
     cat > apps/api/.env <<EOF
 PORT=3001
@@ -118,7 +118,10 @@ FRONTEND_URL=http://localhost:5173
 EOF
     echo "Created apps/api/.env"
   else
-    echo "apps/api/.env already exists, skipping"
+    # .env exists — ensure DATABASE_URL points to local postgres (personal mode)
+    sed -i '' "s|^DATABASE_URL=.*|DATABASE_URL=${DATABASE_URL}|" apps/api/.env
+    sed -i '' "s|^DATABASE_SSL=.*|DATABASE_SSL=${DATABASE_SSL}|" apps/api/.env
+    echo "Updated .env: DATABASE_URL → local postgres"
   fi
 
   # Docker check + start (postgres service only — avoids team-host variable interpolation)
