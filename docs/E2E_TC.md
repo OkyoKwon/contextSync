@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **163 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **178 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -413,7 +413,7 @@
 
 ### 20-3. Team Collaboration
 
-**File:** `e2e/tests/clean-env/team-collaboration.spec.ts` (19 TC)
+**File:** `e2e/tests/clean-env/team-collaboration.spec.ts` (34 TC)
 
 | #   | TC ID     | Test Name                                      | Description                                                                | Assertions                                        |
 | --- | --------- | ---------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -443,6 +443,35 @@
 | 161 | CLEAN-035 | Manual sync endpoint responds on remote project         | POST /projects/:id/sessions/sync → 비존재 세션 ID            | status 201, success true               |
 | 162 | CLEAN-036 | Recalculate tokens works on remote project              | POST /projects/:id/sessions/recalculate-tokens               | updatedSessions ≥ 0                    |
 | 163 | CLEAN-037 | Local-only project sessions isolated from remote        | 별도 local 프로젝트에 세션 import → remote 프로젝트에 미반영 | remote project에 local session ID 없음 |
+
+#### Local Session File Sync
+
+> 실제 `.jsonl` 파일을 `~/.claude/projects/`에 생성하여 수동 sync → DB 저장 → 팀원 간 양방향 조회까지의 풀 플로우 검증.
+
+| #   | TC ID     | Test Name                            | Description                                              | Assertions                         |
+| --- | --------- | ------------------------------------ | -------------------------------------------------------- | ---------------------------------- |
+| 164 | CLEAN-038 | Owner sets local_directory           | PATCH /projects/:id → localDirectory 설정                | localDirectory 값 확인             |
+| 165 | CLEAN-039 | Create local .jsonl session file     | ~/.claude/projects/ 에 .jsonl 파일 생성                  | 파일 존재 확인                     |
+| 166 | CLEAN-040 | Manual sync imports local session    | POST /projects/:id/sessions/sync → sessionId로 동기화    | syncedCount === 1                  |
+| 167 | CLEAN-041 | Synced session visible via API       | GET /projects/:id/sessions → sync된 세션 조회            | title 일치, userId === ownerId     |
+| 168 | CLEAN-042 | Member sets local_directory          | PATCH /projects/:id/my-directory → collaborator dir 설정 | status 200                         |
+| 169 | CLEAN-043 | Member syncs local session           | Member 파일 생성 + POST sync                             | syncedCount === 1                  |
+| 170 | CLEAN-044 | Owner sees member's synced session   | Owner가 sessions 조회 → member 세션 포함                 | member userId 세션 ≥ 1, title 포함 |
+| 171 | CLEAN-045 | Member sees owner's synced session   | Member가 sessions 조회 → owner 세션 포함                 | owner userId 세션 ≥ 1, title 포함  |
+| 172 | CLEAN-046 | Local sessions API shows team groups | GET /sessions/local → @memberName 그룹 포함              | @userName 그룹 존재                |
+| 173 | CLEAN-047 | Team stats reflect synced sessions   | GET /team-stats → import + sync 세션 합산                | 양쪽 sessionCount ≥ 2              |
+| 174 | CLEAN-048 | Cleanup temp session files           | 생성한 ~/.claude/projects/ 파일/디렉토리 삭제            | 디렉토리 삭제됨                    |
+
+#### Dashboard UI — Team Session Visibility
+
+> Dashboard 타임라인에서 팀 세션이 올바르게 표시되고 양쪽 사용자가 상대방 세션을 확인할 수 있는지 검증.
+
+| #   | TC ID     | Test Name                                    | Description                                    | Assertions              |
+| --- | --------- | -------------------------------------------- | ---------------------------------------------- | ----------------------- |
+| 175 | CLEAN-049 | Dashboard shows synced sessions              | Owner가 /dashboard 접속 → Timeline에 세션 표시 | 세션 제목 보임          |
+| 176 | CLEAN-050 | Dashboard shows owner sessions in timeline   | Owner Dashboard → Owner 이름 표시              | Owner name 보임         |
+| 177 | CLEAN-051 | Dashboard shows member sessions in timeline  | Owner Dashboard → Member 이름 + 세션 표시      | Member name + 제목 보임 |
+| 178 | CLEAN-052 | Member views dashboard and sees all sessions | Member Dashboard → 양쪽 세션 모두 표시         | 양쪽 세션 제목 보임     |
 
 ### 20-4. Team Onboarding (Profile)
 
