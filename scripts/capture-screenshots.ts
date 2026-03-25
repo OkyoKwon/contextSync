@@ -343,7 +343,7 @@ test.describe('Marketing Screenshots', () => {
     await page.waitForTimeout(3000);
 
     await page.screenshot({
-      path: join(OPTIONAL_DIR, 'admin-panel.png'),
+      path: join(OUTPUT_DIR, 'admin-panel.png'),
       fullPage: false,
     });
   });
@@ -356,7 +356,7 @@ test.describe('Marketing Screenshots', () => {
     await page.waitForTimeout(3000);
 
     await page.screenshot({
-      path: join(OPTIONAL_DIR, 'plans-view.png'),
+      path: join(OUTPUT_DIR, 'plans-view.png'),
       fullPage: false,
     });
   });
