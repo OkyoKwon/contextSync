@@ -1,43 +1,108 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHookWithProviders, waitFor } from '../../test/test-utils';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../test/mocks/server';
+import {
+  createAuthStoreMock,
+  setMockAuthState,
+  resetMockAuthState,
+} from '../../test/mocks/auth-store.mock';
+import { renderHookWithProviders, waitFor, setupMsw } from '../../test/test-utils';
 
-vi.mock('../../api/admin.api', () => ({
-  adminApi: {
-    getStatus: vi.fn(),
-    getConfig: vi.fn(),
-    runMigrations: vi.fn(),
-  },
-}));
+vi.mock('../../stores/auth.store', () => createAuthStoreMock());
 
-import { adminApi } from '../../api/admin.api';
 import { useAdminStatus, useAdminConfig, useRunMigrations } from '../use-admin';
 
+setupMsw();
+
 describe('useAdmin hooks', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('useAdminStatus calls adminApi.getStatus', async () => {
-    vi.mocked(adminApi.getStatus).mockResolvedValue({
-      success: true,
-      data: {} as any,
-      error: null,
-    });
-    const { result } = renderHookWithProviders(() => useAdminStatus());
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(adminApi.getStatus).toHaveBeenCalled();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetMockAuthState();
+    setMockAuthState({ token: 'tok' });
   });
 
-  it('useAdminConfig calls adminApi.getConfig', async () => {
-    vi.mocked(adminApi.getConfig).mockResolvedValue({
-      success: true,
-      data: {} as any,
-      error: null,
+  describe('useAdminStatus', () => {
+    it('fetches admin status successfully', async () => {
+      server.use(
+        http.get('/api/admin/status', () =>
+          HttpResponse.json({
+            success: true,
+            data: { migrationsPending: 0, version: '1.0.0' },
+            error: null,
+          }),
+        ),
+      );
+
+      const { result } = renderHookWithProviders(() => useAdminStatus());
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.data).toEqual({ migrationsPending: 0, version: '1.0.0' });
     });
-    const { result } = renderHookWithProviders(() => useAdminConfig());
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    it('handles error response', async () => {
+      server.use(
+        http.get('/api/admin/status', () =>
+          HttpResponse.json(
+            { success: false, data: null, error: 'Admin access required' },
+            { status: 403 },
+          ),
+        ),
+      );
+
+      const { result } = renderHookWithProviders(() => useAdminStatus());
+      await waitFor(() => expect(result.current.isError).toBe(true));
+    });
   });
 
-  it('useRunMigrations returns mutate', () => {
-    const { result } = renderHookWithProviders(() => useRunMigrations());
-    expect(result.current.mutate).toBeDefined();
+  describe('useAdminConfig', () => {
+    it('fetches admin config successfully', async () => {
+      server.use(
+        http.get('/api/admin/config', () =>
+          HttpResponse.json({
+            success: true,
+            data: { autoSync: true, syncInterval: 30000 },
+            error: null,
+          }),
+        ),
+      );
+
+      const { result } = renderHookWithProviders(() => useAdminConfig());
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.data).toEqual({ autoSync: true, syncInterval: 30000 });
+    });
+
+    it('handles error response', async () => {
+      server.use(
+        http.get('/api/admin/config', () =>
+          HttpResponse.json({ success: false, data: null, error: 'Server error' }, { status: 500 }),
+        ),
+      );
+
+      const { result } = renderHookWithProviders(() => useAdminConfig());
+      await waitFor(() => expect(result.current.isError).toBe(true));
+    });
+  });
+
+  describe('useRunMigrations', () => {
+    it('returns mutate function', () => {
+      const { result } = renderHookWithProviders(() => useRunMigrations());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls POST /admin/migrations/run on mutate', async () => {
+      server.use(
+        http.post('/api/admin/migrations/run', () =>
+          HttpResponse.json({
+            success: true,
+            data: { applied: ['001_init'] },
+            error: null,
+          }),
+        ),
+      );
+
+      const { result } = renderHookWithProviders(() => useRunMigrations());
+      result.current.mutate();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(result.current.data?.data).toEqual({ applied: ['001_init'] });
+    });
   });
 });

@@ -1,33 +1,72 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHookWithProviders } from '../../test/test-utils';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../test/mocks/server';
+import {
+  createAuthStoreMock,
+  setMockAuthState,
+  resetMockAuthState,
+} from '../../test/mocks/auth-store.mock';
+import { renderHookWithProviders, waitFor, setupMsw } from '../../test/test-utils';
 
-vi.mock('../../stores/auth.store', () => ({
-  useAuthStore: vi.fn(),
-}));
+vi.mock('../../stores/auth.store', () => createAuthStoreMock());
 
-vi.mock('../../api/projects.api', () => ({
-  projectsApi: { list: vi.fn() },
-}));
-
-import { useAuthStore } from '../../stores/auth.store';
 import { useOnboardingStatus } from '../use-onboarding-status';
 
+setupMsw();
+
 describe('useOnboardingStatus', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetMockAuthState();
+  });
 
   it('returns "ready" when currentProjectId exists', () => {
-    vi.mocked(useAuthStore).mockImplementation((s: any) =>
-      s({ token: 'tok', currentProjectId: 'p1', setCurrentProject: vi.fn() }),
-    );
+    setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
     const { result } = renderHookWithProviders(() => useOnboardingStatus());
     expect(result.current).toBe('ready');
   });
 
   it('returns "needs-project" when no token and no projectId', () => {
-    vi.mocked(useAuthStore).mockImplementation((s: any) =>
-      s({ token: null, currentProjectId: null, setCurrentProject: vi.fn() }),
-    );
+    setMockAuthState({ token: null, currentProjectId: null });
     const { result } = renderHookWithProviders(() => useOnboardingStatus());
     expect(result.current).toBe('needs-project');
+  });
+
+  it('returns "loading" when token exists but no projectId and query is loading', () => {
+    setMockAuthState({ token: 'tok', currentProjectId: null });
+
+    // Delay the response to keep the query in loading state
+    server.use(
+      http.get('/api/projects', async () => {
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
+    const { result } = renderHookWithProviders(() => useOnboardingStatus());
+    expect(result.current).toBe('loading');
+  });
+
+  it('transitions from loading to needs-project when no projects returned', async () => {
+    setMockAuthState({ token: 'tok', currentProjectId: null });
+
+    server.use(
+      http.get('/api/projects', () => HttpResponse.json({ success: true, data: [], error: null })),
+    );
+
+    const { result } = renderHookWithProviders(() => useOnboardingStatus());
+    // Initially loading, then transitions to needs-project
+    await waitFor(() => expect(result.current).toBe('needs-project'));
+  });
+
+  it('returns "needs-project" when fetch returns empty list', async () => {
+    setMockAuthState({ token: 'tok', currentProjectId: null });
+
+    server.use(
+      http.get('/api/projects', () => HttpResponse.json({ success: true, data: [], error: null })),
+    );
+
+    const { result } = renderHookWithProviders(() => useOnboardingStatus());
+    await waitFor(() => expect(result.current).toBe('needs-project'));
   });
 });

@@ -1,15 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHookWithProviders, waitFor } from '../../test/test-utils';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../test/mocks/server';
+import {
+  createAuthStoreMock,
+  setMockAuthState,
+  resetMockAuthState,
+} from '../../test/mocks/auth-store.mock';
+import { renderHookWithProviders, waitFor, setupMsw } from '../../test/test-utils';
 
-vi.mock('../../api/projects.api', () => ({
-  projectsApi: { listCollaborators: vi.fn() },
-}));
+vi.mock('../../stores/auth.store', () => createAuthStoreMock());
 
-import { projectsApi } from '../../api/projects.api';
 import { useCollaborators } from '../use-collaborators';
 
+setupMsw();
+
 describe('useCollaborators', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetMockAuthState();
+    setMockAuthState({ token: 'tok' });
+  });
 
   it('is disabled when projectId is null', () => {
     const { result } = renderHookWithProviders(() => useCollaborators(null));
@@ -21,15 +31,36 @@ describe('useCollaborators', () => {
     expect(result.current.fetchStatus).toBe('idle');
   });
 
-  it('fetches when projectId exists', async () => {
-    vi.mocked(projectsApi.listCollaborators).mockResolvedValue({
-      success: true,
-      data: [],
-      error: null,
-    });
+  it('fetches collaborators when projectId exists', async () => {
+    server.use(
+      http.get('/api/projects/proj-1/collaborators', () =>
+        HttpResponse.json({
+          success: true,
+          data: [
+            { userId: 'u1', name: 'Alice', role: 'owner' },
+            { userId: 'u2', name: 'Bob', role: 'member' },
+          ],
+          error: null,
+        }),
+      ),
+    );
 
     const { result } = renderHookWithProviders(() => useCollaborators('proj-1'));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(projectsApi.listCollaborators).toHaveBeenCalledWith('proj-1');
+    expect(result.current.data?.data).toHaveLength(2);
+  });
+
+  it('handles error response', async () => {
+    server.use(
+      http.get('/api/projects/proj-1/collaborators', () =>
+        HttpResponse.json(
+          { success: false, data: null, error: 'Project not found' },
+          { status: 404 },
+        ),
+      ),
+    );
+
+    const { result } = renderHookWithProviders(() => useCollaborators('proj-1'));
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

@@ -1,25 +1,74 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHookWithProviders, waitFor } from '../../test/test-utils';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../test/mocks/server';
+import {
+  createAuthStoreMock,
+  setMockAuthState,
+  resetMockAuthState,
+} from '../../test/mocks/auth-store.mock';
+import { renderHookWithProviders, waitFor, setupMsw } from '../../test/test-utils';
 
-vi.mock('../../api/projects.api', () => ({
-  projectsApi: { list: vi.fn() },
-}));
+// useProjects doesn't use auth store directly, but api/client.ts does via getState()
+vi.mock('../../stores/auth.store', () => createAuthStoreMock());
 
-import { projectsApi } from '../../api/projects.api';
 import { useProjects } from '../use-projects';
 
-describe('useProjects', () => {
-  beforeEach(() => vi.clearAllMocks());
+setupMsw();
 
-  it('calls projectsApi.list', async () => {
-    vi.mocked(projectsApi.list).mockResolvedValue({
-      success: true,
-      data: [],
-      error: null,
-    });
+describe('useProjects', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetMockAuthState();
+    setMockAuthState({ token: 'tok' });
+  });
+
+  it('fetches project list on mount', async () => {
+    const projects = [
+      { id: 'p1', name: 'Project A', ownerId: 'u1', collaboratorCount: 2, isTeam: true },
+      { id: 'p2', name: 'Project B', ownerId: 'u1', collaboratorCount: 0, isTeam: false },
+    ];
+    server.use(
+      http.get('/api/projects', () =>
+        HttpResponse.json({ success: true, data: projects, error: null }),
+      ),
+    );
+
+    const { result } = renderHookWithProviders(() => useProjects());
+    expect(result.current.isLoading).toBe(true);
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.data).toHaveLength(2);
+    expect(result.current.data?.data?.[0]?.name).toBe('Project A');
+  });
+
+  it('returns empty array when no projects', async () => {
+    server.use(
+      http.get('/api/projects', () => HttpResponse.json({ success: true, data: [], error: null })),
+    );
 
     const { result } = renderHookWithProviders(() => useProjects());
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(projectsApi.list).toHaveBeenCalled();
+    expect(result.current.data?.data).toEqual([]);
+  });
+
+  it('transitions to error state on API failure', async () => {
+    server.use(
+      http.get('/api/projects', () =>
+        HttpResponse.json({ error: 'Database error' }, { status: 500 }),
+      ),
+    );
+
+    const { result } = renderHookWithProviders(() => useProjects());
+    await waitFor(() => expect(result.current.isError).toBe(true));
+  });
+
+  it('handles success:false response as error', async () => {
+    server.use(
+      http.get('/api/projects', () =>
+        HttpResponse.json({ success: false, data: null, error: 'Forbidden' }),
+      ),
+    );
+
+    const { result } = renderHookWithProviders(() => useProjects());
+    await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });

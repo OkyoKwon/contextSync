@@ -1,51 +1,126 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../test/mocks/server';
+import {
+  createAuthStoreMock,
+  setMockAuthState,
+  resetMockAuthState,
+} from '../../test/mocks/auth-store.mock';
+import { setupMsw } from '../../test/test-utils';
 
-vi.mock('../client', () => ({
-  api: {
-    get: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
-    patch: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
-  },
-}));
+vi.mock('../../stores/auth.store', () => createAuthStoreMock());
 
 import { conflictsApi } from '../conflicts.api';
-import { api } from '../client';
+
+setupMsw();
 
 describe('conflictsApi', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetMockAuthState();
+    setMockAuthState({ token: 'test-token' });
+  });
+
+  it('list returns parsed conflict data', async () => {
+    const conflicts = [{ id: 'c1', severity: 'warning', status: 'open' }];
+    server.use(
+      http.get('/api/projects/proj-1/conflicts', () =>
+        HttpResponse.json({ success: true, data: conflicts, error: null }),
+      ),
+    );
+
+    const result = await conflictsApi.list('proj-1');
+    expect(result.data).toEqual(conflicts);
+  });
 
   it('list builds query string from filter', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/projects/proj-1/conflicts', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
     await conflictsApi.list('proj-1', { severity: 'high' } as any);
-    const callArg = vi.mocked(api.get).mock.calls[0]![0];
-    expect(callArg).toContain('/projects/proj-1/conflicts?');
-    expect(callArg).toContain('severity=high');
+    expect(capturedUrl).toContain('severity=high');
   });
 
   it('list without filter has no query string', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/projects/proj-1/conflicts', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
     await conflictsApi.list('proj-1');
-    expect(api.get).toHaveBeenCalledWith('/projects/proj-1/conflicts');
+    expect(capturedUrl).not.toContain('?');
   });
 
-  it('get calls GET /conflicts/:id', async () => {
-    await conflictsApi.get('conflict-1');
-    expect(api.get).toHaveBeenCalledWith('/conflicts/conflict-1');
+  it('get returns single conflict', async () => {
+    const conflict = { id: 'c-1', severity: 'critical', filePath: '/src/main.ts' };
+    server.use(
+      http.get('/api/conflicts/c-1', () =>
+        HttpResponse.json({ success: true, data: conflict, error: null }),
+      ),
+    );
+
+    const result = await conflictsApi.get('c-1');
+    expect(result.data?.id).toBe('c-1');
   });
 
-  it('update calls PATCH /conflicts/:id', async () => {
-    await conflictsApi.update('conflict-1', { status: 'resolved' } as any);
-    expect(api.patch).toHaveBeenCalledWith('/conflicts/conflict-1', { status: 'resolved' });
+  it('update sends PATCH with input', async () => {
+    let capturedBody: any = null;
+    server.use(
+      http.patch('/api/conflicts/c-1', async ({ request }) => {
+        capturedBody = await request.json();
+        return HttpResponse.json({
+          success: true,
+          data: { id: 'c-1', status: 'resolved' },
+          error: null,
+        });
+      }),
+    );
+
+    await conflictsApi.update('c-1', { status: 'resolved' } as any);
+    expect(capturedBody).toEqual({ status: 'resolved' });
   });
 
-  it('assignReviewer calls PATCH with reviewerId', async () => {
-    await conflictsApi.assignReviewer('conflict-1', 'user-1');
-    expect(api.patch).toHaveBeenCalledWith('/conflicts/conflict-1/assign', {
-      reviewerId: 'user-1',
-    });
+  it('assignReviewer sends PATCH with reviewerId', async () => {
+    let capturedBody: any = null;
+    server.use(
+      http.patch('/api/conflicts/c-1/assign', async ({ request }) => {
+        capturedBody = await request.json();
+        return HttpResponse.json({ success: true, data: { id: 'c-1' }, error: null });
+      }),
+    );
+
+    await conflictsApi.assignReviewer('c-1', 'user-1');
+    expect(capturedBody).toEqual({ reviewerId: 'user-1' });
   });
 
-  it('addReviewNotes calls PATCH with reviewNotes', async () => {
-    await conflictsApi.addReviewNotes('conflict-1', 'Looks good');
-    expect(api.patch).toHaveBeenCalledWith('/conflicts/conflict-1/review-notes', {
-      reviewNotes: 'Looks good',
-    });
+  it('addReviewNotes sends PATCH with reviewNotes', async () => {
+    let capturedBody: any = null;
+    server.use(
+      http.patch('/api/conflicts/c-1/review-notes', async ({ request }) => {
+        capturedBody = await request.json();
+        return HttpResponse.json({ success: true, data: { id: 'c-1' }, error: null });
+      }),
+    );
+
+    await conflictsApi.addReviewNotes('c-1', 'Looks good');
+    expect(capturedBody).toEqual({ reviewNotes: 'Looks good' });
+  });
+
+  it('throws on server error', async () => {
+    server.use(
+      http.get('/api/projects/proj-1/conflicts', () =>
+        HttpResponse.json({ error: 'Internal error' }, { status: 500 }),
+      ),
+    );
+
+    await expect(conflictsApi.list('proj-1')).rejects.toThrow('Internal error');
   });
 });

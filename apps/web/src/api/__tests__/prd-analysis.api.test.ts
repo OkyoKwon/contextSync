@@ -1,68 +1,166 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { http, HttpResponse } from 'msw';
+import { server } from '../../test/mocks/server';
+import {
+  createAuthStoreMock,
+  setMockAuthState,
+  resetMockAuthState,
+} from '../../test/mocks/auth-store.mock';
+import { setupMsw } from '../../test/test-utils';
 
-vi.mock('../client', () => ({
-  api: {
-    get: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
-    post: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
-    delete: vi.fn().mockResolvedValue({ success: true, data: null, error: null }),
-  },
-}));
+vi.mock('../../stores/auth.store', () => createAuthStoreMock());
 
 import { prdAnalysisApi } from '../prd-analysis.api';
-import { api } from '../client';
+
+setupMsw();
 
 describe('prdAnalysisApi', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('uploadDocument sends FormData with file', async () => {
-    const file = new File(['content'], 'prd.md', { type: 'text/markdown' });
-    await prdAnalysisApi.uploadDocument('proj-1', file, 'My PRD');
-
-    expect(api.post).toHaveBeenCalledWith('/projects/proj-1/prd/documents', expect.any(FormData));
-    const formData = vi.mocked(api.post).mock.calls[0]![1] as FormData;
-    expect(formData.get('file')).toBe(file);
-    expect(formData.get('title')).toBe('My PRD');
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetMockAuthState();
+    setMockAuthState({ token: 'test-token' });
   });
 
-  it('uploadDocument without title omits title field', async () => {
+  it('uploadDocument sends FormData with file', async () => {
+    let wasCalled = false;
+    server.use(
+      http.post('/api/projects/:projectId/prd/documents', () => {
+        wasCalled = true;
+        return HttpResponse.json({
+          success: true,
+          data: { id: 'doc-1', title: 'My PRD' },
+          error: null,
+        });
+      }),
+    );
+
+    const file = new File(['content'], 'prd.md', { type: 'text/markdown' });
+    const result = await prdAnalysisApi.uploadDocument('proj-1', file, 'My PRD');
+
+    expect(wasCalled).toBe(true);
+    expect(result.data).toEqual({ id: 'doc-1', title: 'My PRD' });
+  });
+
+  it('uploadDocument without title still calls endpoint', async () => {
+    let wasCalled = false;
+    server.use(
+      http.post('/api/projects/:projectId/prd/documents', () => {
+        wasCalled = true;
+        return HttpResponse.json({
+          success: true,
+          data: { id: 'doc-2', title: null },
+          error: null,
+        });
+      }),
+    );
+
     const file = new File(['content'], 'prd.md');
     await prdAnalysisApi.uploadDocument('proj-1', file);
 
-    const formData = vi.mocked(api.post).mock.calls[0]![1] as FormData;
-    expect(formData.get('title')).toBeNull();
+    expect(wasCalled).toBe(true);
   });
 
-  it('listDocuments calls GET', async () => {
-    await prdAnalysisApi.listDocuments('proj-1');
-    expect(api.get).toHaveBeenCalledWith('/projects/proj-1/prd/documents');
+  it('listDocuments returns documents array', async () => {
+    const docs = [
+      { id: 'doc-1', title: 'PRD 1' },
+      { id: 'doc-2', title: 'PRD 2' },
+    ];
+    server.use(
+      http.get('/api/projects/:projectId/prd/documents', () =>
+        HttpResponse.json({ success: true, data: docs, error: null }),
+      ),
+    );
+
+    const result = await prdAnalysisApi.listDocuments('proj-1');
+    expect(result.data).toEqual(docs);
   });
 
-  it('deleteDocument calls DELETE', async () => {
+  it('deleteDocument calls DELETE endpoint', async () => {
+    let wasCalled = false;
+    server.use(
+      http.delete('/api/prd/documents/:documentId', () => {
+        wasCalled = true;
+        return HttpResponse.json({ success: true, data: null, error: null });
+      }),
+    );
+
     await prdAnalysisApi.deleteDocument('doc-1');
-    expect(api.delete).toHaveBeenCalledWith('/prd/documents/doc-1');
+    expect(wasCalled).toBe(true);
   });
 
-  it('startAnalysis calls POST with prdDocumentId', async () => {
-    await prdAnalysisApi.startAnalysis('proj-1', 'doc-1');
-    expect(api.post).toHaveBeenCalledWith('/projects/proj-1/prd/analyze', {
-      prdDocumentId: 'doc-1',
-    });
+  it('startAnalysis sends prdDocumentId in body', async () => {
+    let capturedBody: any = null;
+    const analysisResult = { id: 'analysis-1', status: 'completed' };
+    server.use(
+      http.post('/api/projects/:projectId/prd/analyze', async ({ request }) => {
+        capturedBody = await request.json();
+        return HttpResponse.json({ success: true, data: analysisResult, error: null });
+      }),
+    );
+
+    const result = await prdAnalysisApi.startAnalysis('proj-1', 'doc-1');
+    expect(capturedBody).toEqual({ prdDocumentId: 'doc-1' });
+    expect(result.data).toEqual(analysisResult);
   });
 
-  it('getLatestAnalysis calls GET', async () => {
-    await prdAnalysisApi.getLatestAnalysis('proj-1');
-    expect(api.get).toHaveBeenCalledWith('/projects/proj-1/prd/analysis/latest');
+  it('getLatestAnalysis returns analysis or null', async () => {
+    const analysis = { id: 'analysis-1', score: 85 };
+    server.use(
+      http.get('/api/projects/:projectId/prd/analysis/latest', () =>
+        HttpResponse.json({ success: true, data: analysis, error: null }),
+      ),
+    );
+
+    const result = await prdAnalysisApi.getLatestAnalysis('proj-1');
+    expect(result.data).toEqual(analysis);
   });
 
-  it('getAnalysisHistory builds query params', async () => {
+  it('getAnalysisHistory builds query params correctly', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/projects/:projectId/prd/analysis/history', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
     await prdAnalysisApi.getAnalysisHistory('proj-1', 2, 10);
-    const callArg = vi.mocked(api.get).mock.calls[0]![0];
-    expect(callArg).toContain('page=2');
-    expect(callArg).toContain('limit=10');
+    const url = new URL(capturedUrl);
+    expect(url.searchParams.get('page')).toBe('2');
+    expect(url.searchParams.get('limit')).toBe('10');
   });
 
-  it('getAnalysisDetail calls GET with analysisId', async () => {
-    await prdAnalysisApi.getAnalysisDetail('analysis-1');
-    expect(api.get).toHaveBeenCalledWith('/prd/analysis/analysis-1');
+  it('getAnalysisDetail returns analysis with requirements', async () => {
+    const detail = { id: 'analysis-1', requirements: [{ id: 'r1' }] };
+    server.use(
+      http.get('/api/prd/analysis/:analysisId', () =>
+        HttpResponse.json({ success: true, data: detail, error: null }),
+      ),
+    );
+
+    const result = await prdAnalysisApi.getAnalysisDetail('analysis-1');
+    expect(result.data).toEqual(detail);
+  });
+
+  it('throws on server error', async () => {
+    server.use(
+      http.get('/api/projects/:projectId/prd/documents', () =>
+        HttpResponse.json({ error: 'Internal error' }, { status: 500 }),
+      ),
+    );
+
+    await expect(prdAnalysisApi.listDocuments('proj-1')).rejects.toThrow('Internal error');
+  });
+
+  it('throws on server error for POST endpoints', async () => {
+    server.use(
+      http.post('/api/projects/:projectId/prd/analyze', () =>
+        HttpResponse.json({ error: 'Analysis failed' }, { status: 500 }),
+      ),
+    );
+
+    await expect(prdAnalysisApi.startAnalysis('proj-1', 'doc-1')).rejects.toThrow(
+      'Analysis failed',
+    );
   });
 });

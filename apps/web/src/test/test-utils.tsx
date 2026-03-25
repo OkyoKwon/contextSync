@@ -1,6 +1,8 @@
 import { type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, renderHook, type RenderOptions, type RenderResult } from '@testing-library/react';
+import { beforeAll, afterEach, afterAll } from 'vitest';
+import { server } from './mocks/server';
 
 export function createTestQueryClient(): QueryClient {
   return new QueryClient({
@@ -24,6 +26,16 @@ export function renderWithProviders(ui: React.ReactElement, options?: RenderOpti
 
 export function renderHookWithProviders<TResult>(hook: () => TResult) {
   return renderHook(hook, { wrapper: createWrapper() });
+}
+
+/**
+ * Call at describe-level to wire MSW server lifecycle.
+ * Tests can still call server.use() to override individual handlers.
+ */
+export function setupMsw() {
+  beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
+  afterEach(() => server.resetHandlers());
+  afterAll(() => server.close());
 }
 
 // Re-export everything from testing-library
