@@ -195,6 +195,7 @@ export const ko: TranslationKeys = {
   'screenshot.alt.searchOverlay': '전문 검색 오버레이',
   'screenshot.alt.settingsTeam': '팀 설정 및 멤버 관리',
   'screenshot.alt.aiEvaluation': 'AI 평가 점수',
+  'screenshot.alt.plansView': '프로젝트에 연결된 마크다운 계획 문서 뷰',
 
   // Open Source
   'openSource.sectionLabel': '// Open Source',

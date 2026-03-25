@@ -199,6 +199,7 @@ export const en: TranslationKeys = {
   'screenshot.alt.searchOverlay': 'Full-text search overlay',
   'screenshot.alt.settingsTeam': 'Team settings and member management',
   'screenshot.alt.aiEvaluation': 'AI evaluation scores',
+  'screenshot.alt.plansView': 'Plans view showing markdown documents linked to projects',
 
   // Open Source
   'openSource.sectionLabel': '// Open Source',

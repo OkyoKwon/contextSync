@@ -168,6 +168,7 @@ export interface TranslationKeys {
   readonly 'screenshot.alt.searchOverlay': string;
   readonly 'screenshot.alt.settingsTeam': string;
   readonly 'screenshot.alt.aiEvaluation': string;
+  readonly 'screenshot.alt.plansView': string;
 
   // Open Source
   readonly 'openSource.sectionLabel': string;

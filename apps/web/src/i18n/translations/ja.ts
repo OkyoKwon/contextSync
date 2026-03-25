@@ -196,6 +196,7 @@ export const ja: TranslationKeys = {
   'screenshot.alt.searchOverlay': '全文検索オーバーレイ',
   'screenshot.alt.settingsTeam': 'チーム設定・メンバー管理',
   'screenshot.alt.aiEvaluation': 'AI評価スコア',
+  'screenshot.alt.plansView': 'プロジェクトにリンクされたマークダウン計画ドキュメントビュー',
 
   // Open Source
   'openSource.sectionLabel': '// Open Source',

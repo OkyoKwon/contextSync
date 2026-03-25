@@ -1,12 +1,15 @@
 export type ActivityAction =
   | 'session_created'
   | 'session_completed'
+  | 'session_synced'
   | 'conflict_detected'
   | 'conflict_resolved'
   | 'collaborator_added'
   | 'collaborator_removed'
   | 'collaborator_joined'
-  | 'directory_updated';
+  | 'directory_updated'
+  | 'prd_analyzed'
+  | 'evaluation_completed';
 
 export interface ActivityEntry {
   readonly id: string;

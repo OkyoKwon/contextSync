@@ -8,6 +8,7 @@ import { useConflicts } from '../../hooks/use-conflicts';
 import { useCurrentProject } from '../../hooks/use-current-project';
 import { useUiStore } from '../../stores/ui.store';
 import { Tooltip } from '../ui/Tooltip';
+import { assetUrl } from '@/lib/asset-url';
 import {
   DashboardIcon,
   ConversationsIcon,
@@ -84,7 +85,7 @@ export function Sidebar() {
       className={`flex ${sidebarCollapsed ? 'w-16' : 'w-60'} flex-col border-r border-border-default bg-surface transition-all duration-200`}
     >
       <div className="flex h-14 items-center gap-2 border-b border-border-default px-4">
-        <img src="/logo.png" alt="ContextSync" className="h-7 w-7 flex-shrink-0" />
+        <img src={assetUrl('/logo.png')} alt="ContextSync" className="h-7 w-7 flex-shrink-0" />
         {!sidebarCollapsed && (
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-bold text-text-primary">ContextSync</h1>

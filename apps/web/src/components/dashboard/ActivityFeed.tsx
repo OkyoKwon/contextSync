@@ -6,12 +6,15 @@ import { Spinner } from '../ui/Spinner';
 const ACTION_LABELS: Record<ActivityAction, string> = {
   session_created: 'created a session',
   session_completed: 'completed a session',
+  session_synced: 'synced a session',
   conflict_detected: 'triggered a conflict',
   conflict_resolved: 'resolved a conflict',
   collaborator_added: 'added a collaborator',
   collaborator_removed: 'removed a collaborator',
   collaborator_joined: 'joined via code',
   directory_updated: 'updated their directory',
+  prd_analyzed: 'ran PRD analysis',
+  evaluation_completed: 'completed AI evaluation',
 };
 
 function formatRelativeTime(dateStr: string): string {
