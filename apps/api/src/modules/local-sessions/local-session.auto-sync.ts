@@ -40,27 +40,35 @@ async function findUserProjects(db: Db, userId: string): Promise<readonly UserPr
     .where('local_directory', 'is not', null)
     .execute();
 
-  const projects: UserProject[] = [
+  return [
     ...ownedProjects.map((p) => ({ projectId: p.id, role: 'owner' as const })),
     ...collabProjects.map((p) => ({ projectId: p.project_id, role: 'collaborator' as const })),
   ];
-
-  return projects;
 }
 
-export async function detectSyncTasks(db: Db, userId: string): Promise<readonly AutoSyncTask[]> {
-  const projects = await findUserProjects(db, userId);
+/**
+ * Detect which local session files need to be synced.
+ * Reads project metadata from metaDb, but checks synced_sessions from each
+ * project's resolved data DB (via resolveDb) so we look at the right target.
+ */
+export async function detectSyncTasks(
+  metaDb: Db,
+  userId: string,
+  resolveDb: (projectId: string) => Promise<Db>,
+): Promise<readonly AutoSyncTask[]> {
+  const projects = await findUserProjects(metaDb, userId);
   if (projects.length === 0) return [];
 
   const tasks: AutoSyncTask[] = [];
 
   for (const project of projects) {
-    const sessionFiles = await getProjectSessionFiles(db, project.projectId);
+    const sessionFiles = await getProjectSessionFiles(metaDb, project.projectId);
     if (sessionFiles.length === 0) continue;
 
+    const dataDb = await resolveDb(project.projectId);
     const externalIds = sessionFiles.map((f) => f.fileName.replace('.jsonl', ''));
 
-    const syncedRows = await db
+    const syncedRows = await dataDb
       .selectFrom('synced_sessions')
       .select(['external_session_id', 'session_id', 'synced_at'])
       .where('project_id', '=', project.projectId)

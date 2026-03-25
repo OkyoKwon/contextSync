@@ -11,12 +11,11 @@ test.describe('Smoke Tests', () => {
   });
 
   test('Login API returns token and user', async ({ apiClient }) => {
-    const { name, email } = buildUser();
-    const result = await apiClient.login(name, email);
+    const { name } = buildUser();
+    const result = await apiClient.identify(name);
 
     expect(result.token).toBeTruthy();
     expect(result.user.id).toBeTruthy();
-    expect(result.user.email).toBe(email);
     expect(result.user.name).toBe(name);
   });
 

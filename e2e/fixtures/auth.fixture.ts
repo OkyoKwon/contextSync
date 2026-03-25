@@ -17,8 +17,8 @@ export interface AuthFixture {
 
 export const test = apiTest.extend<AuthFixture>({
   testUser: async ({ apiClient }, use) => {
-    const { name, email } = buildUser();
-    const { token, user } = await apiClient.login(name, email);
+    const { name } = buildUser();
+    const { token, user } = await apiClient.identify(name);
     await use({ id: user.id, email: user.email, name: user.name, token });
   },
 

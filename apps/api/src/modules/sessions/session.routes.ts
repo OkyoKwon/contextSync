@@ -144,6 +144,7 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
       const db = await app.resolveDb(request.params.projectId);
       const stats = await sessionService.getDashboardStats(
         db,
+        app.localDb,
         request.params.projectId,
         request.user.userId,
       );

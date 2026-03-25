@@ -160,14 +160,16 @@ export async function syncSessions(
 }
 
 export async function recalculateTokenUsage(
-  db: Db,
+  metaDb: Db,
+  dataDb: Db,
   projectId: string,
   userId: string,
 ): Promise<RecalculateTokenResult> {
-  await assertProjectAccess(db, projectId, userId);
+  // Authorization check runs against metaDb (where project metadata lives)
+  await assertProjectAccess(metaDb, projectId, userId);
 
-  // Find all synced sessions with their source JSONL paths
-  const syncedRows = await db
+  // Find all synced sessions from the data DB (where sessions/synced_sessions live)
+  const syncedRows = await dataDb
     .selectFrom('synced_sessions')
     .select(['session_id', 'external_session_id', 'source_path'])
     .where('project_id', '=', projectId)
@@ -189,7 +191,7 @@ export async function recalculateTokenUsage(
 
       // Re-parsed data may have more messages (tool-use turns) than old parse.
       // Delete all messages and re-insert from scratch.
-      await db.deleteFrom('messages').where('session_id', '=', row.session_id).execute();
+      await dataDb.deleteFrom('messages').where('session_id', '=', row.session_id).execute();
 
       const values = parsed.messages.map((msg, index) => ({
         session_id: row.session_id,
@@ -203,7 +205,7 @@ export async function recalculateTokenUsage(
       }));
 
       if (values.length > 0) {
-        await db.insertInto('messages').values(values).execute();
+        await dataDb.insertInto('messages').values(values).execute();
       }
 
       updatedSessions++;

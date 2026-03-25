@@ -22,7 +22,7 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   DATABASE_SSL_CA: z.string().optional(),
 
-  REMOTE_DATABASE_URL: z.string().url().optional(),
+  REMOTE_DATABASE_URL: z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional()),
   REMOTE_DATABASE_SSL: z
     .enum(['true', 'false'])
     .default('false')

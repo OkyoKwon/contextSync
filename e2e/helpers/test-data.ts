@@ -11,14 +11,12 @@ export function resetCounter(): void {
   counter = 0;
 }
 
-export function buildUser(overrides?: { name?: string; email?: string }): {
+export function buildUser(overrides?: { name?: string }): {
   readonly name: string;
-  readonly email: string;
 } {
   const id = nextId();
   return {
     name: overrides?.name ?? `Test User ${id}`,
-    email: overrides?.email ?? `testuser-${id}@e2e.test`,
   };
 }
 

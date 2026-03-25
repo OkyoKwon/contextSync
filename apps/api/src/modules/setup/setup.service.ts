@@ -39,9 +39,13 @@ export interface SwitchToRemoteResult {
   readonly migrationsApplied: readonly string[];
 }
 
+import type { Db } from '../../database/client.js';
+import type { Database } from '../../database/types.js';
+
 export async function switchToRemote(
   connectionUrl: string,
   sslEnabled: boolean,
+  onRemoteReady?: (tempRemoteDb: Db) => Promise<void>,
 ): Promise<SwitchToRemoteResult> {
   // 1. Test connection
   const testResult = await testConnection(connectionUrl, sslEnabled);
@@ -55,7 +59,7 @@ export async function switchToRemote(
   const pg = await import('pg');
   const { promises: fs } = await import('node:fs');
 
-  const remoteDb = new Kysely({
+  const remoteDb = new Kysely<Database>({
     dialect: new PostgresDialect({
       pool: new pg.default.Pool({
         connectionString: connectionUrl,
@@ -89,7 +93,12 @@ export async function switchToRemote(
       throw new AppError(`Migration failed on remote database: ${String(error)}`, 500);
     }
 
-    // 3. Update in-memory state (immediate effect) and persist to .env
+    // 3. Run callback before destroying the temp instance (project/user sync)
+    if (onRemoteReady) {
+      await onRemoteReady(remoteDb as unknown as Db);
+    }
+
+    // 4. Update in-memory state (immediate effect) and persist to .env
     switchedToRemoteHost = connectionUrl;
     if (process.env['NODE_ENV'] !== 'test') {
       updateEnvFile(connectionUrl, sslEnabled);

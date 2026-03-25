@@ -36,6 +36,14 @@ vi.mock('../../auth/auth.service.js', () => ({
   findUserById: vi.fn(),
 }));
 
+vi.mock('../../../lib/user-sync.js', () => ({
+  syncUserToRemote: vi.fn(),
+}));
+
+vi.mock('../../../lib/project-sync.js', () => ({
+  syncProjectToRemote: vi.fn(),
+}));
+
 import * as projectRepo from '../project.repository.js';
 import * as collabRepo from '../collaborator.repository.js';
 import { assertPermission } from '../permission.helper.js';
@@ -54,7 +62,12 @@ import {
   deleteJoinCode,
   joinByCode,
 } from '../project.service.js';
+import { syncProjectToRemote } from '../../../lib/project-sync.js';
+import { syncUserToRemote } from '../../../lib/user-sync.js';
 import { NotFoundError, ForbiddenError } from '../../../plugins/error-handler.plugin.js';
+
+const mockSyncProjectToRemote = syncProjectToRemote as ReturnType<typeof vi.fn>;
+const mockSyncUserToRemote = syncUserToRemote as ReturnType<typeof vi.fn>;
 
 const mockCreateProject = projectRepo.createProject as ReturnType<typeof vi.fn>;
 const mockFindProjectsWithTeamInfo = projectRepo.findProjectsWithTeamInfo as ReturnType<
@@ -394,6 +407,34 @@ describe('joinByCode', () => {
     mockFindCollabByProjectAndUser.mockResolvedValue({ role: 'member' });
 
     await expect(joinByCode(db, 'ABC123', 'user-1')).rejects.toThrow(ForbiddenError);
+  });
+
+  it('should call syncProjectToRemote when databaseMode is remote', async () => {
+    const remoteDb = {} as any;
+    const project = makeProject({ ownerId: 'other-user', databaseMode: 'remote' });
+    mockFindProjectByJoinCode.mockResolvedValue(project);
+    mockFindCollabByProjectAndUser.mockResolvedValue(null);
+    (findUserById as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: 'user-1',
+      name: 'User',
+      email: 'u@test.com',
+      avatarUrl: null,
+    });
+
+    await joinByCode(db, 'ABC123', 'user-1', remoteDb);
+
+    expect(mockSyncProjectToRemote).toHaveBeenCalledWith(db, remoteDb, 'proj-1', 'other-user');
+  });
+
+  it('should skip remote sync when databaseMode is local', async () => {
+    const project = makeProject({ ownerId: 'other-user', databaseMode: 'local' });
+    mockFindProjectByJoinCode.mockResolvedValue(project);
+    mockFindCollabByProjectAndUser.mockResolvedValue(null);
+
+    await joinByCode(db, 'ABC123', 'user-1');
+
+    expect(mockSyncProjectToRemote).not.toHaveBeenCalled();
+    expect(mockSyncUserToRemote).not.toHaveBeenCalled();
   });
 });
 

@@ -14,6 +14,7 @@ import { assertPermission } from './permission.helper.js';
 import { generateJoinCode as generateCode } from '../../lib/join-code.js';
 import { findUserById } from '../auth/auth.service.js';
 import { syncUserToRemote } from '../../lib/user-sync.js';
+import { syncProjectToRemote } from '../../lib/project-sync.js';
 
 export async function createProject(
   db: Db,
@@ -255,8 +256,15 @@ export async function joinByCode(
 
   await collabRepo.addCollaborator(db, project.id, userId, 'member');
 
-  // Sync user to remote DB for team projects (FK integrity)
+  // Sync project + users to remote DB for team projects (FK integrity)
   if (project.databaseMode === 'remote' && remoteDb) {
+    try {
+      // Ensure project and owner exist on remote
+      await syncProjectToRemote(db, remoteDb, project.id, project.ownerId);
+    } catch {
+      // Non-fatal: project sync failure shouldn't block join
+    }
+
     const user = await findUserById(db, userId);
     if (user) {
       try {

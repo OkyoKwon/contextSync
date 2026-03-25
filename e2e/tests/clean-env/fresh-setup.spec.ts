@@ -75,20 +75,19 @@ test.describe('Fresh Setup — Infrastructure Verification', () => {
   });
 
   test('CLEAN-006: Auth flow works on fresh database', async ({ apiClient }) => {
-    const { name, email } = buildUser();
-    const { token, user } = await apiClient.login(name, email);
+    const { name } = buildUser();
+    const { token, user } = await apiClient.identify(name);
 
     expect(token).toBeTruthy();
     expect(user.id).toBeTruthy();
-    expect(user.email).toBe(email);
 
-    const me = await apiClient.get<{ id: string; email: string }>('/auth/me', token);
+    const me = await apiClient.get<{ id: string }>('/auth/me', token);
     expect(me.id).toBe(user.id);
   });
 
   test('CLEAN-007: Full CRUD works after fresh setup', async ({ apiClient }) => {
-    const { name, email } = buildUser();
-    const { token } = await apiClient.login(name, email);
+    const { name } = buildUser();
+    const { token } = await apiClient.identify(name);
 
     // Create project
     const project = await apiClient.createProject(token, buildProject());

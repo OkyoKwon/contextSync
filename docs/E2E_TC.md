@@ -1,6 +1,6 @@
 # E2E Test Cases
 
-> **136 total test cases** | Playwright + Custom Fixtures (auth, api, db)
+> **163 total test cases** | Playwright + Custom Fixtures (auth, api, db)
 >
 > Test path: `e2e/tests/`
 
@@ -366,13 +366,16 @@
 
 ## 19. Local Sessions
 
-**File:** `e2e/tests/sessions/local-sessions.spec.ts` (3 TC)
+**File:** `e2e/tests/sessions/local-sessions.spec.ts` (6 TC)
 
-| #   | TC ID    | Test Name                                | Description                                      | Assertions                    |
-| --- | -------- | ---------------------------------------- | ------------------------------------------------ | ----------------------------- |
-| 117 | LSES-001 | List local sessions endpoint responds    | GET /sessions/local returns response             | status === 200, data is array |
-| 118 | LSES-002 | Browse local directory endpoint responds | GET /sessions/local/browse returns response      | status === 200                |
-| 119 | LSES-003 | Local directories endpoint responds      | GET /sessions/local/directories returns response | status === 200, data is array |
+| #   | TC ID    | Test Name                                | Description                                                   | Assertions                        |
+| --- | -------- | ---------------------------------------- | ------------------------------------------------------------- | --------------------------------- |
+| 117 | LSES-001 | List local sessions endpoint responds    | GET /sessions/local returns response                          | status === 200, data is array     |
+| 118 | LSES-002 | Browse local directory endpoint responds | GET /sessions/local/browse returns response                   | status === 200                    |
+| 119 | LSES-003 | Local directories endpoint responds      | GET /sessions/local/directories returns response              | status === 200, data is array     |
+| 120 | LSES-004 | Manual sync rejects empty sessionIds     | POST /projects/:id/sessions/sync with empty array returns 400 | status === 400, success === false |
+| 121 | LSES-005 | Recalculate tokens endpoint responds     | POST /projects/:id/sessions/recalculate-tokens returns ok     | status === 200, success === true  |
+| 122 | LSES-006 | Manual sync requires authentication      | POST /projects/:id/sessions/sync without token                | status === 401                    |
 
 ---
 
@@ -410,7 +413,7 @@
 
 ### 20-3. Team Collaboration
 
-**File:** `e2e/tests/clean-env/team-collaboration.spec.ts` (10 TC)
+**File:** `e2e/tests/clean-env/team-collaboration.spec.ts` (19 TC)
 
 | #   | TC ID     | Test Name                                      | Description                                                                | Assertions                                        |
 | --- | --------- | ---------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -424,6 +427,22 @@
 | 146 | CLEAN-020 | Dashboard shows sessions from both users       | Owner Dashboard 타임라인에 양쪽 세션                                       | 두 세션 제목 + 두 유저 이름 표시                  |
 | 147 | CLEAN-021 | Conflict details include overlapping paths     | GET /projects/:id/conflicts                                                | overlappingPaths에 src/auth/login.ts 포함         |
 | 148 | CLEAN-022 | Team stats show activity from both users       | GET /projects/:id/team-stats                                               | 2명 유저 활동 데이터                              |
+
+#### Remote Sync & DB Routing
+
+> 리모트 전환 후 dual-DB 라우팅(resolveDb)이 올바르게 동작하는지 검증. 세션 데이터가 올바른 DB로 라우팅되고, 팀원 간 양방향 조회가 가능한지 확인.
+
+| #   | TC ID     | Test Name                                               | Description                                                  | Assertions                             |
+| --- | --------- | ------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| 155 | CLEAN-029 | switchToRemote syncs project and returns migration info | setup/status 확인 → databaseMode === 'remote'                | databaseMode 'remote'                  |
+| 156 | CLEAN-030 | Session import works after remote switch                | 리모트 전환 후 세션 조회 가능 확인                           | sessions.length ≥ 1                    |
+| 157 | CLEAN-031 | Owner sees member sessions on remote project            | Owner가 /projects/:id/sessions 조회 → Member 세션 포함       | member userId 가진 세션 ≥ 1            |
+| 158 | CLEAN-032 | Member sees owner sessions on remote project            | Member가 /projects/:id/sessions 조회 → Owner 세션 포함       | owner userId 가진 세션 ≥ 1             |
+| 159 | CLEAN-033 | Team stats reflect both users on remote project         | GET /projects/:id/team-stats → 양쪽 sessionCount > 0         | 2명 userId, 각 sessionCount ≥ 1        |
+| 160 | CLEAN-034 | Dashboard stats returns session counts                  | GET /projects/:id/stats → todaySessions, weekSessions 존재   | typeof number, ≥ 0                     |
+| 161 | CLEAN-035 | Manual sync endpoint responds on remote project         | POST /projects/:id/sessions/sync → 비존재 세션 ID            | status 201, success true               |
+| 162 | CLEAN-036 | Recalculate tokens works on remote project              | POST /projects/:id/sessions/recalculate-tokens               | updatedSessions ≥ 0                    |
+| 163 | CLEAN-037 | Local-only project sessions isolated from remote        | 별도 local 프로젝트에 세션 import → remote 프로젝트에 미반영 | remote project에 local session ID 없음 |
 
 ### 20-4. Team Onboarding (Profile)
 

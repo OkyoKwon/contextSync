@@ -48,8 +48,8 @@ test.describe('Identify Flow', () => {
   });
 
   test('existing user identify → dashboard directly', async ({ page, apiClient }) => {
-    const { name, email } = buildUser();
-    const { token } = await apiClient.login(name, email);
+    const { name } = buildUser();
+    const { token } = await apiClient.identify(name);
     await apiClient.createProject(token, buildProject());
 
     await page.goto('/identify');

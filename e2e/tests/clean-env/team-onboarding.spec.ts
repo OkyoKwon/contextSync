@@ -22,7 +22,7 @@ test.describe('Team Onboarding — Profile Flow', () => {
 
   test('CLEAN-023: Owner creates project and generates join code', async ({ apiClient }) => {
     const ownerData = buildUser({ name: 'Onboard Owner' });
-    const login = await apiClient.login(ownerData.name, ownerData.email);
+    const login = await apiClient.identify(ownerData.name);
     ownerToken = login.token;
     ownerName = login.user.name;
     ownerId = login.user.id;
@@ -47,7 +47,7 @@ test.describe('Team Onboarding — Profile Flow', () => {
 
   test('CLEAN-024: Member joins project via join code API', async ({ apiClient }) => {
     const memberData = buildUser({ name: 'Onboard Member' });
-    const login = await apiClient.login(memberData.name, memberData.email);
+    const login = await apiClient.identify(memberData.name);
     memberToken = login.token;
     memberName = login.user.name;
     memberId = login.user.id;

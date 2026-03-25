@@ -59,8 +59,7 @@ test.describe('Onboarding — First User Experience', () => {
   test('CLEAN-011: Second identify skips onboarding', async ({ page, apiClient }) => {
     // Create a user with a project via API first
     const name = `Returning User ${Date.now()}`;
-    const email = `returning-${Date.now()}-${Math.random().toString(36).slice(2)}@e2e.test`;
-    const { token } = await apiClient.login(name, email);
+    const { token } = await apiClient.identify(name);
     await apiClient.createProject(token, { name: 'Existing Project' });
 
     // Now identify via UI — should skip onboarding

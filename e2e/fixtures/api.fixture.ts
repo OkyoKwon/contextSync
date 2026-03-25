@@ -4,7 +4,7 @@ import { basename } from 'node:path';
 
 const API_BASE = process.env['TEST_API_BASE'] ?? 'http://localhost:3099/api';
 
-interface LoginResult {
+interface IdentifyResult {
   readonly token: string;
   readonly user: {
     readonly id: string;
@@ -38,7 +38,7 @@ interface ApiClient {
   post<T>(path: string, body: unknown, token?: string): Promise<T>;
   patch<T>(path: string, body: unknown, token?: string): Promise<T>;
   del<T>(path: string, token?: string): Promise<T>;
-  login(name: string, email: string): Promise<LoginResult>;
+  identify(name: string): Promise<IdentifyResult>;
   createProject(
     token: string,
     input: { name: string; description?: string },
@@ -165,8 +165,18 @@ function createApiClient(): ApiClient {
     patch: <T>(path: string, body: unknown, token?: string) =>
       request<T>('PATCH', path, body, token),
     del: <T>(path: string, token?: string) => request<T>('DELETE', path, undefined, token),
-    login: (name: string, email: string) =>
-      request<LoginResult>('POST', '/auth/login', { name, email }),
+    identify: async (name: string): Promise<IdentifyResult> => {
+      const data = await request<
+        IdentifyResult | { users: readonly { id: string }[]; needsSelection: true }
+      >('POST', '/auth/identify', { name });
+      // If multiple users match the name, select the first one
+      if ('needsSelection' in data && data.needsSelection) {
+        return request<IdentifyResult>('POST', '/auth/identify/select', {
+          userId: data.users[0]!.id,
+        });
+      }
+      return data as IdentifyResult;
+    },
     createProject: (token: string, input: { name: string; description?: string }) =>
       request<CreateProjectResult>('POST', '/projects', input, token),
     importSession: (token: string, projectId: string, filePath: string) =>
@@ -178,7 +188,7 @@ function createApiClient(): ApiClient {
   };
 }
 
-export type { ApiClient, RawResponse, LoginResult, CreateProjectResult };
+export type { ApiClient, RawResponse, IdentifyResult, CreateProjectResult };
 
 export interface ApiFixture {
   readonly apiClient: ApiClient;

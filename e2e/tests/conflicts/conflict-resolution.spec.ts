@@ -20,11 +20,11 @@ interface ConflictItem {
 
 async function createConflictScenario(apiClient: ApiClient, db: Kysely<unknown>) {
   const userAData = buildUser();
-  const { token: tokenA, user: userA } = await apiClient.login(userAData.name, userAData.email);
+  const { token: tokenA, user: userA } = await apiClient.identify(userAData.name);
   const project = await apiClient.createProject(tokenA, buildProject());
 
   const userBData = buildUser();
-  const { token: tokenB, user: userB } = await apiClient.login(userBData.name, userBData.email);
+  const { token: tokenB, user: userB } = await apiClient.identify(userBData.name);
 
   await addCollaborator(db, project.id, userB.id, 'member');
 

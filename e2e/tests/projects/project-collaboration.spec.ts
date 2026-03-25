@@ -23,7 +23,7 @@ test.describe('Project Collaboration', () => {
 
     // Create a new user and join
     const inviteeData = buildUser();
-    const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
+    const { token: inviteeToken } = await apiClient.identify(inviteeData.name);
     const joined = await apiClient.post<{ id: string }>(
       '/projects/join',
       { code: project.joinCode },
@@ -68,7 +68,7 @@ test.describe('Project Collaboration', () => {
 
     // Attempt to join with old code should fail
     const inviteeData = buildUser();
-    const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
+    const { token: inviteeToken } = await apiClient.identify(inviteeData.name);
     const response = await apiClient.fetchRaw(
       'POST',
       '/projects/join',
@@ -81,7 +81,7 @@ test.describe('Project Collaboration', () => {
 
   test('invalid join code returns 404', async ({ apiClient, testUser }) => {
     const inviteeData = buildUser();
-    const { token: inviteeToken } = await apiClient.login(inviteeData.name, inviteeData.email);
+    const { token: inviteeToken } = await apiClient.identify(inviteeData.name);
 
     const response = await apiClient.fetchRaw(
       'POST',

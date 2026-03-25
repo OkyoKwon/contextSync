@@ -15,14 +15,14 @@ test.describe('Conflict Detection', () => {
     db,
   }) => {
     const userAData = buildUser();
-    const { token: tokenA } = await apiClient.login(userAData.name, userAData.email);
+    const { token: tokenA } = await apiClient.identify(userAData.name);
     const project = await apiClient.createProject(
       tokenA,
       buildProject({ name: 'Conflict Test Project' }),
     );
 
     const userBData = buildUser();
-    const { token: tokenB, user: userB } = await apiClient.login(userBData.name, userBData.email);
+    const { token: tokenB, user: userB } = await apiClient.identify(userBData.name);
 
     // Add userB as collaborator directly
     await addCollaborator(db, project.id, userB.id, 'member');
@@ -51,14 +51,14 @@ test.describe('Conflict Detection', () => {
 
   test('non-overlapping file paths produce no conflicts', async ({ apiClient, db }) => {
     const userAData = buildUser();
-    const { token: tokenA } = await apiClient.login(userAData.name, userAData.email);
+    const { token: tokenA } = await apiClient.identify(userAData.name);
     const project = await apiClient.createProject(
       tokenA,
       buildProject({ name: 'No Conflict Project' }),
     );
 
     const userBData = buildUser();
-    const { token: tokenB, user: userB } = await apiClient.login(userBData.name, userBData.email);
+    const { token: tokenB, user: userB } = await apiClient.identify(userBData.name);
 
     await addCollaborator(db, project.id, userB.id, 'member');
 
@@ -79,14 +79,14 @@ test.describe('Conflict Detection', () => {
 
   test('conflict severity is valid for overlapping files', async ({ apiClient, db }) => {
     const userAData = buildUser();
-    const { token: tokenA } = await apiClient.login(userAData.name, userAData.email);
+    const { token: tokenA } = await apiClient.identify(userAData.name);
     const project = await apiClient.createProject(
       tokenA,
       buildProject({ name: 'Severity Project' }),
     );
 
     const userBData = buildUser();
-    const { token: tokenB, user: userB } = await apiClient.login(userBData.name, userBData.email);
+    const { token: tokenB, user: userB } = await apiClient.identify(userBData.name);
 
     await addCollaborator(db, project.id, userB.id, 'member');
 

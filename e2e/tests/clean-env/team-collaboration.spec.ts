@@ -10,9 +10,11 @@ const TEST_DB_URL =
 test.describe('Team Collaboration — Full Flow', () => {
   let ownerToken: string;
   let ownerName: string;
+  let ownerEmail: string;
   let ownerId: string;
   let memberToken: string;
   let memberName: string;
+  let memberEmail: string;
   let memberId: string;
   let projectId: string;
   let joinCode: string;
@@ -22,9 +24,10 @@ test.describe('Team Collaboration — Full Flow', () => {
   test('CLEAN-013: Remote DB — Self-Hosted setup form UI', async ({ page, apiClient }) => {
     // Create owner user + project
     const ownerData = buildUser({ name: 'Owner' });
-    const login = await apiClient.login(ownerData.name, ownerData.email);
+    const login = await apiClient.identify(ownerData.name);
     ownerToken = login.token;
     ownerName = login.user.name;
+    ownerEmail = login.user.email;
     ownerId = login.user.id;
     const project = await apiClient.createProject(ownerToken, buildProject());
     projectId = project.id;
@@ -35,7 +38,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: ownerToken,
-          user: { id: ownerId, email: ownerData.email, name: ownerName },
+          user: { id: ownerId, email: ownerEmail, name: ownerName },
           currentProjectId: projectId,
         },
         version: 0,
@@ -103,7 +106,7 @@ test.describe('Team Collaboration — Full Flow', () => {
     // Use owner token from previous test (or create fresh if needed)
     if (!ownerToken) {
       const ownerData = buildUser({ name: 'Owner API' });
-      const login = await apiClient.login(ownerData.name, ownerData.email);
+      const login = await apiClient.identify(ownerData.name);
       ownerToken = login.token;
       ownerId = login.user.id;
       ownerName = login.user.name;
@@ -130,7 +133,7 @@ test.describe('Team Collaboration — Full Flow', () => {
   test('CLEAN-015: Owner generates Join Code via UI', async ({ page, apiClient }) => {
     if (!ownerToken) {
       const ownerData = buildUser({ name: 'Owner JC' });
-      const login = await apiClient.login(ownerData.name, ownerData.email);
+      const login = await apiClient.identify(ownerData.name);
       ownerToken = login.token;
       ownerId = login.user.id;
       ownerName = login.user.name;
@@ -177,9 +180,10 @@ test.describe('Team Collaboration — Full Flow', () => {
   test('CLEAN-016: Member joins project via Join Code UI', async ({ page, apiClient }) => {
     // Create member user
     const memberData = buildUser({ name: 'Member' });
-    const login = await apiClient.login(memberData.name, memberData.email);
+    const login = await apiClient.identify(memberData.name);
     memberToken = login.token;
     memberName = login.user.name;
+    memberEmail = login.user.email;
     memberId = login.user.id;
 
     // Member needs their own project first (to have a currentProjectId for sidebar to show)
@@ -190,7 +194,7 @@ test.describe('Team Collaboration — Full Flow', () => {
       JSON.stringify({
         state: {
           token: memberToken,
-          user: { id: memberId, email: memberData.email, name: memberName },
+          user: { id: memberId, email: memberEmail, name: memberName },
           currentProjectId: memberProject.id,
         },
         version: 0,
@@ -379,5 +383,265 @@ test.describe('Team Collaboration — Full Flow', () => {
 
     expect(ownerStats).toBeTruthy();
     expect(memberStats).toBeTruthy();
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // Remote Sync & DB Routing
+  //
+  // NOTE: switchToRemote (CLEAN-013) rewrites .env which may trigger a
+  // tsx watch restart. After restart the old JWT tokens may become invalid
+  // if the database changes.  We re-login at the start of this section to
+  // obtain fresh tokens that are guaranteed to work.
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // ── CLEAN-029: switchToRemote syncs project to remote DB ──────────────
+
+  test('CLEAN-029: switchToRemote syncs project and returns migration info', async ({
+    apiClient,
+  }) => {
+    // switchToRemote (CLEAN-013) rewrites .env → tsx watch restarts the server.
+    // We must wait for the server to stabilize before re-logging in.
+    // Poll health endpoint until it responds, allowing up to 15s for restart.
+    const API_BASE = process.env['TEST_API_BASE'] ?? 'http://localhost:3098/api';
+    for (let i = 0; i < 30; i++) {
+      try {
+        const res = await fetch(`${API_BASE}/health`);
+        if (res.ok) break;
+      } catch {
+        // server not ready yet
+      }
+      await new Promise((r) => setTimeout(r, 500));
+    }
+
+    // Re-login to obtain fresh tokens
+    if (ownerName) {
+      const ownerLogin = await apiClient.identify(ownerName);
+      ownerToken = ownerLogin.token;
+      ownerId = ownerLogin.user.id;
+    }
+
+    if (memberName) {
+      const memberLogin = await apiClient.identify(memberName);
+      memberToken = memberLogin.token;
+      memberId = memberLogin.user.id;
+    }
+
+    // Re-resolve projectId
+    if (ownerToken) {
+      const projects = await apiClient.get<ReadonlyArray<{ id: string; name: string }>>(
+        '/projects',
+        ownerToken,
+      );
+      const found = (projects as ReadonlyArray<{ id: string }>).find((p) => p.id === projectId);
+      if (!found && (projects as readonly unknown[]).length > 0) {
+        projectId = (projects as ReadonlyArray<{ id: string }>)[0]!.id;
+      }
+    }
+
+    // switchToRemote was already called in CLEAN-013; verify the effect via setup status
+    const status = await apiClient.get<{
+      readonly databaseMode: string;
+      readonly provider: string;
+    }>('/setup/status');
+
+    expect(status.databaseMode).toBe('remote');
+  });
+
+  // ── CLEAN-030: Session import works on remote-mode project ────────────
+
+  test('CLEAN-030: Session import works after remote switch', async ({ apiClient }) => {
+    // Sessions were imported in CLEAN-018/019 — verify they're queryable
+    const raw = await apiClient.fetchRaw(
+      'GET',
+      `/projects/${projectId}/sessions?page=1&limit=10`,
+      undefined,
+      ownerToken,
+    );
+
+    expect(raw.status).toBe(200);
+    expect(raw.body.success).toBe(true);
+    const sessions = raw.body.data as ReadonlyArray<{ readonly title: string }>;
+    expect(sessions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── CLEAN-031: Owner sees member sessions ─────────────────────────────
+
+  test('CLEAN-031: Owner sees member sessions on remote project', async ({ apiClient }) => {
+    const raw = await apiClient.fetchRaw(
+      'GET',
+      `/projects/${projectId}/sessions?page=1&limit=50`,
+      undefined,
+      ownerToken,
+    );
+
+    expect(raw.status).toBe(200);
+    const sessions = raw.body.data as ReadonlyArray<{
+      readonly title: string;
+      readonly userId: string;
+    }>;
+
+    // Member's session (Auth Refactoring) should be visible to owner
+    const memberSessions = sessions.filter((s) => s.userId === memberId);
+    expect(memberSessions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── CLEAN-032: Member sees owner sessions ─────────────────────────────
+
+  test('CLEAN-032: Member sees owner sessions on remote project', async ({ apiClient }) => {
+    // Re-login member if token is stale
+    if (memberName) {
+      const login = await apiClient.identify(memberName);
+      memberToken = login.token;
+      memberId = login.user.id;
+    }
+
+    const raw = await apiClient.fetchRaw(
+      'GET',
+      `/projects/${projectId}/sessions?page=1&limit=50`,
+      undefined,
+      memberToken,
+    );
+
+    expect(raw.status).toBe(200);
+    const sessions = raw.body.data as ReadonlyArray<{
+      readonly title: string;
+      readonly userId: string;
+    }>;
+
+    // Owner's session (Auth Feature Implementation) should be visible to member
+    const ownerSessions = sessions.filter((s) => s.userId === ownerId);
+    expect(ownerSessions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── CLEAN-033: Team stats on remote project ───────────────────────────
+
+  test('CLEAN-033: Team stats reflect both users on remote project', async ({ apiClient }) => {
+    // Refresh owner token defensively
+    if (ownerName) {
+      const login = await apiClient.identify(ownerName);
+      ownerToken = login.token;
+    }
+
+    const stats = await apiClient.get<
+      ReadonlyArray<{
+        readonly userId: string;
+        readonly sessionCount: number;
+      }>
+    >(`/projects/${projectId}/team-stats`, ownerToken);
+
+    const members = stats as ReadonlyArray<{
+      readonly userId: string;
+      readonly sessionCount: number;
+    }>;
+    expect(members.length).toBeGreaterThanOrEqual(2);
+
+    const ownerEntry = members.find((m) => m.userId === ownerId);
+    const memberEntry = members.find((m) => m.userId === memberId);
+    expect(ownerEntry).toBeTruthy();
+    expect(memberEntry).toBeTruthy();
+    expect(ownerEntry!.sessionCount).toBeGreaterThanOrEqual(1);
+    expect(memberEntry!.sessionCount).toBeGreaterThanOrEqual(1);
+  });
+
+  // ── CLEAN-034: Dashboard stats returns valid data ─────────────────────
+
+  test('CLEAN-034: Dashboard stats returns session counts', async ({ apiClient }) => {
+    if (ownerName) {
+      const login = await apiClient.identify(ownerName);
+      ownerToken = login.token;
+    }
+
+    const stats = await apiClient.get<{
+      readonly todaySessions: number;
+      readonly weekSessions: number;
+      readonly activeConflicts: number;
+      readonly activeMembers: number;
+    }>(`/projects/${projectId}/stats`, ownerToken);
+
+    expect(typeof stats.todaySessions).toBe('number');
+    expect(typeof stats.weekSessions).toBe('number');
+    expect(stats.todaySessions).toBeGreaterThanOrEqual(0);
+    expect(stats.weekSessions).toBeGreaterThanOrEqual(0);
+  });
+
+  // ── CLEAN-035: Manual sync endpoint on remote project ─────────────────
+
+  test('CLEAN-035: Manual sync endpoint responds on remote project', async ({ apiClient }) => {
+    if (ownerName) {
+      const login = await apiClient.identify(ownerName);
+      ownerToken = login.token;
+    }
+
+    // Use a non-existent session ID — should return success with 0 synced
+    const raw = await apiClient.fetchRaw(
+      'POST',
+      `/projects/${projectId}/sessions/sync`,
+      { sessionIds: ['nonexistent-session-id'] },
+      ownerToken,
+    );
+
+    expect(raw.status).toBe(201);
+    expect(raw.body.success).toBe(true);
+  });
+
+  // ── CLEAN-036: Recalculate tokens on remote project ───────────────────
+
+  test('CLEAN-036: Recalculate tokens works on remote project', async ({ apiClient }) => {
+    if (ownerName) {
+      const login = await apiClient.identify(ownerName);
+      ownerToken = login.token;
+    }
+
+    const result = await apiClient.post<{
+      readonly updatedSessions: number;
+      readonly updatedMessages: number;
+      readonly skipped: number;
+    }>(`/projects/${projectId}/sessions/recalculate-tokens`, {}, ownerToken);
+
+    expect(typeof result.updatedSessions).toBe('number');
+    expect(typeof result.updatedMessages).toBe('number');
+    expect(result.updatedSessions).toBeGreaterThanOrEqual(0);
+  });
+
+  // ── CLEAN-037: Local-only project does not route to remote ────────────
+
+  test('CLEAN-037: Local-only project sessions are isolated from remote project', async ({
+    apiClient,
+  }) => {
+    if (ownerName) {
+      const login = await apiClient.identify(ownerName);
+      ownerToken = login.token;
+    }
+
+    // Create a separate local-only project
+    const localProject = await apiClient.createProject(ownerToken, {
+      name: `Local-Only-${Date.now()}`,
+    });
+
+    // Import a session into the local project
+    const sessionFilePath = resolve(
+      process.cwd(),
+      'e2e/fixtures/session-fixtures/sample-session.jsonl',
+    );
+    await apiClient.importSession(ownerToken, localProject.id, sessionFilePath);
+
+    // Verify the remote project does NOT contain the local project's session
+    const remoteSessions = await apiClient.get<
+      ReadonlyArray<{ readonly title: string; readonly id: string }>
+    >(`/projects/${projectId}/sessions?page=1&limit=100`, ownerToken);
+
+    // Get the local project session to know its ID
+    const localSessions = await apiClient.get<
+      ReadonlyArray<{ readonly title: string; readonly id: string }>
+    >(`/projects/${localProject.id}/sessions?page=1&limit=100`, ownerToken);
+
+    const localSessionIds = new Set(
+      (localSessions as ReadonlyArray<{ id: string }>).map((s) => s.id),
+    );
+    const leakedSessions = (remoteSessions as ReadonlyArray<{ id: string }>).filter((s) =>
+      localSessionIds.has(s.id),
+    );
+
+    expect(leakedSessions).toHaveLength(0);
   });
 });

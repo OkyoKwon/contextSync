@@ -91,6 +91,7 @@ export async function getTimeline(
 
 export async function getDashboardStats(
   db: Db,
+  metaDb: Db,
   projectId: string,
   userId: string,
 ): Promise<DashboardStats> {
@@ -101,7 +102,7 @@ export async function getDashboardStats(
   weekStart.setDate(weekStart.getDate() - 7);
 
   const [localCounts, conflictsResult, membersResult, hotFilesResult] = await Promise.all([
-    countLocalSessionsByDate(db, projectId),
+    countLocalSessionsByDate(metaDb, projectId),
     db
       .selectFrom('conflicts')
       .select(db.fn.countAll().as('count'))

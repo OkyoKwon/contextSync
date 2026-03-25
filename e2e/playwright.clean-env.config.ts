@@ -29,7 +29,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: `DATABASE_URL=${TEST_DB_URL} DATABASE_SSL=false PORT=${TEST_API_PORT} NODE_ENV=test RUN_MIGRATIONS=true pnpm --filter @context-sync/api dev`,
+      command: `DATABASE_URL=${TEST_DB_URL} DATABASE_SSL=false REMOTE_DATABASE_URL= PORT=${TEST_API_PORT} NODE_ENV=test RUN_MIGRATIONS=true pnpm --filter @context-sync/api dev`,
       url: `http://localhost:${TEST_API_PORT}/api/health`,
       reuseExistingServer: false,
       timeout: 60_000,

@@ -62,11 +62,16 @@ export async function buildApp(env: Env) {
     return mode === 'remote' && remoteDb ? remoteDb : localDb;
   }
 
+  function invalidateDbModeCache(projectId: string): void {
+    dbModeCache.delete(projectId);
+  }
+
   // Backward compat: app.db = localDb (routes can migrate incrementally)
   app.decorate('db', localDb);
   app.decorate('localDb', localDb);
   app.decorate('remoteDb', remoteDb);
   app.decorate('resolveDb', resolveDb);
+  app.decorate('invalidateDbModeCache', invalidateDbModeCache);
   app.decorate('env', env);
   app.decorate('lastAuthUserId', null as string | null);
 
@@ -124,6 +129,7 @@ declare module 'fastify' {
     localDb: Db;
     remoteDb: Db | null;
     resolveDb: (projectId: string) => Promise<Db>;
+    invalidateDbModeCache: (projectId: string) => void;
     env: Env;
     lastAuthUserId: string | null;
   }

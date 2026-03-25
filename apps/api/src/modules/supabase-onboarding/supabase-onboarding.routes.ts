@@ -8,6 +8,7 @@ import {
   createAndSetup,
 } from './supabase-onboarding.service.js';
 import { updateDatabaseMode } from '../projects/project.repository.js';
+import { syncProjectToRemote } from '../../lib/project-sync.js';
 
 export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
   app.get('/supabase/projects', { preHandler: [app.authenticate] }, async (request, reply) => {
@@ -43,13 +44,20 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(400).send(fail(message));
     }
 
+    const { projectId } = parsed.data;
+    const userId = request.user.userId;
+
     const result = await autoSetupExisting(
       app.localDb,
-      request.user.userId,
+      userId,
       app.env.JWT_SECRET,
       parsed.data,
+      async (tempRemoteDb) => {
+        await syncProjectToRemote(app.localDb, tempRemoteDb, projectId, userId);
+      },
     );
-    await updateDatabaseMode(app.localDb, parsed.data.projectId, 'remote');
+    await updateDatabaseMode(app.localDb, projectId, 'remote');
+    app.invalidateDbModeCache(projectId);
     return reply.send(ok(result));
   });
 
@@ -63,11 +71,17 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
         return reply.status(400).send(fail(message));
       }
 
+      const { projectId } = parsed.data;
+      const userId = request.user.userId;
+
       const result = await createAndSetup(
         app.localDb,
-        request.user.userId,
+        userId,
         app.env.JWT_SECRET,
         parsed.data,
+        async (tempRemoteDb) => {
+          await syncProjectToRemote(app.localDb, tempRemoteDb, projectId, userId);
+        },
       );
 
       if ('recovered' in result) {
@@ -78,7 +92,8 @@ export const supabaseOnboardingRoutes: FastifyPluginAsync = async (app) => {
           );
       }
 
-      await updateDatabaseMode(app.localDb, parsed.data.projectId, 'remote');
+      await updateDatabaseMode(app.localDb, projectId, 'remote');
+      app.invalidateDbModeCache(projectId);
       return reply.send(ok(result));
     },
   );

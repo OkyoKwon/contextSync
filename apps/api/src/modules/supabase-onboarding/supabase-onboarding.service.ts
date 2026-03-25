@@ -267,6 +267,7 @@ export async function autoSetupExisting(
   userId: string,
   jwtSecret: string,
   input: AutoSetupExistingInput,
+  onRemoteReady?: (tempRemoteDb: Db) => Promise<void>,
 ) {
   const supabaseToken = await resolveSupabaseToken(db, userId, jwtSecret);
 
@@ -299,7 +300,7 @@ export async function autoSetupExisting(
     throw new AppError(message, 400);
   }
 
-  return switchToRemote(connectionUrl, true);
+  return switchToRemote(connectionUrl, true, onRemoteReady);
 }
 
 export async function createAndSetup(
@@ -307,6 +308,7 @@ export async function createAndSetup(
   userId: string,
   jwtSecret: string,
   input: AutoSetupNewInput,
+  onRemoteReady?: (tempRemoteDb: Db) => Promise<void>,
 ): Promise<SwitchToRemoteResult | CreateSetupRecovery> {
   const supabaseToken = await resolveSupabaseToken(db, userId, jwtSecret);
 
@@ -332,7 +334,7 @@ export async function createAndSetup(
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       const testResult = await testConnection(connectionUrl, true);
       if (testResult.success) {
-        return switchToRemote(connectionUrl, true);
+        return switchToRemote(connectionUrl, true, onRemoteReady);
       }
       lastError = testResult.error;
       if (attempt < MAX_RETRIES - 1) {

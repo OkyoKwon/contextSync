@@ -111,19 +111,20 @@ export async function listLocalDirectories(): Promise<readonly LocalDirectory[]>
 }
 
 export async function listLocalSessions(
-  db: Db,
+  metaDb: Db,
+  dataDb: Db,
   projectId: string,
   activeOnly = true,
   currentUserId?: string,
 ): Promise<readonly LocalProjectGroup[]> {
-  const sessionFiles = await getProjectSessionFiles(db, projectId);
+  const sessionFiles = await getProjectSessionFiles(metaDb, projectId);
 
-  const directoryOwners = await getProjectDirectoryOwners(db, projectId);
+  const directoryOwners = await getProjectDirectoryOwners(metaDb, projectId);
 
   const now = Date.now();
 
-  // Get already-synced session IDs for this project
-  const syncedRows = await db
+  // Get already-synced session IDs from the data DB (where sessions live)
+  const syncedRows = await dataDb
     .selectFrom('synced_sessions')
     .select(['external_session_id'])
     .where('project_id', '=', projectId)
@@ -189,9 +190,9 @@ export async function listLocalSessions(
     };
   });
 
-  // Include DB sessions from other team members
+  // Include DB sessions from other team members (from the data DB)
   if (currentUserId) {
-    const teamGroups = await getTeamDbSessionGroups(db, projectId, currentUserId, syncedIds);
+    const teamGroups = await getTeamDbSessionGroups(dataDb, projectId, currentUserId, syncedIds);
     groups.push(...teamGroups);
   }
 
@@ -358,10 +359,10 @@ export function findFirstTimestamp(raw: string): string | null {
 }
 
 export async function countLocalSessionsByDate(
-  db: Db,
+  metaDb: Db,
   projectId: string,
 ): Promise<{ readonly todaySessions: number; readonly weekSessions: number }> {
-  const sessionFiles = await getProjectSessionFiles(db, projectId);
+  const sessionFiles = await getProjectSessionFiles(metaDb, projectId);
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
