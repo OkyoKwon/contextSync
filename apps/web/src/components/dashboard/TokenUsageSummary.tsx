@@ -8,7 +8,6 @@ import { ZapIcon, CrownIcon, CpuIcon } from '../ui/icons';
 import { formatTokenCount } from '../../lib/format';
 
 const SOURCE_LABELS: Record<PlanDetectionSource, string> = {
-  'rate-limit': 'via API',
   cli: 'via CLI',
   manual: 'Manual',
 };

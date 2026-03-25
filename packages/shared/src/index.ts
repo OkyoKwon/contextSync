@@ -104,7 +104,7 @@ export type {
   TeamEvaluationSummaryEntry,
   TriggerEvaluationInput,
 } from './types/ai-evaluation.js';
-export type { RateLimitSnapshot, QuotaStatus, PlanDetectionSource } from './types/rate-limit.js';
+export type { QuotaStatus, PlanDetectionSource } from './types/rate-limit.js';
 
 // Constants
 export { USER_ROLES } from './constants/roles.js';
@@ -137,10 +137,6 @@ export {
   ANTHROPIC_MODEL_LABELS,
 } from './constants/anthropic-models.js';
 export type { AnthropicModel } from './constants/anthropic-models.js';
-export {
-  PLAN_RATE_LIMIT_THRESHOLDS,
-  inferPlanFromRequestsLimit,
-} from './constants/rate-limit-thresholds.js';
 
 export {
   AI_EVALUATION_STATUSES,

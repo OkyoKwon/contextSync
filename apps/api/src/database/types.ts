@@ -16,7 +16,6 @@ export interface Database {
   ai_evaluations: AiEvaluationsTable;
   ai_evaluation_dimensions: AiEvaluationDimensionsTable;
   ai_evaluation_evidence: AiEvaluationEvidenceTable;
-  rate_limit_snapshots: RateLimitSnapshotsTable;
 }
 
 export interface UsersTable {
@@ -217,24 +216,6 @@ export interface AiEvaluationEvidenceTable {
   sentiment: Generated<string>;
   annotation: string;
   sort_order: Generated<number>;
-}
-
-export interface RateLimitSnapshotsTable {
-  id: Generated<string>;
-  user_id: string;
-  requests_limit: number | null;
-  requests_remaining: number | null;
-  requests_reset: string | null;
-  tokens_limit: number | null;
-  tokens_remaining: number | null;
-  tokens_reset: string | null;
-  input_tokens_limit: number | null;
-  input_tokens_remaining: number | null;
-  input_tokens_reset: string | null;
-  output_tokens_limit: number | null;
-  output_tokens_remaining: number | null;
-  output_tokens_reset: string | null;
-  captured_at: Generated<Date>;
 }
 
 export interface PromptTemplatesTable {

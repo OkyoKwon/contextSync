@@ -10,7 +10,6 @@ import { assertProjectAccess } from '../projects/project.service.js';
 import * as prdRepo from './prd-analysis.repository.js';
 import { scanCodebase } from './codebase-scanner.js';
 import { analyzePrd } from './claude-client.js';
-import { saveRateLimitSnapshot } from '../quota/quota.service.js';
 import { extname } from 'node:path';
 
 export async function uploadPrdDocument(
@@ -92,11 +91,6 @@ export async function startAnalysis(
     const codebaseSummary = await scanCodebase(project.localDirectory);
 
     const result = await analyzePrd(apiKey, model, document.content, codebaseSummary);
-
-    // Fire-and-forget: save rate limit snapshot
-    if (result.rateLimits) {
-      saveRateLimitSnapshot(db, userId, result.rateLimits).catch(() => {});
-    }
 
     const requirementInputs = result.requirements.map((req, index) => ({
       requirementText: req.requirementText,

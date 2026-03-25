@@ -83,21 +83,20 @@ export async function findUserById(db: Db, id: string): Promise<User | null> {
 
   const user = toUser(row);
 
-  if (user.claudePlan === 'free') {
-    const detected = await detectPlan(db, id);
-    if (detected.plan !== 'free') {
-      const updated = await db
-        .updateTable('users')
-        .set({
-          claude_plan: detected.plan,
-          plan_detection_source: detected.source,
-          updated_at: new Date(),
-        })
-        .where('id', '=', id)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-      return toUser(updated);
-    }
+  // Always re-detect plan on login to reflect subscription changes
+  const detected = await detectPlan(db, id);
+  if (detected.plan !== user.claudePlan) {
+    const updated = await db
+      .updateTable('users')
+      .set({
+        claude_plan: detected.plan,
+        plan_detection_source: detected.source,
+        updated_at: new Date(),
+      })
+      .where('id', '=', id)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return toUser(updated);
   }
 
   return user;

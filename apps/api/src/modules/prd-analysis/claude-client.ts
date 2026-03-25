@@ -1,7 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { RateLimitSnapshot } from '@context-sync/shared';
 import type { CodebaseSummary } from './codebase-scanner.js';
-import { callWithRetryAndHeaders } from '../../lib/claude-utils.js';
+import { callWithRetry } from '../../lib/claude-utils.js';
 
 export interface ParsedRequirement {
   readonly requirementText: string;
@@ -18,7 +17,6 @@ export interface PrdAnalysisResult {
   readonly inputTokens: number;
   readonly outputTokens: number;
   readonly modelUsed: string;
-  readonly rateLimits: RateLimitSnapshot | null;
 }
 
 const SYSTEM_PROMPT = `You are a PRD (Product Requirements Document) analysis expert. Your task is to analyze a PRD against an actual codebase to determine the achievement rate of each requirement.
@@ -81,12 +79,7 @@ ${codebaseContext}
 
 Analyze the PRD against this codebase and return the JSON result.`;
 
-  const { message, rateLimits } = await callWithRetryAndHeaders(
-    client,
-    model,
-    SYSTEM_PROMPT,
-    userMessage,
-  );
+  const message = await callWithRetry(client, model, SYSTEM_PROMPT, userMessage);
 
   const text = message.content
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
@@ -100,7 +93,6 @@ Analyze the PRD against this codebase and return the JSON result.`;
     inputTokens: message.usage.input_tokens,
     outputTokens: message.usage.output_tokens,
     modelUsed: model,
-    rateLimits,
   };
 }
 
