@@ -4,7 +4,7 @@ import { waitForAppReady } from '../../helpers/wait-for.js';
 
 test.describe('Identify Flow', () => {
   test('new user identify → onboarding → dashboard', async ({ page }) => {
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     const name = `New User ${Date.now()}`;
@@ -52,7 +52,7 @@ test.describe('Identify Flow', () => {
     const { token } = await apiClient.identify(name);
     await apiClient.createProject(token, buildProject());
 
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     await page.fill('input[placeholder="Enter your name"]', name);
@@ -63,28 +63,28 @@ test.describe('Identify Flow', () => {
   });
 
   test('empty field submission is blocked', async ({ page }) => {
-    await page.goto('/identify');
+    await page.goto('/onboarding');
     await waitForAppReady(page);
 
     // Submit button should be disabled when name field is empty
     const submitButton = page.locator('button[type="submit"]');
     await expect(submitButton).toBeDisabled();
-    expect(page.url()).toContain('/identify');
+    expect(page.url()).toContain('/onboarding');
   });
 
-  test('authenticated user visiting /identify redirects to dashboard', async ({
+  test('authenticated user visiting /onboarding redirects to dashboard', async ({
     authenticatedPage,
   }) => {
-    await authenticatedPage.goto('/identify');
-    await authenticatedPage.waitForURL((url) => !url.pathname.includes('/identify'), {
+    await authenticatedPage.goto('/onboarding');
+    await authenticatedPage.waitForURL((url) => !url.pathname.includes('/onboarding'), {
       timeout: 10_000,
     });
     expect(authenticatedPage.url()).toContain('/dashboard');
   });
 
-  test('/login redirects to /identify', async ({ page }) => {
+  test('/login redirects to /onboarding', async ({ page }) => {
     await page.goto('/login');
-    await page.waitForURL('**/identify', { timeout: 10_000 });
-    expect(page.url()).toContain('/identify');
+    await page.waitForURL('**/onboarding', { timeout: 10_000 });
+    expect(page.url()).toContain('/onboarding');
   });
 });

@@ -49,11 +49,11 @@ test.describe('User Dropdown', () => {
     await expect(logoutBtn).toBeVisible({ timeout: 5_000 });
     await logoutBtn.click();
 
-    // Should redirect to landing or login
+    // Should redirect to landing or onboarding
     await authenticatedPage.waitForURL(
       (url) => {
         const pathname = url.pathname;
-        return pathname === '/' || pathname.includes('/login') || pathname.includes('/identify');
+        return pathname === '/' || pathname.includes('/onboarding') || pathname.includes('/login');
       },
       { timeout: 10_000 },
     );
