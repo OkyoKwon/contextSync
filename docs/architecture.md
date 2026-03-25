@@ -195,7 +195,7 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 - Pool: max 20 connections, 30s idle timeout, 5s connect timeout
 - Types: `Db = Kysely<Database>` (`apps/api/src/database/types.ts`)
 
-### Tables (18)
+### Tables (16)
 
 | Table                      | Purpose                      | Key Columns                                                                |
 | -------------------------- | ---------------------------- | -------------------------------------------------------------------------- |
@@ -214,8 +214,6 @@ Global error handler converts all errors to `fail()` responses. Only 5xx errors 
 | `ai_evaluations`           | AI utilization evaluations   | project_id, target_user_id, overall_score, proficiency_tier                |
 | `ai_evaluation_dimensions` | Evaluation dimensions        | evaluation_id, dimension, score, confidence, strengths[], weaknesses[]     |
 | `ai_evaluation_evidence`   | Evaluation evidence          | dimension_id, message_id, session_id, excerpt, sentiment                   |
-| `project_db_configs`       | External DB configuration    | project_id, provider, connection_url, ssl_enabled, status                  |
-| `data_migration_jobs`      | Data migration jobs          | project_id, direction, status, total/migrated sessions/messages            |
 | `rate_limit_snapshots`     | Rate limit snapshot tracking | user_id, project_id, plan_tier, usage_percent, captured_at                 |
 
 ### Full-Text Search

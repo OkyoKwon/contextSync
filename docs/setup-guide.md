@@ -77,7 +77,7 @@ pnpm dev
 ```
 
 > `bash scripts/setup.sh` runs interactive mode. Add `--defaults` for non-interactive personal mode.
-> If you already have Node 22+, you can use `pnpm bootstrap` instead.
+> If you already have Node 22+, you can run `bash scripts/setup.sh --defaults` for non-interactive mode.
 
 ### Team Host Mode
 
@@ -190,18 +190,18 @@ Expected version: >=22.0.0
 Got: v20.x.x
 ```
 
-`setup.sh`가 nvm으로 Node 22를 설치했지만, 변경이 스크립트 서브셸 안에서만 적용되어 현재 터미널에는 이전 Node 버전이 남아있을 때 발생합니다.
+This happens when `setup.sh` installed Node 22 via nvm, but the change only applied inside the script's subshell — your current terminal still has the old Node version.
 
 ```bash
-nvm use 22        # 현재 터미널에서 Node 22 활성화
-pnpm dev          # 정상 동작
+nvm use 22        # Activate Node 22 in the current terminal
+pnpm dev          # Should work now
 ```
 
-또는 새 터미널을 열면 됩니다 — setup 중 nvm default alias가 22로 설정됩니다.
+Or simply open a new terminal — setup sets the nvm default alias to 22.
 
 ### Bootstrap Fails
 
-If `pnpm bootstrap` fails, try the manual setup steps to isolate the issue:
+If `bash scripts/setup.sh` fails, try the manual setup steps to isolate the issue:
 
 ```bash
 docker compose up -d                        # Is Docker running?

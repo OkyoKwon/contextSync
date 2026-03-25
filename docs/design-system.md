@@ -389,6 +389,26 @@ interface MarkdownRendererProps {
 
 Theme-aware Markdown renderer using `react-markdown` + `remark-gfm`. Applies `prose prose-sm max-w-none`, auto-applies `prose-invert` in dark mode.
 
+### LiquidGradientBackground
+
+```tsx
+<LiquidGradientBackground className="fixed inset-0 -z-10" />
+```
+
+```typescript
+interface LiquidGradientBackgroundProps {
+  readonly className?: string;
+}
+```
+
+WebGL-powered animated gradient background using Three.js with simplex noise and mouse-following distortion. Used on the onboarding page. Features:
+
+- 6 animated color blobs (blue accent tones against dark navy)
+- Mouse/touch-reactive distortion via offscreen touch texture
+- Film grain + radial vignette post-processing
+- Graceful CSS gradient fallback when WebGL is unavailable
+- Auto-cleanup of WebGL resources on unmount
+
 ---
 
 ## 5. Theme System

@@ -57,13 +57,15 @@ Daily usage charts and 7-day activity stats — session counts, token usage, hot
 
 <br/>
 
-| Feature                | Description                                                                |
-| ---------------------- | -------------------------------------------------------------------------- |
-| **PRD Analysis**       | Upload PRDs and track requirement fulfillment with Claude-powered analysis |
-| **Plans**              | Structured markdown plans linked to projects from `~/.claude/plans/`       |
-| **Full-text Search**   | PostgreSQL tsvector search across sessions, messages, file paths, and tags |
-| **AI Evaluation**      | Multi-dimensional scoring of AI utilization with proficiency tiers         |
-| **Team Collaboration** | Role-based access (Owner / Member) with project sharing and invitations    |
+| Feature                | Description                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| **Local Auto-Sync**    | Background sync of local Claude sessions (`~/.claude/projects/`) on interval |
+| **Dual-DB Routing**    | Local + remote database for seamless team collaboration                      |
+| **PRD Analysis**       | Upload PRDs and track requirement fulfillment with Claude-powered analysis   |
+| **Plans**              | Structured markdown plans linked to projects from `~/.claude/plans/`         |
+| **Full-text Search**   | PostgreSQL tsvector search across sessions, messages, file paths, and tags   |
+| **AI Evaluation**      | Multi-dimensional scoring of AI utilization with proficiency tiers           |
+| **Team Collaboration** | Role-based access (Owner / Member) with project sharing and invitations      |
 
 </details>
 
@@ -177,7 +179,7 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before participating.
 
 ## Roadmap
 
-- [ ] Session export (JSON, CSV)
+- [x] Session export (JSON, CSV)
 - [ ] GitHub integration (link sessions to PRs/issues)
 - [ ] Real-time collaboration (WebSocket-based live sync)
 - [ ] Plugin system for custom session processors
