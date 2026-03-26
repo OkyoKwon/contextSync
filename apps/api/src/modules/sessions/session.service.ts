@@ -89,6 +89,41 @@ export async function getTimeline(
   return { entries, total: result.total };
 }
 
+async function countSessionsByDateFromDb(
+  db: Db,
+  projectId: string,
+  todayStart: Date,
+  weekStart: Date,
+): Promise<{ readonly todaySessions: number; readonly weekSessions: number }> {
+  const [todayResult, weekResult] = await Promise.all([
+    db
+      .selectFrom('sessions')
+      .select(db.fn.countAll().as('count'))
+      .where('project_id', '=', projectId)
+      .where('created_at', '>=', todayStart)
+      .executeTakeFirstOrThrow(),
+    db
+      .selectFrom('sessions')
+      .select(db.fn.countAll().as('count'))
+      .where('project_id', '=', projectId)
+      .where('created_at', '>=', weekStart)
+      .executeTakeFirstOrThrow(),
+  ]);
+  return {
+    todaySessions: Number(todayResult.count),
+    weekSessions: Number(weekResult.count),
+  };
+}
+
+async function getDatabaseMode(metaDb: Db, projectId: string): Promise<string> {
+  const project = await metaDb
+    .selectFrom('projects')
+    .select('database_mode')
+    .where('id', '=', projectId)
+    .executeTakeFirst();
+  return project?.database_mode ?? 'local';
+}
+
 export async function getDashboardStats(
   db: Db,
   metaDb: Db,
@@ -98,11 +133,19 @@ export async function getDashboardStats(
   await assertProjectAccess(db, projectId, userId);
 
   const now = new Date();
-  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(todayStart);
   weekStart.setDate(weekStart.getDate() - 7);
 
-  const [localCounts, conflictsResult, membersResult, hotFilesResult] = await Promise.all([
-    countLocalSessionsByDate(metaDb, projectId),
+  const dbMode = await getDatabaseMode(metaDb, projectId);
+
+  const sessionCountsFn =
+    dbMode === 'remote'
+      ? countSessionsByDateFromDb(db, projectId, todayStart, weekStart)
+      : countLocalSessionsByDate(metaDb, projectId);
+
+  const [sessionCounts, conflictsResult, membersResult, hotFilesResult] = await Promise.all([
+    sessionCountsFn,
     db
       .selectFrom('conflicts')
       .select(db.fn.countAll().as('count'))
@@ -134,8 +177,8 @@ export async function getDashboardStats(
   ]);
 
   return {
-    todaySessions: localCounts.todaySessions,
-    weekSessions: localCounts.weekSessions,
+    todaySessions: sessionCounts.todaySessions,
+    weekSessions: sessionCounts.weekSessions,
     activeConflicts: Number(conflictsResult.count),
     activeMembers: Number(membersResult.count),
     hotFilePaths: hotFilesResult.map((r) => ({
