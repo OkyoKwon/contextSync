@@ -30,7 +30,7 @@ export function getDatabaseStatus(databaseUrl: string, remoteDbUrl?: string): Da
     databaseMode: isRemote ? 'remote' : 'local',
     provider: isSupabase ? 'supabase' : isRemote ? 'custom' : 'local',
     host: maskedHost,
-    remoteUrl: remoteDbUrl ?? (isRemote ? databaseUrl : null),
+    remoteUrl: remoteDbUrl ?? switchedToRemoteHost ?? (isRemote ? databaseUrl : null),
   };
 }
 
