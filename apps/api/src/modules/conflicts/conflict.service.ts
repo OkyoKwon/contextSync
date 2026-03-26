@@ -4,6 +4,7 @@ import type {
   Conflict,
   DetectedConflict,
   ConflictFilterQuery,
+  ConflictOverviewAnalysis,
 } from '@context-sync/shared';
 import { CONFLICT_DETECTION_WINDOW_DAYS, AI_VERIFY_COOLDOWN_MINUTES } from '@context-sync/shared';
 import { NotFoundError, ForbiddenError, AppError } from '../../plugins/error-handler.plugin.js';
@@ -16,7 +17,7 @@ import {
   findMessagesBySessionId,
 } from '../sessions/session.repository.js';
 import { logActivity } from '../activity/activity.service.js';
-import { analyzeConflict } from './conflict-ai-analyzer.js';
+import { analyzeConflict, analyzeConflictOverview } from './conflict-ai-analyzer.js';
 
 export async function detectConflicts(
   db: Db,
@@ -206,4 +207,24 @@ export async function addReviewNotes(
   if (!conflict) throw new NotFoundError('Conflict');
   await assertProjectAccess(db, conflict.projectId, userId);
   return conflictRepo.updateReviewNotes(db, conflictId, reviewNotes);
+}
+
+export async function getConflictOverview(
+  db: Db,
+  apiKey: string,
+  model: string,
+  projectId: string,
+  userId: string,
+): Promise<ConflictOverviewAnalysis> {
+  await assertProjectAccess(db, projectId, userId);
+
+  const { conflicts } = await conflictRepo.findConflictsByProjectId(db, projectId, {
+    limit: 100,
+  });
+
+  if (conflicts.length === 0) {
+    throw new AppError('분석할 충돌이 없습니다', 400);
+  }
+
+  return analyzeConflictOverview(apiKey, model, conflicts);
 }

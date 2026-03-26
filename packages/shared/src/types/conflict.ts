@@ -49,6 +49,28 @@ export interface UpdateConflictInput {
   readonly status: 'reviewing' | 'resolved' | 'dismissed';
 }
 
+export interface ConflictOverviewAnalysis {
+  readonly riskLevel: 'critical' | 'high' | 'moderate' | 'low';
+  readonly summary: string;
+  readonly verdictDistribution: {
+    readonly realConflict: number;
+    readonly likelyConflict: number;
+    readonly lowRisk: number;
+    readonly falsePositive: number;
+    readonly notAnalyzed: number;
+  };
+  readonly hotspotFiles: readonly string[];
+  readonly teamRecommendations: readonly string[];
+  readonly memberPairs: readonly {
+    readonly userA: string;
+    readonly userB: string;
+    readonly conflictCount: number;
+    readonly recommendation: string;
+  }[];
+  readonly analyzedCount: number;
+  readonly totalCount: number;
+}
+
 export interface DetectedConflict {
   readonly sessionAId: string;
   readonly sessionBId: string;

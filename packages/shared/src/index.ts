@@ -58,6 +58,7 @@ export type {
   AiVerdict,
   AiOverlapType,
   AiRecommendation,
+  ConflictOverviewAnalysis,
 } from './types/conflict.js';
 export type {
   PrdDocument,

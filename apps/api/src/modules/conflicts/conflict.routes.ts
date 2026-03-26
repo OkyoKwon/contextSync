@@ -10,6 +10,7 @@ import {
 } from './conflict.schema.js';
 import { findConflictById } from './conflict.repository.js';
 import { NotFoundError, AppError } from '../../plugins/error-handler.plugin.js';
+import { getUserApiKey } from '../auth/auth.service.js';
 
 export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -41,6 +42,27 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
         request.params.projectId,
         request.user.userId,
         input.status,
+      );
+      return reply.send(ok(result));
+    },
+  );
+
+  app.post<{ Params: { projectId: string } }>(
+    '/projects/:projectId/conflicts/overview-analysis',
+    async (request, reply) => {
+      const userApiKey = await getUserApiKey(app.localDb, request.user.userId);
+      const apiKey = userApiKey ?? app.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        throw new AppError('Anthropic API Key가 설정되지 않았습니다', 400);
+      }
+
+      const db = await app.resolveDb(request.params.projectId);
+      const result = await conflictService.getConflictOverview(
+        db,
+        apiKey,
+        app.env.ANTHROPIC_MODEL,
+        request.params.projectId,
+        request.user.userId,
       );
       return reply.send(ok(result));
     },
@@ -86,7 +108,8 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.post<{ Params: { conflictId: string } }>(
     '/conflicts/:conflictId/ai-verify',
     async (request, reply) => {
-      const apiKey = app.env.ANTHROPIC_API_KEY;
+      const userApiKey = await getUserApiKey(app.localDb, request.user.userId);
+      const apiKey = userApiKey ?? app.env.ANTHROPIC_API_KEY;
       if (!apiKey) {
         throw new AppError('Anthropic API Key가 설정되지 않았습니다', 400);
       }

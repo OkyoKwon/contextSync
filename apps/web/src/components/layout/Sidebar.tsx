@@ -4,8 +4,8 @@ import { EXTERNAL_URLS } from '@/lib/external-urls';
 import { ProjectSelector } from './ProjectSelector';
 import { CreateProjectModal } from '../projects/CreateProjectModal';
 import { JoinProjectDialog } from '../projects/JoinProjectDialog';
-import { useConflicts } from '../../hooks/use-conflicts';
 import { useCurrentProject } from '../../hooks/use-current-project';
+import { useDashboardStats } from '../../hooks/use-sessions';
 import { useUiStore } from '../../stores/ui.store';
 import { Tooltip } from '../ui/Tooltip';
 import { assetUrl } from '@/lib/asset-url';
@@ -38,8 +38,8 @@ export function Sidebar() {
   const [showJoinDialog, setShowJoinDialog] = useState(false);
   const { data: projectData } = useCurrentProject();
   const isTeam = projectData?.data?.isTeam ?? false;
-  const { data: conflictsData } = useConflicts({ status: 'detected' }, { enabled: isTeam });
-  const activeConflictCount = conflictsData?.data?.length ?? 0;
+  const { data: statsData } = useDashboardStats();
+  const activeConflictCount = statsData?.data?.activeConflicts ?? 0;
 
   const sidebarCollapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);

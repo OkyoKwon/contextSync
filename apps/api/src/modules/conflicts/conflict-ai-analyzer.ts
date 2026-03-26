@@ -6,6 +6,7 @@ import type {
   AiVerdict,
   AiOverlapType,
   AiRecommendation,
+  ConflictOverviewAnalysis,
 } from '@context-sync/shared';
 import { AI_VERDICTS, AI_OVERLAP_TYPES, AI_RECOMMENDATIONS } from '@context-sync/shared';
 import { callWithRetry } from '../../lib/claude-utils.js';
@@ -184,9 +185,169 @@ function validateEnum<T extends string>(value: string, allowed: readonly T[], fa
   return (allowed as readonly string[]).includes(value) ? (value as T) : fallback;
 }
 
+// ── Overview Analysis ──
+
+export async function analyzeConflictOverview(
+  apiKey: string,
+  model: string,
+  conflicts: readonly Conflict[],
+): Promise<ConflictOverviewAnalysis> {
+  const client = new Anthropic({ apiKey });
+
+  // Compute verdict distribution from existing data
+  const distribution = {
+    realConflict: 0,
+    likelyConflict: 0,
+    lowRisk: 0,
+    falsePositive: 0,
+    notAnalyzed: 0,
+  };
+  for (const c of conflicts) {
+    switch (c.aiVerdict) {
+      case 'real_conflict':
+        distribution.realConflict++;
+        break;
+      case 'likely_conflict':
+        distribution.likelyConflict++;
+        break;
+      case 'low_risk':
+        distribution.lowRisk++;
+        break;
+      case 'false_positive':
+        distribution.falsePositive++;
+        break;
+      default:
+        distribution.notAnalyzed++;
+    }
+  }
+
+  const userMessage = buildOverviewPrompt(conflicts, distribution);
+  const response = await callWithRetry(client, model, OVERVIEW_SYSTEM_PROMPT, userMessage, 1, 4096);
+
+  const text = response.content
+    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+    .map((block) => block.text)
+    .join('');
+
+  const parsed = parseOverviewResponse(text);
+
+  return {
+    ...parsed,
+    verdictDistribution: distribution,
+    analyzedCount: conflicts.length - distribution.notAnalyzed,
+    totalCount: conflicts.length,
+  };
+}
+
+function buildOverviewPrompt(
+  conflicts: readonly Conflict[],
+  distribution: ConflictOverviewAnalysis['verdictDistribution'],
+): string {
+  const conflictEntries = conflicts
+    .map(
+      (c, i) =>
+        `### Conflict ${i + 1}
+- Severity: ${c.severity} | Status: ${c.status} | Type: ${c.conflictType}
+- Users: ${c.sessionAUserName ?? 'Unknown'} ↔ ${c.sessionBUserName ?? 'Unknown'}
+- Overlapping Files: ${c.overlappingPaths.join(', ')}
+- AI Verdict: ${c.aiVerdict ?? 'not analyzed'}${c.aiConfidence != null ? ` (${c.aiConfidence}%)` : ''}
+- AI Summary: ${c.aiSummary ?? 'N/A'}`,
+    )
+    .join('\n\n');
+
+  return `## Project Conflict Overview
+
+- Total Conflicts: ${conflicts.length}
+- Verdict Distribution: real_conflict=${distribution.realConflict}, likely_conflict=${distribution.likelyConflict}, low_risk=${distribution.lowRisk}, false_positive=${distribution.falsePositive}, not_analyzed=${distribution.notAnalyzed}
+
+## Individual Conflicts
+
+${conflictEntries}
+
+위 프로젝트의 전체 충돌 상황을 종합 분석하여 JSON으로 응답하세요.`;
+}
+
+function parseOverviewResponse(text: string): {
+  readonly riskLevel: ConflictOverviewAnalysis['riskLevel'];
+  readonly summary: string;
+  readonly hotspotFiles: readonly string[];
+  readonly teamRecommendations: readonly string[];
+  readonly memberPairs: ConflictOverviewAnalysis['memberPairs'];
+} {
+  const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) ?? [null, text];
+  const jsonStr = (jsonMatch[1] ?? text).trim();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch {
+    throw new Error(`Failed to parse overview response as JSON: ${text.slice(0, 200)}`);
+  }
+
+  const result = parsed as Record<string, unknown>;
+
+  const riskLevels = ['critical', 'high', 'moderate', 'low'] as const;
+  const riskLevel = validateEnum(String(result['riskLevel'] ?? 'moderate'), riskLevels, 'moderate');
+
+  const memberPairs = Array.isArray(result['memberPairs'])
+    ? (result['memberPairs'] as unknown[]).map((p) => {
+        const pair = p as Record<string, unknown>;
+        return {
+          userA: String(pair['userA'] ?? ''),
+          userB: String(pair['userB'] ?? ''),
+          conflictCount: Number(pair['conflictCount'] ?? 0),
+          recommendation: String(pair['recommendation'] ?? ''),
+        };
+      })
+    : [];
+
+  return {
+    riskLevel,
+    summary: String(result['summary'] ?? ''),
+    hotspotFiles: Array.isArray(result['hotspotFiles'])
+      ? (result['hotspotFiles'] as unknown[]).map(String)
+      : [],
+    teamRecommendations: Array.isArray(result['teamRecommendations'])
+      ? (result['teamRecommendations'] as unknown[]).map(String)
+      : [],
+    memberPairs,
+  };
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
+
+const OVERVIEW_SYSTEM_PROMPT = `당신은 소프트웨어 개발팀의 프로젝트 충돌 현황 분석 전문가입니다.
+프로젝트에서 감지된 모든 충돌을 종합 분석하여 팀 차원의 리스크 평가와 조율 권장사항을 제시합니다.
+
+## Output Format
+
+Respond ONLY with valid JSON:
+{
+  "riskLevel": "high",
+  "summary": "프로젝트 전체 충돌 상황 한국어 2-3문장 요약",
+  "hotspotFiles": ["가장 많이 충돌하는 파일 경로 top 5"],
+  "teamRecommendations": ["팀 차원 권장사항 1", "팀 차원 권장사항 2"],
+  "memberPairs": [
+    {
+      "userA": "사용자 A 이름",
+      "userB": "사용자 B 이름",
+      "conflictCount": 3,
+      "recommendation": "이 두 사람에 대한 구체적 조율 권장"
+    }
+  ]
+}
+
+## Guidelines
+- riskLevel: critical (실제 충돌 다수) | high (잠재적 충돌 다수) | moderate (일부 위험) | low (대부분 안전)
+- summary: 전체 상황을 팀 리더가 빠르게 파악할 수 있도록 요약
+- hotspotFiles: 여러 충돌에 등장하는 파일을 빈도순으로 최대 5개
+- teamRecommendations: 팀 전체에 적용할 수 있는 실행 가능한 권장사항 2-4개
+- memberPairs: 충돌이 있는 팀원 쌍별로 구체적 조율 방안 제시
+- 모든 텍스트는 한국어로 작성
+- 개별 conflict의 AI verdict가 있다면 그 결과를 신뢰하고 종합할 것
+- verdict가 없는 conflict은 메타데이터(severity, overlapping files)로 판단`;
 
 const SYSTEM_PROMPT = `당신은 소프트웨어 개발팀의 작업 충돌 분석 전문가입니다.
 두 팀원이 각각 AI 코딩 어시스턴트와 나눈 대화 및 작업 컨텍스트를 분석하여,

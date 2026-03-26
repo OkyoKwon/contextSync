@@ -11,6 +11,7 @@ import { EmptyState } from '../components/ui/EmptyState';
 import { Select } from '../components/ui/Select';
 import { Button } from '../components/ui/Button';
 import { SeverityGuide } from '../components/conflicts/SeverityGuide';
+import { ConflictOverviewPanel } from '../components/conflicts/ConflictOverviewPanel';
 import { showToast } from '../lib/toast';
 
 export function ConflictsPage() {
@@ -100,7 +101,7 @@ export function ConflictsPage() {
         <PageBreadcrumb pageName="Conflicts" />
       </div>
 
-      <div className="mb-4 flex items-center gap-3">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
         <Select
           value={severity ?? ''}
           onChange={(e) =>
@@ -139,20 +140,24 @@ export function ConflictsPage() {
           <option value="false_positive">False Positive</option>
         </Select>
 
-        <SeverityGuide />
-
-        {activeCount > 0 && (
-          <Button
-            size="sm"
-            className="ml-auto"
-            onClick={handleResolveAll}
-            disabled={batchResolveMutation.isPending}
-            isLoading={batchResolveMutation.isPending}
-          >
-            Resolve All ({activeCount})
-          </Button>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-text-muted">{conflicts.length} conflicts</span>
+          {activeCount > 0 && (
+            <Button
+              size="sm"
+              onClick={handleResolveAll}
+              disabled={batchResolveMutation.isPending}
+              isLoading={batchResolveMutation.isPending}
+            >
+              Resolve All ({activeCount})
+            </Button>
+          )}
+        </div>
       </div>
+
+      <SeverityGuide />
+
+      {allConflicts.length >= 2 && <ConflictOverviewPanel conflicts={allConflicts} />}
 
       <ConflictList conflicts={conflicts} isLoading={isLoading} />
     </div>

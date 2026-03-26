@@ -79,6 +79,14 @@ export function useAiVerifyConflict() {
   });
 }
 
+export function useConflictOverview() {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useMutation({
+    mutationFn: () => conflictsApi.overviewAnalysis(projectId!),
+  });
+}
+
 export function useAddReviewNotes() {
   const queryClient = useQueryClient();
 

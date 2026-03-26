@@ -40,10 +40,14 @@ export function useLatestEvaluationGroup(targetUserId: string | null) {
     refetchInterval: (query) => {
       const group = query.state.data?.data;
       if (!group) return false;
-      const hasInProgress = [group.claude, group.chatgpt, group.gemini].some(
+      const inProgressEvals = [group.claude, group.chatgpt, group.gemini].filter(
         (e) => e?.status === 'pending' || e?.status === 'analyzing',
       );
-      return hasInProgress ? 3000 : false;
+      if (inProgressEvals.length === 0) return false;
+      // Stop polling after 5 minutes to prevent infinite loading
+      const createdAt = inProgressEvals[0]?.createdAt;
+      if (createdAt && Date.now() - new Date(createdAt).getTime() > 5 * 60 * 1000) return false;
+      return 3000;
     },
   });
 }

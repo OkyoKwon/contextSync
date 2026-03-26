@@ -1,4 +1,9 @@
-import type { Conflict, ConflictFilterQuery, UpdateConflictInput } from '@context-sync/shared';
+import type {
+  Conflict,
+  ConflictFilterQuery,
+  UpdateConflictInput,
+  ConflictOverviewAnalysis,
+} from '@context-sync/shared';
 import { api } from './client';
 
 export const conflictsApi = {
@@ -28,4 +33,7 @@ export const conflictsApi = {
     api.patch<{ count: number }>(`/projects/${projectId}/conflicts/batch-resolve`, { status }),
 
   aiVerify: (conflictId: string) => api.post<Conflict>(`/conflicts/${conflictId}/ai-verify`),
+
+  overviewAnalysis: (projectId: string) =>
+    api.post<ConflictOverviewAnalysis>(`/projects/${projectId}/conflicts/overview-analysis`),
 };
