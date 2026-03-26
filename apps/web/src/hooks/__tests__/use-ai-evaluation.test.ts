@@ -120,7 +120,7 @@ describe('useAiEvaluation hooks', () => {
       const { result } = renderHookWithProviders(() => useEvaluationDetail('ev-1'));
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.data?.id).toBe('ev-1');
-      expect(result.current.data?.data?.score).toBe(85);
+      expect(result.current.data?.data?.overallScore).toBe(85);
     });
   });
 

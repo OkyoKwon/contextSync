@@ -2,7 +2,6 @@ import type { Db } from '../../database/client.js';
 import type {
   AiEvaluationDimensionDetail,
   AiEvaluationEvidence,
-  EvaluationDimension,
   EvidenceSentiment,
 } from '@context-sync/shared';
 
@@ -84,7 +83,7 @@ export function toDimension(row: Record<string, unknown>): AiEvaluationDimension
   return {
     id: row['id'] as string,
     evaluationId: row['evaluation_id'] as string,
-    dimension: row['dimension'] as EvaluationDimension,
+    dimension: row['dimension'] as string,
     score: Number(row['score']),
     confidence: Number(row['confidence']),
     summary: row['summary'] as string,

@@ -1,10 +1,11 @@
-import type { ProficiencyTier } from '@context-sync/shared';
+import type { EvaluationPerspective } from '@context-sync/shared';
+import { PERSPECTIVE_TIER_LABELS } from '@context-sync/shared';
 import { Badge } from '../ui/Badge';
 import type { ComponentPropsWithoutRef } from 'react';
 
 type BadgeVariant = ComponentPropsWithoutRef<typeof Badge>['variant'];
 
-const tierVariants: Record<string, BadgeVariant> = {
+const claudeTierVariants: Record<string, BadgeVariant> = {
   novice: 'default',
   developing: 'warning',
   proficient: 'info',
@@ -12,15 +13,36 @@ const tierVariants: Record<string, BadgeVariant> = {
   expert: 'success',
 };
 
-const tierLabels: Record<string, string> = {
-  novice: 'Novice',
-  developing: 'Developing',
-  proficient: 'Proficient',
-  advanced: 'Advanced',
-  expert: 'Expert',
+const chatgptTierVariants: Record<string, BadgeVariant> = {
+  beginner: 'default',
+  intermediate: 'warning',
+  advanced: 'info',
+  expert: 'success',
 };
 
-export function ProficiencyBadge({ tier }: { tier: ProficiencyTier | null }) {
+const geminiTierVariants: Record<string, BadgeVariant> = {
+  awareness: 'default',
+  user: 'warning',
+  advanced: 'info',
+  strategist: 'success',
+  innovator: 'success',
+};
+
+const perspectiveTierVariants: Record<string, Record<string, BadgeVariant>> = {
+  claude: claudeTierVariants,
+  chatgpt: chatgptTierVariants,
+  gemini: geminiTierVariants,
+};
+
+export function ProficiencyBadge({
+  tier,
+  perspective = 'claude',
+}: {
+  tier: string | null;
+  perspective?: EvaluationPerspective;
+}) {
   if (!tier) return null;
-  return <Badge variant={tierVariants[tier] ?? 'default'}>{tierLabels[tier] ?? tier}</Badge>;
+  const variants = perspectiveTierVariants[perspective] ?? claudeTierVariants;
+  const labels = PERSPECTIVE_TIER_LABELS[perspective];
+  return <Badge variant={variants[tier] ?? 'default'}>{labels[tier] ?? tier}</Badge>;
 }

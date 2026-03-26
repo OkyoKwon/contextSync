@@ -22,8 +22,48 @@ export function useStartEvaluation() {
       aiEvaluationApi.triggerEvaluation(projectId!, input),
     onSuccess: () => {
       queryClient.refetchQueries({ queryKey: ['ai-evaluation-summary', projectId] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-latest-group'] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-group-history'] });
       queryClient.refetchQueries({ queryKey: ['ai-evaluation-latest'] });
       queryClient.refetchQueries({ queryKey: ['ai-evaluation-history'] });
+    },
+  });
+}
+
+export function useLatestEvaluationGroup(targetUserId: string | null) {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useQuery({
+    queryKey: ['ai-evaluation-latest-group', projectId, targetUserId],
+    queryFn: () => aiEvaluationApi.getLatestEvaluationGroup(projectId!, targetUserId!),
+    enabled: !!projectId && projectId !== 'skipped' && !!targetUserId,
+    refetchInterval: (query) => {
+      const group = query.state.data?.data;
+      if (!group) return false;
+      const hasInProgress = [group.claude, group.chatgpt, group.gemini].some(
+        (e) => e?.status === 'pending' || e?.status === 'analyzing',
+      );
+      return hasInProgress ? 3000 : false;
+    },
+  });
+}
+
+export function useEvaluationGroupHistory(targetUserId: string | null, page = 1) {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useQuery({
+    queryKey: ['ai-evaluation-group-history', projectId, targetUserId, page],
+    queryFn: () => aiEvaluationApi.getEvaluationGroupHistory(projectId!, targetUserId!, page),
+    enabled: !!projectId && projectId !== 'skipped' && !!targetUserId,
+    refetchInterval: (query) => {
+      const entries = query.state.data?.data;
+      if (!entries || entries.length === 0) return false;
+      const latestGroup = entries[0];
+      if (!latestGroup) return false;
+      const hasInProgress = latestGroup.perspectives.some(
+        (p) => p.status === 'pending' || p.status === 'analyzing',
+      );
+      return hasInProgress ? 3000 : false;
     },
   });
 }

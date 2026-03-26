@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import type { EvaluationPerspective } from '@context-sync/shared';
 import { showToast } from '../lib/toast';
 import {
   useTeamEvaluationSummary,
   useStartEvaluation,
-  useLatestEvaluation,
+  useLatestEvaluationGroup,
+  useEvaluationGroupHistory,
   useEvaluationDetail,
-  useEvaluationHistory,
 } from '../hooks/use-ai-evaluation';
 import { useRequireProject } from '../hooks/use-require-project';
 import { useAuthStore } from '../stores/auth.store';
@@ -14,12 +15,15 @@ import { TeamEvaluationSummary } from '../components/ai-evaluation/TeamEvaluatio
 import { EvaluationDashboard } from '../components/ai-evaluation/EvaluationDashboard';
 import { EvaluationHistory } from '../components/ai-evaluation/EvaluationHistory';
 import { TriggerEvaluationDialog } from '../components/ai-evaluation/TriggerEvaluationDialog';
+import { PerspectiveScoreSummary } from '../components/ai-evaluation/PerspectiveScoreSummary';
+import { PerspectiveTabs } from '../components/ai-evaluation/PerspectiveTabs';
 import { ApiKeyMissingBanner } from '../components/shared/ApiKeyMissingBanner';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Spinner } from '../components/ui/Spinner';
 import { PageLayout } from '../components/ui/PageLayout';
+import { Badge } from '../components/ui/Badge';
 
 export function AiEvaluationPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -29,20 +33,28 @@ export function AiEvaluationPage() {
   const startEvaluation = useStartEvaluation();
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedEvaluationId, setSelectedEvaluationId] = useState<string | null>(null);
   const [showTriggerDialog, setShowTriggerDialog] = useState(false);
+  const [activePerspective, setActivePerspective] = useState<EvaluationPerspective>('claude');
 
-  const { data: latestData } = useLatestEvaluation(selectedUserId);
+  // Group-based data
+  const { data: groupData } = useLatestEvaluationGroup(selectedUserId);
+  const { data: groupHistoryData } = useEvaluationGroupHistory(selectedUserId);
+
+  // For viewing a specific evaluation from history
+  const [selectedEvaluationId, setSelectedEvaluationId] = useState<string | null>(null);
   const { data: detailData } = useEvaluationDetail(selectedEvaluationId);
-  const { data: historyData } = useEvaluationHistory(selectedUserId);
 
   const members = summaryData?.data ?? [];
-  const displayEvaluation = selectedEvaluationId
-    ? (detailData?.data ?? null)
-    : (latestData?.data ?? null);
-  const historyEntries = historyData?.data ?? [];
-
+  const evaluationGroup = groupData?.data ?? null;
+  const groupHistoryEntries = groupHistoryData?.data ?? [];
   const selectedUserName = members.find((m) => m.userId === selectedUserId)?.userName;
+
+  // Current display evaluation (from group or specific selection)
+  const activeEvaluation = selectedEvaluationId
+    ? (detailData?.data ?? null)
+    : evaluationGroup
+      ? evaluationGroup[activePerspective]
+      : null;
 
   const handleTrigger = (targetUserId: string, dateRangeStart?: string, dateRangeEnd?: string) => {
     startEvaluation.mutate(
@@ -52,15 +64,27 @@ export function AiEvaluationPage() {
         dateRangeEnd: dateRangeEnd ? new Date(dateRangeEnd).toISOString() : undefined,
       },
       {
-        onSuccess: (data) => {
-          showToast.success('Evaluation completed');
+        onSuccess: () => {
+          showToast.success('Evaluation started for 3 perspectives');
           setShowTriggerDialog(false);
           setSelectedUserId(targetUserId);
-          setSelectedEvaluationId(data.data?.id ?? null);
+          setSelectedEvaluationId(null);
+          setActivePerspective('claude');
         },
         onError: (err) => showToast.error(err.message),
       },
     );
+  };
+
+  const handleSelectGroup = (groupId: string) => {
+    // When user clicks a group in history, find the evaluation for active perspective
+    const group = groupHistoryEntries.find((g) => g.groupId === groupId);
+    if (group) {
+      const perspectiveEntry = group.perspectives.find((p) => p.perspective === activePerspective);
+      if (perspectiveEntry) {
+        setSelectedEvaluationId(perspectiveEntry.evaluationId);
+      }
+    }
   };
 
   if (isProjectLoading) {
@@ -91,7 +115,7 @@ export function AiEvaluationPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">AI Evaluation</h1>
           <p className="mt-1 text-sm text-text-tertiary">
-            Evaluate team members' AI utilization skills
+            Multi-perspective AI utilization evaluation
           </p>
         </div>
         <Button
@@ -137,22 +161,73 @@ export function AiEvaluationPage() {
             </span>
           </div>
 
-          {displayEvaluation ? (
-            <EvaluationDashboard evaluation={displayEvaluation} />
+          {evaluationGroup ? (
+            <>
+              {/* 3-perspective Score Summary */}
+              <PerspectiveScoreSummary
+                group={evaluationGroup}
+                activePerspective={activePerspective}
+                onSelectPerspective={(p) => {
+                  setActivePerspective(p);
+                  setSelectedEvaluationId(null);
+                }}
+              />
+
+              {/* Perspective Tabs */}
+              <Card padding="none">
+                <PerspectiveTabs
+                  group={evaluationGroup}
+                  activePerspective={activePerspective}
+                  onSelectPerspective={(p) => {
+                    setActivePerspective(p);
+                    setSelectedEvaluationId(null);
+                  }}
+                />
+
+                {/* Active perspective content */}
+                <div className="p-4">
+                  {activeEvaluation?.status === 'completed' ? (
+                    <EvaluationDashboard
+                      evaluation={activeEvaluation}
+                      perspective={
+                        selectedEvaluationId ? activeEvaluation.perspective : activePerspective
+                      }
+                    />
+                  ) : activeEvaluation?.status === 'analyzing' ||
+                    activeEvaluation?.status === 'pending' ? (
+                    <div className="flex flex-col items-center gap-3 py-12">
+                      <Spinner />
+                      <p className="text-sm text-text-tertiary">
+                        Analyzing from {activePerspective} perspective...
+                      </p>
+                    </div>
+                  ) : activeEvaluation?.status === 'failed' ? (
+                    <div className="py-8 text-center">
+                      <Badge variant="critical">Evaluation Failed</Badge>
+                      <p className="mt-2 text-sm text-text-tertiary">
+                        {activeEvaluation.errorMessage ?? 'An error occurred during analysis.'}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="py-8 text-center text-sm text-text-tertiary">
+                      No evaluation data available for this perspective.
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </>
           ) : (
             <Card padding="lg" className="text-center text-sm text-text-tertiary">
               No evaluations found for this user. Run an evaluation to get started.
             </Card>
           )}
 
+          {/* Group History */}
           <Card>
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-text-tertiary">
               Evaluation History
             </h2>
-            <EvaluationHistory
-              entries={historyEntries}
-              onSelectEvaluation={setSelectedEvaluationId}
-            />
+            <EvaluationHistory entries={groupHistoryEntries} onSelectGroup={handleSelectGroup} />
           </Card>
         </>
       )}
@@ -170,5 +245,6 @@ export function AiEvaluationPage() {
   function handleSelectUser(userId: string) {
     setSelectedUserId(userId);
     setSelectedEvaluationId(null);
+    setActivePerspective('claude');
   }
 }

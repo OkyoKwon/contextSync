@@ -11,7 +11,7 @@ import {
 export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
 
-  // Trigger evaluation
+  // Trigger evaluation (creates 3 perspectives)
   app.post<{ Params: { projectId: string }; Body: unknown }>(
     '/projects/:projectId/ai-evaluation/evaluate',
     async (request, reply) => {
@@ -39,7 +39,57 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  // Get latest evaluation for a user
+  // Get latest evaluation group (3 perspectives)
+  app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
+    '/projects/:projectId/ai-evaluation/latest-group',
+    async (request, reply) => {
+      const db = await app.resolveDb(request.params.projectId);
+      const query = latestEvaluationQuerySchema.parse(request.query);
+      const result = await evaluationService.getLatestEvaluationGroup(
+        db,
+        request.params.projectId,
+        request.user.userId,
+        query.targetUserId,
+      );
+      return reply.send(ok(result));
+    },
+  );
+
+  // Get evaluation group by group ID
+  app.get<{ Params: { projectId: string; groupId: string } }>(
+    '/projects/:projectId/ai-evaluation/group/:groupId',
+    async (request, reply) => {
+      const db = await app.resolveDb(request.params.projectId);
+      const result = await evaluationService.getEvaluationGroup(
+        db,
+        request.params.projectId,
+        request.params.groupId,
+        request.user.userId,
+      );
+      return reply.send(ok(result));
+    },
+  );
+
+  // Get group history
+  app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
+    '/projects/:projectId/ai-evaluation/group-history',
+    async (request, reply) => {
+      const db = await app.resolveDb(request.params.projectId);
+      const query = evaluationHistoryQuerySchema.parse(request.query);
+      const result = await evaluationService.getEvaluationGroupHistory(
+        db,
+        request.params.projectId,
+        request.user.userId,
+        query.targetUserId,
+        query.page,
+        query.limit,
+      );
+      const meta = buildPaginationMeta(result.total, query.page, query.limit);
+      return reply.send(paginated(result.entries, meta));
+    },
+  );
+
+  // Get latest evaluation for a user (backward compatible)
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/ai-evaluation/latest',
     async (request, reply) => {
@@ -55,7 +105,7 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  // Get evaluation history
+  // Get evaluation history (backward compatible)
   app.get<{ Params: { projectId: string }; Querystring: Record<string, string> }>(
     '/projects/:projectId/ai-evaluation/history',
     async (request, reply) => {

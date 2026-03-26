@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { EvaluationDimension, EvidenceSentiment } from '@context-sync/shared';
-import { EVALUATION_DIMENSIONS } from '@context-sync/shared';
+import type { EvaluationPerspective, EvidenceSentiment } from '@context-sync/shared';
+import { PERSPECTIVE_DIMENSIONS } from '@context-sync/shared';
 import { callWithRetry } from '../../lib/claude-utils.js';
+import { getSystemPrompt } from './perspective-prompts.js';
 
 const MAX_PROMPT_CHAR_LENGTH = 2000;
 const MAX_TOTAL_CHARS = 80_000;
@@ -15,7 +16,7 @@ export interface SampledMessage {
 }
 
 export interface ParsedDimensionResult {
-  readonly dimension: EvaluationDimension;
+  readonly dimension: string;
   readonly score: number;
   readonly confidence: number;
   readonly summary: string;
@@ -38,59 +39,6 @@ export interface EvaluationAnalysisResult {
   readonly outputTokens: number;
   readonly modelUsed: string;
 }
-
-const SYSTEM_PROMPT = `You are an AI utilization skills evaluator. Your task is to analyze a user's prompts/messages sent to an AI coding assistant and evaluate their proficiency across 5 dimensions.
-
-## Evaluation Dimensions
-
-1. **prompt_quality** (25% weight) — Specificity, clear requirements, acceptance criteria
-2. **task_complexity** (20% weight) — Simple fixes vs architecture design, multi-file refactoring scope
-3. **iteration_pattern** (20% weight) — Effective feedback loops, error handling, incremental improvement
-4. **context_utilization** (20% weight) — Providing file paths, error messages, code snippets, environment info
-5. **ai_capability_leverage** (15% weight) — Using planning mode, code review, test writing, multi-step workflows
-
-## Scoring Guide
-
-- 0-25: Novice — Vague prompts, single-line requests, no context
-- 26-50: Developing — Some structure, basic context, limited iteration
-- 51-70: Proficient — Clear requirements, good context, effective iteration
-- 71-85: Advanced — Detailed specs, rich context, strategic AI use
-- 86-100: Expert — Comprehensive specs, optimal context, advanced workflows
-
-## Output Format
-
-Respond ONLY with valid JSON:
-{
-  "dimensions": [
-    {
-      "dimension": "prompt_quality",
-      "score": 75,
-      "confidence": 85,
-      "summary": "Brief assessment of this dimension",
-      "strengths": ["strength 1", "strength 2"],
-      "weaknesses": ["weakness 1"],
-      "suggestions": ["suggestion 1", "suggestion 2"],
-      "evidence": [
-        {
-          "excerpt": "Exact quote from a user prompt (max 200 chars)",
-          "sentiment": "positive",
-          "annotation": "Why this excerpt is relevant"
-        }
-      ]
-    }
-  ],
-  "improvementSummary": "2-3 paragraph comprehensive improvement guide"
-}
-
-## Guidelines
-- Evaluate ALL 5 dimensions, in the order listed above
-- Score each 0-100, confidence 0-100
-- Confidence should be lower when fewer messages are available
-- Each dimension should have 1-3 evidence excerpts
-- Evidence excerpts must be exact quotes from the provided prompts (max 200 chars)
-- Sentiment: "positive" for good examples, "negative" for areas to improve, "neutral" for mixed
-- improvementSummary should be actionable, specific, and encouraging
-- Be fair — recognize strengths as well as weaknesses`;
 
 export function sampleMessages(messages: readonly SampledMessage[]): readonly SampledMessage[] {
   if (messages.length <= MAX_SAMPLED_MESSAGES) {
@@ -145,20 +93,22 @@ export async function analyzeEvaluation(
   model: string,
   messages: readonly SampledMessage[],
   sessionCount: number,
+  perspective: EvaluationPerspective = 'claude',
 ): Promise<EvaluationAnalysisResult> {
   const client = new Anthropic({ apiKey });
 
   const sampled = sampleMessages(messages);
   const userMessage = buildUserMessage(sampled, sessionCount, messages.length);
+  const systemPrompt = getSystemPrompt(perspective);
 
-  const message = await callWithRetry(client, model, SYSTEM_PROMPT, userMessage);
+  const message = await callWithRetry(client, model, systemPrompt, userMessage);
 
   const text = message.content
     .filter((block): block is Anthropic.TextBlock => block.type === 'text')
     .map((block) => block.text)
     .join('');
 
-  const parsed = parseEvaluationResponse(text, sampled);
+  const parsed = parseEvaluationResponse(text, sampled, perspective);
 
   return {
     ...parsed,
@@ -193,6 +143,7 @@ Analyze these prompts and return the JSON evaluation result.`;
 function parseEvaluationResponse(
   text: string,
   sampledMessages: readonly SampledMessage[],
+  perspective: EvaluationPerspective,
 ): {
   dimensions: readonly ParsedDimensionResult[];
   improvementSummary: string;
@@ -204,7 +155,7 @@ function parseEvaluationResponse(
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
-    throw new Error(`Failed to parse Claude evaluation response as JSON: ${text.slice(0, 200)}`);
+    throw new Error(`Failed to parse evaluation response as JSON: ${text.slice(0, 200)}`);
   }
 
   const result = parsed as {
@@ -213,15 +164,15 @@ function parseEvaluationResponse(
   };
 
   if (!result.dimensions || !Array.isArray(result.dimensions)) {
-    throw new Error('Claude evaluation response missing "dimensions" array');
+    throw new Error('Evaluation response missing "dimensions" array');
   }
 
-  // Build a lookup for matching evidence to message IDs
+  const expectedDimensions = PERSPECTIVE_DIMENSIONS[perspective] as readonly string[];
   const messageByExcerpt = buildExcerptLookup(sampledMessages);
 
   const dimensions: ParsedDimensionResult[] = result.dimensions.map((dim: unknown) => {
     const d = dim as Record<string, unknown>;
-    const dimension = validateDimension(String(d['dimension'] ?? ''));
+    const dimension = validateDimension(String(d['dimension'] ?? ''), expectedDimensions);
     const evidence = Array.isArray(d['evidence'])
       ? (d['evidence'] as unknown[]).map((e: unknown) => {
           const ev = e as Record<string, unknown>;
@@ -249,9 +200,9 @@ function parseEvaluationResponse(
     };
   });
 
-  // Ensure all 5 dimensions are present
+  // Ensure all expected dimensions are present
   const presentDimensions = new Set(dimensions.map((d) => d.dimension));
-  for (const dim of EVALUATION_DIMENSIONS) {
+  for (const dim of expectedDimensions) {
     if (!presentDimensions.has(dim)) {
       dimensions.push({
         dimension: dim,
@@ -272,14 +223,13 @@ function parseEvaluationResponse(
   };
 }
 
-function validateDimension(dimension: string): EvaluationDimension {
-  const valid: readonly string[] = EVALUATION_DIMENSIONS;
-  if (valid.includes(dimension)) {
-    return dimension as EvaluationDimension;
+function validateDimension(dimension: string, expectedDimensions: readonly string[]): string {
+  if (expectedDimensions.includes(dimension)) {
+    return dimension;
   }
   // Try to match partial names
-  const match = EVALUATION_DIMENSIONS.find((d) => dimension.toLowerCase().includes(d));
-  return match ?? 'prompt_quality';
+  const match = expectedDimensions.find((d) => dimension.toLowerCase().includes(d));
+  return match ?? expectedDimensions[0] ?? dimension;
 }
 
 function validateSentiment(sentiment: string): EvidenceSentiment {
@@ -302,7 +252,6 @@ function buildExcerptLookup(
   messages: readonly SampledMessage[],
 ): (excerpt: string) => SampledMessage | null {
   return (excerpt: string) => {
-    // Find the message that contains this excerpt
     const normalized = excerpt.toLowerCase();
     return messages.find((m) => m.content.toLowerCase().includes(normalized)) ?? null;
   };

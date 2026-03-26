@@ -1,13 +1,27 @@
-import type { TeamEvaluationSummaryEntry } from '@context-sync/shared';
+import type { TeamEvaluationSummaryEntry, EvaluationPerspective } from '@context-sync/shared';
+import { PERSPECTIVE_LABELS } from '@context-sync/shared';
 import { Card } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
-import { ProficiencyBadge } from './ProficiencyBadge';
 
 interface TeamEvaluationSummaryProps {
   members: readonly TeamEvaluationSummaryEntry[];
   onSelectUser: (userId: string) => void;
 }
+
+const PERSPECTIVES: EvaluationPerspective[] = ['claude', 'chatgpt', 'gemini'];
+
+const perspectiveColors: Record<EvaluationPerspective, string> = {
+  claude: 'text-orange-400',
+  chatgpt: 'text-emerald-400',
+  gemini: 'text-blue-400',
+};
+
+const barColors: Record<EvaluationPerspective, string> = {
+  claude: 'bg-orange-500',
+  chatgpt: 'bg-emerald-500',
+  gemini: 'bg-blue-500',
+};
 
 export function TeamEvaluationSummary({ members, onSelectUser }: TeamEvaluationSummaryProps) {
   if (members.length === 0) {
@@ -20,62 +34,63 @@ export function TeamEvaluationSummary({ members, onSelectUser }: TeamEvaluationS
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {members.map((member) => (
-        <Card
-          key={member.userId}
-          className="cursor-pointer transition-colors hover:border-blue-500/30"
-          onClick={() => onSelectUser(member.userId)}
-        >
-          <div className="flex items-center gap-3">
-            <Avatar src={member.userAvatarUrl} name={member.userName} size="lg" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-text-primary">{member.userName}</p>
-              {member.latestEvaluation ? (
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="text-lg font-bold text-text-primary">
-                    {member.latestEvaluation.overallScore?.toFixed(1) ?? '-'}
-                  </span>
-                  <ProficiencyBadge tier={member.latestEvaluation.proficiencyTier} />
-                </div>
-              ) : (
-                <Badge variant="default" className="mt-1">
-                  Not evaluated
-                </Badge>
-              )}
-            </div>
-          </div>
-          {member.latestEvaluation && (
-            <div className="mt-3 grid grid-cols-5 gap-1">
-              <ScoreBar label="PQ" score={member.latestEvaluation.promptQualityScore} />
-              <ScoreBar label="TC" score={member.latestEvaluation.taskComplexityScore} />
-              <ScoreBar label="IP" score={member.latestEvaluation.iterationPatternScore} />
-              <ScoreBar label="CU" score={member.latestEvaluation.contextUtilizationScore} />
-              <ScoreBar label="AL" score={member.latestEvaluation.aiCapabilityLeverageScore} />
-            </div>
-          )}
-        </Card>
-      ))}
-    </div>
-  );
-}
+      {members.map((member) => {
+        const hasAnyScore = PERSPECTIVES.some((p) => member.perspectives[p] != null);
 
-function ScoreBar({ label, score }: { label: string; score: number | null }) {
-  const value = score ?? 0;
-  const color =
-    value >= 71
-      ? 'bg-green-500'
-      : value >= 51
-        ? 'bg-blue-500'
-        : value >= 26
-          ? 'bg-yellow-500'
-          : 'bg-red-500';
-
-  return (
-    <div className="text-center">
-      <div className="mb-1 h-1 w-full overflow-hidden rounded-full bg-surface-hover">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
-      </div>
-      <span className="text-[10px] text-text-tertiary">{label}</span>
+        return (
+          <Card
+            key={member.userId}
+            className="cursor-pointer transition-colors hover:border-blue-500/30"
+            onClick={() => onSelectUser(member.userId)}
+          >
+            <div className="flex items-center gap-3">
+              <Avatar src={member.userAvatarUrl} name={member.userName} size="lg" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-text-primary">{member.userName}</p>
+                {!hasAnyScore ? (
+                  <Badge variant="default" className="mt-1">
+                    Not evaluated
+                  </Badge>
+                ) : (
+                  <div className="mt-1 flex items-center gap-3">
+                    {PERSPECTIVES.map((p) => {
+                      const data = member.perspectives[p];
+                      return (
+                        <span key={p} className={`text-xs font-medium ${perspectiveColors[p]}`}>
+                          {data ? data.score.toFixed(0) : '—'}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+            {hasAnyScore && (
+              <div className="mt-3 space-y-1.5">
+                {PERSPECTIVES.map((p) => {
+                  const data = member.perspectives[p];
+                  const score = data?.score ?? 0;
+                  return (
+                    <div key={p} className="flex items-center gap-2">
+                      <span className={`w-14 text-[10px] ${perspectiveColors[p]}`}>
+                        {PERSPECTIVE_LABELS[p]}
+                      </span>
+                      <div className="flex-1">
+                        <div className="h-1 w-full overflow-hidden rounded-full bg-surface-hover">
+                          <div
+                            className={`h-full rounded-full ${barColors[p]}`}
+                            style={{ width: `${score}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        );
+      })}
     </div>
   );
 }

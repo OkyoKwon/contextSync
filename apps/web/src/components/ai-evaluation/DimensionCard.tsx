@@ -1,17 +1,20 @@
-import type { AiEvaluationDimensionDetail } from '@context-sync/shared';
-import { DIMENSION_LABELS } from '@context-sync/shared';
+import type { AiEvaluationDimensionDetail, EvaluationPerspective } from '@context-sync/shared';
+import { PERSPECTIVE_DIMENSION_LABELS } from '@context-sync/shared';
 import { Card } from '../ui/Card';
 
 interface DimensionCardProps {
   dimension: AiEvaluationDimensionDetail;
+  perspective?: EvaluationPerspective;
 }
 
-export function DimensionCard({ dimension }: DimensionCardProps) {
+export function DimensionCard({ dimension, perspective = 'claude' }: DimensionCardProps) {
+  const labels = PERSPECTIVE_DIMENSION_LABELS[perspective];
+
   return (
     <Card>
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-text-primary">
-          {DIMENSION_LABELS[dimension.dimension] ?? dimension.dimension}
+          {labels[dimension.dimension] ?? dimension.dimension}
         </h3>
         <div className="flex items-center gap-2">
           <span className="text-lg font-bold text-text-primary">{dimension.score}</span>

@@ -5,8 +5,11 @@ import type {
   AiEvaluationWithDetails,
   AiEvaluationHistoryEntry,
   TeamEvaluationSummaryEntry,
-  ProficiencyTier,
+  EvaluationPerspective,
+  EvaluationGroupResult,
+  EvaluationGroupHistoryEntry,
 } from '@context-sync/shared';
+import { EVALUATION_PERSPECTIVES } from '@context-sync/shared';
 import { toDimension, toEvidence } from './ai-evaluation-detail.repository.js';
 export { createDimensions, createEvidence } from './ai-evaluation-detail.repository.js';
 
@@ -17,6 +20,8 @@ interface CreateEvaluationInput {
   readonly dateRangeStart: Date;
   readonly dateRangeEnd: Date;
   readonly modelUsed: string;
+  readonly perspective: EvaluationPerspective;
+  readonly evaluationGroupId: string;
 }
 
 interface UpdateEvaluationInput {
@@ -35,6 +40,7 @@ interface UpdateEvaluationInput {
   readonly errorMessage?: string | null;
   readonly improvementSummary?: string | null;
   readonly completedAt?: Date;
+  readonly [key: string]: unknown;
 }
 
 export async function createEvaluation(
@@ -50,6 +56,8 @@ export async function createEvaluation(
       date_range_start: input.dateRangeStart,
       date_range_end: input.dateRangeEnd,
       model_used: input.modelUsed,
+      perspective: input.perspective,
+      evaluation_group_id: input.evaluationGroupId,
       overall_score: null,
       error_message: null,
       improvement_summary: null,
@@ -109,6 +117,203 @@ export async function updateEvaluation(
 
   return toEvaluation(row);
 }
+
+// === Group-aware guards ===
+
+export async function findPendingOrAnalyzingGroup(
+  db: Db,
+  projectId: string,
+  targetUserId: string,
+): Promise<boolean> {
+  const row = await db
+    .selectFrom('ai_evaluations')
+    .select('id')
+    .where('project_id', '=', projectId)
+    .where('target_user_id', '=', targetUserId)
+    .where('status', 'in', ['pending', 'analyzing'])
+    .executeTakeFirst();
+
+  return !!row;
+}
+
+export async function findLatestCompletedGroupTime(
+  db: Db,
+  projectId: string,
+  targetUserId: string,
+): Promise<string | null> {
+  const row = await db
+    .selectFrom('ai_evaluations')
+    .select('completed_at')
+    .where('project_id', '=', projectId)
+    .where('target_user_id', '=', targetUserId)
+    .where('status', '=', 'completed')
+    .orderBy('completed_at', 'desc')
+    .executeTakeFirst();
+
+  if (!row?.completed_at) return null;
+  return (row.completed_at as Date).toISOString();
+}
+
+// === Group queries ===
+
+export async function findEvaluationGroup(
+  db: Db,
+  groupId: string,
+): Promise<EvaluationGroupResult | null> {
+  const rows = await db
+    .selectFrom('ai_evaluations')
+    .selectAll()
+    .where('evaluation_group_id', '=', groupId)
+    .execute();
+
+  if (rows.length === 0) return null;
+
+  const evaluationsMap = new Map<string, AiEvaluation>();
+  for (const row of rows) {
+    const eval_ = toEvaluation(row);
+    evaluationsMap.set(eval_.perspective, eval_);
+  }
+
+  // Fetch details for each perspective
+  let claude: AiEvaluationWithDetails | null = null;
+  let chatgpt: AiEvaluationWithDetails | null = null;
+  let gemini: AiEvaluationWithDetails | null = null;
+
+  for (const perspective of EVALUATION_PERSPECTIVES) {
+    const eval_ = evaluationsMap.get(perspective);
+    const detail: AiEvaluationWithDetails | null = eval_
+      ? eval_.status === 'completed'
+        ? ((await findEvaluationById(db, eval_.id)) ?? null)
+        : { ...eval_, dimensions: [], evidence: [] }
+      : null;
+
+    if (perspective === 'claude') claude = detail;
+    else if (perspective === 'chatgpt') chatgpt = detail;
+    else gemini = detail;
+  }
+
+  return { groupId, claude, chatgpt, gemini };
+}
+
+export async function findLatestEvaluationGroup(
+  db: Db,
+  projectId: string,
+  targetUserId: string,
+): Promise<EvaluationGroupResult | null> {
+  // Find the most recent group_id
+  const row = await db
+    .selectFrom('ai_evaluations')
+    .select('evaluation_group_id')
+    .where('project_id', '=', projectId)
+    .where('target_user_id', '=', targetUserId)
+    .where('evaluation_group_id', 'is not', null)
+    .orderBy('created_at', 'desc')
+    .executeTakeFirst();
+
+  if (!row?.evaluation_group_id) {
+    // Fallback: check for legacy single evaluations (no group_id)
+    const legacyEval = await findLatestEvaluationWithDetails(db, projectId, targetUserId);
+    if (!legacyEval) return null;
+    return {
+      groupId: legacyEval.id, // Use evaluation id as pseudo-group
+      claude: legacyEval,
+      chatgpt: null,
+      gemini: null,
+    };
+  }
+
+  return findEvaluationGroup(db, row.evaluation_group_id as string);
+}
+
+export async function findEvaluationGroupHistory(
+  db: Db,
+  projectId: string,
+  targetUserId: string,
+  page: number,
+  limit: number,
+): Promise<{ entries: readonly EvaluationGroupHistoryEntry[]; total: number }> {
+  const offset = (page - 1) * limit;
+
+  // Get distinct group_ids ordered by creation
+  const groupRows = await db
+    .selectFrom('ai_evaluations')
+    .select(['evaluation_group_id', db.fn.max('created_at').as('latest_created_at')])
+    .where('project_id', '=', projectId)
+    .where('target_user_id', '=', targetUserId)
+    .where('evaluation_group_id', 'is not', null)
+    .groupBy('evaluation_group_id')
+    .orderBy('latest_created_at', 'desc')
+    .limit(limit)
+    .offset(offset)
+    .execute();
+
+  // Count total groups
+  const countResult = await db
+    .selectFrom('ai_evaluations')
+    .select(db.fn.count<number>('evaluation_group_id').distinct().as('count'))
+    .where('project_id', '=', projectId)
+    .where('target_user_id', '=', targetUserId)
+    .where('evaluation_group_id', 'is not', null)
+    .executeTakeFirstOrThrow();
+
+  if (groupRows.length === 0) {
+    return { entries: [], total: Number(countResult.count) };
+  }
+
+  const groupIds = groupRows.map((r) => r.evaluation_group_id as string);
+
+  // Fetch all evaluations for these groups
+  const evalRows = await db
+    .selectFrom('ai_evaluations')
+    .select([
+      'id',
+      'evaluation_group_id',
+      'perspective',
+      'status',
+      'overall_score',
+      'proficiency_tier',
+      'sessions_analyzed',
+      'messages_analyzed',
+      'date_range_start',
+      'date_range_end',
+      'created_at',
+    ])
+    .where('evaluation_group_id', 'in', groupIds)
+    .orderBy('created_at', 'desc')
+    .execute();
+
+  // Group by evaluation_group_id
+  const grouped = new Map<string, typeof evalRows>();
+  for (const row of evalRows) {
+    const gid = row.evaluation_group_id as string;
+    const existing = grouped.get(gid) ?? [];
+    grouped.set(gid, [...existing, row]);
+  }
+
+  const entries: EvaluationGroupHistoryEntry[] = groupIds.map((gid) => {
+    const evals = grouped.get(gid) ?? [];
+    const first = evals[0];
+    return {
+      groupId: gid,
+      createdAt: first ? (first.created_at as Date).toISOString() : '',
+      perspectives: evals.map((e) => ({
+        perspective: e.perspective as string as EvaluationPerspective,
+        evaluationId: e.id as string,
+        overallScore: e.overall_score != null ? Number(e.overall_score) : null,
+        proficiencyTier: (e.proficiency_tier as string) ?? null,
+        status: e.status as AiEvaluationStatus,
+      })),
+      sessionsAnalyzed: first ? Number(first.sessions_analyzed) : 0,
+      messagesAnalyzed: first ? Number(first.messages_analyzed) : 0,
+      dateRangeStart: first ? (first.date_range_start as Date).toISOString() : '',
+      dateRangeEnd: first ? (first.date_range_end as Date).toISOString() : '',
+    };
+  });
+
+  return { entries, total: Number(countResult.count) };
+}
+
+// === Existing queries (backward compatible) ===
 
 export async function findPendingOrAnalyzing(
   db: Db,
@@ -172,6 +377,8 @@ export async function findEvaluationById(
       'ai_evaluations.output_tokens_used',
       'ai_evaluations.error_message',
       'ai_evaluations.improvement_summary',
+      'ai_evaluations.perspective',
+      'ai_evaluations.evaluation_group_id',
       'ai_evaluations.created_at',
       'ai_evaluations.completed_at',
       'users.name as target_user_name',
@@ -253,6 +460,8 @@ export async function findEvaluationHistory(
         'messages_analyzed',
         'date_range_start',
         'date_range_end',
+        'perspective',
+        'evaluation_group_id',
         'created_at',
         'completed_at',
       ])
@@ -265,14 +474,16 @@ export async function findEvaluationHistory(
 
   return {
     entries: rows.map((row) => ({
-      id: row.id,
+      id: row.id as string,
       status: row.status as AiEvaluationStatus,
       overallScore: row.overall_score != null ? Number(row.overall_score) : null,
-      proficiencyTier: (row.proficiency_tier as ProficiencyTier) ?? null,
+      proficiencyTier: (row.proficiency_tier as string) ?? null,
       sessionsAnalyzed: Number(row.sessions_analyzed),
       messagesAnalyzed: Number(row.messages_analyzed),
       dateRangeStart: (row.date_range_start as Date).toISOString(),
       dateRangeEnd: (row.date_range_end as Date).toISOString(),
+      perspective: (row.perspective as EvaluationPerspective) ?? 'claude',
+      evaluationGroupId: (row.evaluation_group_id as string) ?? null,
       createdAt: (row.created_at as Date).toISOString(),
       completedAt: row.completed_at ? (row.completed_at as Date).toISOString() : null,
     })),
@@ -307,30 +518,90 @@ export async function findTeamEvaluationSummary(
 
   const memberIds = members.map((m) => m.id as string);
 
-  // Get latest completed evaluation for each member
+  // Get all completed evaluations for members
   const evaluations = await db
     .selectFrom('ai_evaluations')
-    .selectAll()
+    .select([
+      'id',
+      'target_user_id',
+      'overall_score',
+      'proficiency_tier',
+      'perspective',
+      'evaluation_group_id',
+      'status',
+      'created_at',
+    ])
     .where('project_id', '=', projectId)
     .where('target_user_id', 'in', memberIds)
     .where('status', '=', 'completed')
     .orderBy('created_at', 'desc')
     .execute();
 
-  const latestByUser = new Map<string, AiEvaluation>();
-  for (const row of evaluations) {
-    const userId = row.target_user_id as string;
-    if (!latestByUser.has(userId)) {
-      latestByUser.set(userId, toEvaluation(row));
-    }
-  }
+  // For each member, find the latest group and extract perspective scores
+  return members.map((m) => {
+    const userId = m.id as string;
+    const userEvals = evaluations.filter((e) => (e.target_user_id as string) === userId);
 
-  return members.map((m) => ({
-    userId: m.id as string,
-    userName: m.name as string,
-    userAvatarUrl: (m.avatar_url as string) ?? null,
-    latestEvaluation: latestByUser.get(m.id as string) ?? null,
-  }));
+    // Find latest group_id (or latest single eval)
+    const latestEval = userEvals[0];
+    const latestGroupId = latestEval ? ((latestEval.evaluation_group_id as string) ?? null) : null;
+
+    // Collect perspective scores from the latest group
+    let claudeScore: { readonly score: number; readonly tier: string } | null = null;
+    let chatgptScore: { readonly score: number; readonly tier: string } | null = null;
+    let geminiScore: { readonly score: number; readonly tier: string } | null = null;
+
+    if (latestGroupId) {
+      for (const e of userEvals) {
+        if ((e.evaluation_group_id as string) === latestGroupId) {
+          const entry = {
+            score: Number(e.overall_score),
+            tier: (e.proficiency_tier as string) ?? '',
+          };
+          const p = e.perspective as string;
+          if (p === 'claude') claudeScore = entry;
+          else if (p === 'chatgpt') chatgptScore = entry;
+          else if (p === 'gemini') geminiScore = entry;
+        }
+      }
+    } else if (latestEval) {
+      claudeScore = {
+        score: Number(latestEval.overall_score),
+        tier: (latestEval.proficiency_tier as string) ?? '',
+      };
+    }
+
+    const perspectiveScores = {
+      claude: claudeScore,
+      chatgpt: chatgptScore,
+      gemini: geminiScore,
+    };
+
+    // Build legacy latestEvaluation for backward compat (use the claude one)
+    const claudeEval = latestGroupId
+      ? userEvals.find(
+          (e) =>
+            (e.evaluation_group_id as string) === latestGroupId &&
+            (e.perspective as string) === 'claude',
+        )
+      : latestEval;
+
+    return {
+      userId,
+      userName: m.name as string,
+      userAvatarUrl: (m.avatar_url as string) ?? null,
+      latestEvaluation: claudeEval
+        ? ({
+            id: claudeEval.id as string,
+            overallScore: Number(claudeEval.overall_score),
+            proficiencyTier: (claudeEval.proficiency_tier as string) ?? null,
+            status: claudeEval.status as AiEvaluationStatus,
+          } as AiEvaluation)
+        : null,
+      latestGroupId,
+      perspectives: perspectiveScores,
+    };
+  });
 }
 
 export async function findUserMessagesForEvaluation(
@@ -344,7 +615,6 @@ export async function findUserMessagesForEvaluation(
   messages: readonly { id: string; sessionId: string; content: string; createdAt: string }[];
   sessionCount: number;
 }> {
-  // Get sessions in the date range, ordered by most recent
   const sessions = await db
     .selectFrom('sessions')
     .select(['id', 'created_at'])
@@ -362,7 +632,6 @@ export async function findUserMessagesForEvaluation(
 
   const sessionIds = sessions.map((s) => s.id as string);
 
-  // Get user messages from those sessions
   const messageRows = await db
     .selectFrom('messages')
     .select(['id', 'session_id', 'content', 'created_at'])
@@ -402,7 +671,7 @@ function toEvaluation(row: Record<string, unknown>): AiEvaluation {
       row['ai_capability_leverage_score'] != null
         ? Number(row['ai_capability_leverage_score'])
         : null,
-    proficiencyTier: (row['proficiency_tier'] as ProficiencyTier) ?? null,
+    proficiencyTier: (row['proficiency_tier'] as string) ?? null,
     sessionsAnalyzed: Number(row['sessions_analyzed'] ?? 0),
     messagesAnalyzed: Number(row['messages_analyzed'] ?? 0),
     dateRangeStart: (row['date_range_start'] as Date).toISOString(),
@@ -412,6 +681,8 @@ function toEvaluation(row: Record<string, unknown>): AiEvaluation {
     outputTokensUsed: Number(row['output_tokens_used'] ?? 0),
     errorMessage: (row['error_message'] as string) ?? null,
     improvementSummary: (row['improvement_summary'] as string) ?? null,
+    perspective: ((row['perspective'] as string) ?? 'claude') as EvaluationPerspective,
+    evaluationGroupId: (row['evaluation_group_id'] as string) ?? null,
     createdAt: (row['created_at'] as Date).toISOString(),
     completedAt: row['completed_at'] ? (row['completed_at'] as Date).toISOString() : null,
   };

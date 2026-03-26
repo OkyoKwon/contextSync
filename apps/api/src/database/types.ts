@@ -190,6 +190,8 @@ export interface AiEvaluationsTable {
   output_tokens_used: Generated<number>;
   error_message: string | null;
   improvement_summary: string | null;
+  perspective: Generated<string>;
+  evaluation_group_id: string | null;
   created_at: Generated<Date>;
   completed_at: Date | null;
 }
