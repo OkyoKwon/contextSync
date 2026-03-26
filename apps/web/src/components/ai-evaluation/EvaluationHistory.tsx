@@ -1,6 +1,7 @@
 import type { EvaluationGroupHistoryEntry, EvaluationPerspective } from '@context-sync/shared';
 import { PERSPECTIVE_LABELS } from '@context-sync/shared';
 import { Badge } from '../ui/Badge';
+import { ModelIcon } from './ModelIcon';
 
 interface EvaluationHistoryProps {
   entries: readonly EvaluationGroupHistoryEntry[];
@@ -42,6 +43,7 @@ export function EvaluationHistory({ entries, onSelectGroup }: EvaluationHistoryP
                       key={p.perspective}
                       className={`flex items-center gap-1 text-xs ${perspectiveColors[p.perspective]}`}
                     >
+                      <ModelIcon perspective={p.perspective} size={14} />
                       <span className="font-medium">{PERSPECTIVE_LABELS[p.perspective]}</span>
                       {p.status === 'completed' && p.overallScore != null ? (
                         <span className="font-bold text-text-primary">

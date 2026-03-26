@@ -3,6 +3,7 @@ import { PERSPECTIVE_LABELS } from '@context-sync/shared';
 import { Card } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
 import { Badge } from '../ui/Badge';
+import { ModelIcon } from './ModelIcon';
 
 interface TeamEvaluationSummaryProps {
   members: readonly TeamEvaluationSummaryEntry[];
@@ -72,7 +73,10 @@ export function TeamEvaluationSummary({ members, onSelectUser }: TeamEvaluationS
                   const score = data?.score ?? 0;
                   return (
                     <div key={p} className="flex items-center gap-2">
-                      <span className={`w-14 text-[10px] ${perspectiveColors[p]}`}>
+                      <span
+                        className={`flex w-14 items-center gap-0.5 text-[10px] ${perspectiveColors[p]}`}
+                      >
+                        <ModelIcon perspective={p} size={12} />
                         {PERSPECTIVE_LABELS[p]}
                       </span>
                       <div className="flex-1">

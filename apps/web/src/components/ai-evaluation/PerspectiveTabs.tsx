@@ -1,5 +1,6 @@
 import type { EvaluationPerspective, EvaluationGroupResult } from '@context-sync/shared';
 import { PERSPECTIVE_LABELS } from '@context-sync/shared';
+import { ModelIcon } from './ModelIcon';
 
 interface PerspectiveTabsProps {
   group: EvaluationGroupResult;
@@ -39,6 +40,7 @@ export function PerspectiveTabs({
                 : 'border-transparent text-text-tertiary hover:text-text-secondary'
             }`}
           >
+            <ModelIcon perspective={p} size={16} />
             {PERSPECTIVE_LABELS[p]}
             {score != null && <span className="text-xs opacity-70">{score.toFixed(0)}</span>}
             {isFailed && (

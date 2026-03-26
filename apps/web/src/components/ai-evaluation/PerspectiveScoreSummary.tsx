@@ -3,6 +3,7 @@ import { PERSPECTIVE_LABELS, PERSPECTIVE_TIER_LABELS } from '@context-sync/share
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Spinner } from '../ui/Spinner';
+import { ModelIcon } from './ModelIcon';
 
 interface PerspectiveScoreSummaryProps {
   group: EvaluationGroupResult;
@@ -43,6 +44,7 @@ export function PerspectiveScoreSummary({
             onClick={() => onSelectPerspective(p)}
           >
             <div className="flex items-center gap-2">
+              <ModelIcon perspective={p} size={18} />
               <span className={`text-xs font-semibold uppercase tracking-wider ${colors.text}`}>
                 {PERSPECTIVE_LABELS[p]}
               </span>
