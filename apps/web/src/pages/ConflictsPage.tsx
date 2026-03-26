@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { ConflictSeverity, ConflictStatus } from '@context-sync/shared';
 import { useConflicts, useBatchResolveConflicts } from '../hooks/use-conflicts';
 import { useRequireProject } from '../hooks/use-require-project';
@@ -21,8 +21,19 @@ export function ConflictsPage() {
   const [severity, setSeverity] = useState<ConflictSeverity | undefined>();
   const [status, setStatus] = useState<ConflictStatus | undefined>();
   const [verdictFilter, setVerdictFilter] = useState<string>('');
+  const [period, setPeriod] = useState<string>('7d');
 
-  const { data, isLoading } = useConflicts({ severity, status }, { enabled: isTeam });
+  const since = useMemo(() => {
+    if (!period) return undefined;
+    const now = new Date();
+    const daysMap: Record<string, number> = { '1d': 1, '3d': 3, '7d': 7, '30d': 30 };
+    const days = daysMap[period];
+    if (!days) return undefined;
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - days);
+    return d.toISOString();
+  }, [period]);
+
+  const { data, isLoading } = useConflicts({ severity, status, since }, { enabled: isTeam });
   const allConflicts = data?.data ?? [];
   const conflicts = verdictFilter
     ? allConflicts.filter((c) =>
@@ -138,6 +149,18 @@ export function ConflictsPage() {
           <option value="likely_conflict">Likely Conflict</option>
           <option value="low_risk">Low Risk</option>
           <option value="false_positive">False Positive</option>
+        </Select>
+
+        <Select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value)}
+          className="w-auto py-1.5"
+        >
+          <option value="1d">Today</option>
+          <option value="3d">Last 3 Days</option>
+          <option value="7d">Last 7 Days</option>
+          <option value="30d">Last 30 Days</option>
+          <option value="">All Time</option>
         </Select>
 
         <div className="ml-auto flex items-center gap-2">

@@ -92,6 +92,29 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
         </div>
       )}
 
+      {(conflict.sessionATitle || conflict.sessionBTitle) && (
+        <div className="mt-2.5 grid grid-cols-2 gap-3 rounded-lg bg-surface-raised/50 px-3 py-2">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-text-tertiary">Session A</p>
+            <p className="truncate text-xs text-text-secondary">
+              {conflict.sessionATitle ?? 'Untitled'}
+            </p>
+            {conflict.sessionAUserName && (
+              <p className="text-[11px] text-text-muted">{conflict.sessionAUserName}</p>
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-text-tertiary">Session B</p>
+            <p className="truncate text-xs text-text-secondary">
+              {conflict.sessionBTitle ?? 'Untitled'}
+            </p>
+            {conflict.sessionBUserName && (
+              <p className="text-[11px] text-text-muted">{conflict.sessionBUserName}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       <ConflictAiVerdict conflict={conflict} variant="compact" />
 
       {isActive && (

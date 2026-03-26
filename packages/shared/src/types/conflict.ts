@@ -41,6 +41,7 @@ export type AiRecommendation = 'coordinate' | 'review_together' | 'no_action' | 
 export interface ConflictFilterQuery {
   readonly severity?: ConflictSeverity;
   readonly status?: ConflictStatus;
+  readonly since?: string;
   readonly page?: number;
   readonly limit?: number;
 }

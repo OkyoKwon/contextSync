@@ -37,9 +37,14 @@ export function SeverityGuide() {
           ))}
         </div>
 
-        <p className="shrink-0 text-[11px] text-text-tertiary">
-          Based on overlapping files within {CONFLICT_DETECTION_WINDOW_DAYS}-day window
-        </p>
+        <div className="shrink-0 border-l border-border-default pl-6">
+          <p className="text-[11px] text-text-tertiary">
+            Detects overlapping files within {CONFLICT_DETECTION_WINDOW_DAYS}-day window.
+          </p>
+          <p className="text-[11px] text-text-tertiary">
+            Auto-checked every 30s when sessions sync.
+          </p>
+        </div>
       </div>
     </div>
   );

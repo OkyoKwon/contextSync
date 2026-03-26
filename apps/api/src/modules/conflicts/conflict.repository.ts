@@ -40,6 +40,7 @@ export async function findConflictsByProjectId(
 
   if (filter.severity) query = query.where('conflicts.severity', '=', filter.severity);
   if (filter.status) query = query.where('conflicts.status', '=', filter.status);
+  if (filter.since) query = query.where('conflicts.created_at', '>=', new Date(filter.since));
 
   const [rows, countResult] = await Promise.all([
     query.selectAll().orderBy('conflicts.created_at', 'desc').limit(limit).offset(offset).execute(),
