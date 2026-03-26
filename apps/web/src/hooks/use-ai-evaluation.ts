@@ -21,9 +21,9 @@ export function useStartEvaluation() {
     mutationFn: (input: TriggerEvaluationInput) =>
       aiEvaluationApi.triggerEvaluation(projectId!, input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ai-evaluation-summary', projectId] });
-      queryClient.invalidateQueries({ queryKey: ['ai-evaluation-latest'] });
-      queryClient.invalidateQueries({ queryKey: ['ai-evaluation-history'] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-summary', projectId] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-latest'] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-history'] });
     },
   });
 }
@@ -55,5 +55,12 @@ export function useEvaluationHistory(targetUserId: string | null, page = 1) {
     queryKey: ['ai-evaluation-history', projectId, targetUserId, page],
     queryFn: () => aiEvaluationApi.getEvaluationHistory(projectId!, targetUserId!, page),
     enabled: !!projectId && projectId !== 'skipped' && !!targetUserId,
+    refetchInterval: (query) => {
+      const entries = query.state.data?.data;
+      const hasInProgress = entries?.some(
+        (e) => e.status === 'pending' || e.status === 'analyzing',
+      );
+      return hasInProgress ? 3000 : false;
+    },
   });
 }

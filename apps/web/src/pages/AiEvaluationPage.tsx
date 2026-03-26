@@ -52,11 +52,11 @@ export function AiEvaluationPage() {
         dateRangeEnd: dateRangeEnd ? new Date(dateRangeEnd).toISOString() : undefined,
       },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           showToast.success('Evaluation completed');
           setShowTriggerDialog(false);
           setSelectedUserId(targetUserId);
-          setSelectedEvaluationId(null);
+          setSelectedEvaluationId(data.data?.id ?? null);
         },
         onError: (err) => showToast.error(err.message),
       },
