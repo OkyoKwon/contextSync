@@ -22,3 +22,7 @@ export const setMyDirectorySchema = z.object({
 export const joinProjectSchema = z.object({
   code: z.string().min(4).max(8),
 });
+
+export const removeCollaboratorQuerySchema = z.object({
+  deleteData: z.coerce.boolean().default(false),
+});

@@ -6,6 +6,7 @@ import {
   updateProjectSchema,
   setMyDirectorySchema,
   joinProjectSchema,
+  removeCollaboratorQuerySchema,
 } from './project.schema.js';
 
 export const projectRoutes: FastifyPluginAsync = async (app) => {
@@ -79,17 +80,36 @@ export const projectRoutes: FastifyPluginAsync = async (app) => {
     },
   );
 
-  app.delete<{ Params: { projectId: string; userId: string } }>(
-    '/projects/:projectId/collaborators/:userId',
+  app.get<{ Params: { projectId: string; userId: string } }>(
+    '/projects/:projectId/collaborators/:userId/data-summary',
     { preHandler: [app.authenticateIdentified] },
     async (request, reply) => {
-      await projectService.removeCollaborator(
+      const summary = await projectService.getCollaboratorDataSummary(
         app.localDb,
         request.params.projectId,
         request.user.userId,
         request.params.userId,
       );
-      return reply.send(ok(null));
+      return reply.send(ok(summary));
+    },
+  );
+
+  app.delete<{
+    Params: { projectId: string; userId: string };
+    Querystring: { deleteData?: string };
+  }>(
+    '/projects/:projectId/collaborators/:userId',
+    { preHandler: [app.authenticateIdentified] },
+    async (request, reply) => {
+      const { deleteData } = removeCollaboratorQuerySchema.parse(request.query);
+      const result = await projectService.removeCollaborator(
+        app.localDb,
+        request.params.projectId,
+        request.user.userId,
+        request.params.userId,
+        deleteData,
+      );
+      return reply.send(ok(result));
     },
   );
 

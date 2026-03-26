@@ -2,8 +2,10 @@ import type {
   Project,
   ProjectWithTeamInfo,
   Collaborator,
+  CollaboratorDataSummary,
   CreateProjectInput,
   UpdateProjectInput,
+  DeletedDataSummary,
 } from '@context-sync/shared';
 import { api } from './client';
 
@@ -16,8 +18,12 @@ export const projectsApi = {
   delete: (projectId: string) => api.delete<void>(`/projects/${projectId}`),
   listCollaborators: (projectId: string) =>
     api.get<readonly Collaborator[]>(`/projects/${projectId}/collaborators`),
-  removeCollaborator: (projectId: string, userId: string) =>
-    api.delete<void>(`/projects/${projectId}/collaborators/${userId}`),
+  getCollaboratorDataSummary: (projectId: string, userId: string) =>
+    api.get<CollaboratorDataSummary>(`/projects/${projectId}/collaborators/${userId}/data-summary`),
+  removeCollaborator: (projectId: string, userId: string, deleteData: boolean = false) =>
+    api.delete<DeletedDataSummary | null>(
+      `/projects/${projectId}/collaborators/${userId}${deleteData ? '?deleteData=true' : ''}`,
+    ),
   setMyDirectory: (projectId: string, localDirectory: string | null) =>
     api.patch<void>(`/projects/${projectId}/my-directory`, { localDirectory }),
   generateJoinCode: (projectId: string) => api.post<Project>(`/projects/${projectId}/join-code`),

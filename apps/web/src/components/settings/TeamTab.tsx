@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
+import type { Collaborator } from '@context-sync/shared';
 import { useCurrentProject } from '../../hooks/use-current-project';
 import { usePermissions } from '../../hooks/use-permissions';
 import { useCollaborators } from '../../hooks/use-collaborators';
@@ -13,6 +15,7 @@ import {
 import { useAuthStore } from '../../stores/auth.store';
 import { projectsApi } from '../../api/projects.api';
 import { JoinCodeShare } from './JoinCodeShare';
+import { RemoveMemberModal } from './RemoveMemberModal';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
@@ -45,11 +48,15 @@ export function TeamTab({ projectId }: TeamTabProps) {
   const regenerateMutation = useRegenerateJoinCode(projectId);
   const deleteMutation = useDeleteJoinCode(projectId);
 
+  const [memberToRemove, setMemberToRemove] = useState<Collaborator | null>(null);
+
   const removeMutation = useMutation({
-    mutationFn: (userId: string) => projectsApi.removeCollaborator(projectId, userId),
+    mutationFn: ({ userId, deleteData }: { userId: string; deleteData: boolean }) =>
+      projectsApi.removeCollaborator(projectId, userId, deleteData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['collaborators', projectId] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setMemberToRemove(null);
     },
   });
 
@@ -176,7 +183,7 @@ export function TeamTab({ projectId }: TeamTabProps) {
                 <Button
                   size="sm"
                   variant="danger"
-                  onClick={() => removeMutation.mutate(collab.userId)}
+                  onClick={() => setMemberToRemove(collab)}
                   disabled={removeMutation.isPending}
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -192,6 +199,20 @@ export function TeamTab({ projectId }: TeamTabProps) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Remove Member Modal */}
+      {memberToRemove && (
+        <RemoveMemberModal
+          isOpen={!!memberToRemove}
+          onClose={() => setMemberToRemove(null)}
+          onConfirm={(deleteData) =>
+            removeMutation.mutate({ userId: memberToRemove.userId, deleteData })
+          }
+          isRemoving={removeMutation.isPending}
+          projectId={projectId}
+          collaborator={memberToRemove}
+        />
       )}
     </Card>
   );

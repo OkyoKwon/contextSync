@@ -5,8 +5,10 @@ import type {
   UpdateProjectInput,
   ProjectWithTeamInfo,
   Collaborator,
+  CollaboratorDataSummary,
+  DeletedDataSummary,
 } from '@context-sync/shared';
-import { NotFoundError, ForbiddenError } from '../../plugins/error-handler.plugin.js';
+import { NotFoundError, ForbiddenError, AppError } from '../../plugins/error-handler.plugin.js';
 import * as projectRepo from './project.repository.js';
 import * as collabRepo from './collaborator.repository.js';
 import { logActivity } from '../activity/activity.service.js';
@@ -140,10 +142,32 @@ export async function removeCollaborator(
   projectId: string,
   userId: string,
   targetUserId: string,
-): Promise<void> {
+  deleteData: boolean = false,
+): Promise<DeletedDataSummary | null> {
+  if (userId === targetUserId) {
+    throw new AppError('Cannot remove yourself from the project', 400);
+  }
+
   const project = await projectRepo.findProjectById(db, projectId);
   if (!project) throw new NotFoundError('Project');
   await assertPermission(db, projectId, userId, 'collaborator:manage');
+
+  const targetRole = await getUserRoleInProject(db, projectId, targetUserId);
+  if (!targetRole) throw new NotFoundError('Collaborator');
+
+  if (deleteData) {
+    const deletedCounts = await collabRepo.deleteCollaboratorData(db, projectId, targetUserId);
+    logActivity(db, {
+      projectId,
+      userId,
+      action: 'collaborator_removed',
+      entityType: 'collaborator',
+      entityId: targetUserId,
+      metadata: { deleteData: true, ...deletedCounts },
+    });
+    return deletedCounts;
+  }
+
   await collabRepo.removeCollaborator(db, projectId, targetUserId);
   logActivity(db, {
     projectId,
@@ -152,6 +176,34 @@ export async function removeCollaborator(
     entityType: 'collaborator',
     entityId: targetUserId,
   });
+  return null;
+}
+
+export async function getCollaboratorDataSummary(
+  db: Db,
+  projectId: string,
+  userId: string,
+  targetUserId: string,
+): Promise<CollaboratorDataSummary> {
+  const project = await projectRepo.findProjectById(db, projectId);
+  if (!project) throw new NotFoundError('Project');
+  await assertPermission(db, projectId, userId, 'collaborator:manage');
+
+  const targetCollab = await collabRepo.findCollaboratorByProjectAndUser(
+    db,
+    projectId,
+    targetUserId,
+  );
+  if (!targetCollab) throw new NotFoundError('Collaborator');
+
+  const summary = await collabRepo.getCollaboratorDataSummary(db, projectId, targetUserId);
+
+  return {
+    userId: targetUserId,
+    userName: targetCollab.userName ?? '',
+    projectId,
+    summary,
+  };
 }
 
 export async function setMyDirectory(
