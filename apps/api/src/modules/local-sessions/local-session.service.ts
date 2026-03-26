@@ -126,11 +126,12 @@ export async function listLocalSessions(
   // Get already-synced session IDs from the data DB (where sessions live)
   const syncedRows = await dataDb
     .selectFrom('synced_sessions')
-    .select(['external_session_id'])
+    .select(['external_session_id', 'session_id'])
     .where('project_id', '=', projectId)
     .execute();
 
   const syncedIds = new Set(syncedRows.map((r) => r.external_session_id));
+  const syncedDbIdMap = new Map(syncedRows.map((r) => [r.external_session_id, r.session_id]));
 
   // Read ALL local files to get accurate total counts
   const allSessions: LocalSessionInfo[] = [];
@@ -156,6 +157,7 @@ export async function listLocalSessions(
         lastModifiedAt: new Date(file.lastModifiedMs).toISOString(),
         isSynced: syncedIds.has(sessionId),
         isActive,
+        ...(syncedDbIdMap.has(sessionId) ? { dbSessionId: syncedDbIdMap.get(sessionId) } : {}),
       });
     } catch {
       // Skip files we can't read

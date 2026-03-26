@@ -53,7 +53,30 @@ export function useUpdateSession() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['session', variables.sessionId] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['local-sessions'] });
+
+      // Update the local-sessions cache directly since the list reads from .jsonl files
+      // and won't reflect DB title changes on refetch
+      if (variables.title) {
+        queryClient.setQueriesData<{
+          data: readonly {
+            projectPath: string;
+            sessions: readonly { sessionId: string; dbSessionId?: string; firstMessage: string }[];
+          }[];
+        }>({ queryKey: ['local-sessions'] }, (old) => {
+          if (!old?.data) return old;
+          return {
+            ...old,
+            data: old.data.map((group) => ({
+              ...group,
+              sessions: group.sessions.map((s) =>
+                s.dbSessionId === variables.sessionId
+                  ? { ...s, firstMessage: variables.title! }
+                  : s,
+              ),
+            })),
+          };
+        });
+      }
     },
   });
 }
