@@ -191,8 +191,15 @@ export async function listLocalSessions(
   });
 
   // Include DB sessions from other team members (from the data DB)
+  // Use local file session IDs (not all synced IDs) to avoid filtering out other members' sessions
   if (currentUserId) {
-    const teamGroups = await getTeamDbSessionGroups(dataDb, projectId, currentUserId, syncedIds);
+    const localFileSessionIds = new Set(allSessions.map((s) => s.sessionId));
+    const teamGroups = await getTeamDbSessionGroups(
+      dataDb,
+      projectId,
+      currentUserId,
+      localFileSessionIds,
+    );
     groups.push(...teamGroups);
   }
 
