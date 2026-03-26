@@ -287,6 +287,7 @@ export function ProjectPage() {
           </Button>
         </div>
         <SyncStatusIndicator syncMutation={syncMutation} />
+        <span className="text-xs text-text-muted">Auto-sync every 30s</span>
       </div>
 
       {/* Content */}
