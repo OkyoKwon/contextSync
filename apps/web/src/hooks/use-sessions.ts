@@ -37,6 +37,27 @@ export function useImportSession() {
   });
 }
 
+export function useUpdateSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      ...input
+    }: {
+      sessionId: string;
+      title?: string;
+      status?: string;
+      tags?: string[];
+    }) => sessionsApi.update(sessionId, input),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['session', variables.sessionId] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['local-sessions'] });
+    },
+  });
+}
+
 export function useTimeline(filter?: SessionFilterQuery) {
   const projectId = useAuthStore((s) => s.currentProjectId);
 

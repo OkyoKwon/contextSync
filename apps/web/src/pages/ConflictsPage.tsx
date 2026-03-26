@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { ConflictSeverity, ConflictStatus } from '@context-sync/shared';
-import { useConflicts } from '../hooks/use-conflicts';
+import { useConflicts, useBatchResolveConflicts } from '../hooks/use-conflicts';
 import { useRequireProject } from '../hooks/use-require-project';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { ConflictList } from '../components/conflicts/ConflictList';
@@ -9,6 +9,9 @@ import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { ConflictsSkeleton } from '../components/conflicts/ConflictsSkeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { Select } from '../components/ui/Select';
+import { Button } from '../components/ui/Button';
+import { SeverityGuide } from '../components/conflicts/SeverityGuide';
+import { showToast } from '../lib/toast';
 
 export function ConflictsPage() {
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
@@ -19,6 +22,17 @@ export function ConflictsPage() {
 
   const { data, isLoading } = useConflicts({ severity, status }, { enabled: isTeam });
   const conflicts = data?.data ?? [];
+  const batchResolveMutation = useBatchResolveConflicts();
+  const activeCount = conflicts.filter(
+    (c) => c.status === 'detected' || c.status === 'reviewing',
+  ).length;
+
+  const handleResolveAll = () => {
+    batchResolveMutation.mutate('resolved', {
+      onSuccess: (res) => showToast.success(`Resolved ${res.data?.count ?? 0} conflict(s)`),
+      onError: (err) => showToast.error(err.message),
+    });
+  };
 
   if (isProjectLoading) {
     return (
@@ -80,7 +94,7 @@ export function ConflictsPage() {
         <PageBreadcrumb pageName="Conflicts" />
       </div>
 
-      <div className="mb-4 flex gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <Select
           value={severity ?? ''}
           onChange={(e) =>
@@ -105,6 +119,20 @@ export function ConflictsPage() {
           <option value="resolved">Resolved</option>
           <option value="dismissed">Dismissed</option>
         </Select>
+
+        <SeverityGuide />
+
+        {activeCount > 0 && (
+          <Button
+            size="sm"
+            className="ml-auto"
+            onClick={handleResolveAll}
+            disabled={batchResolveMutation.isPending}
+            isLoading={batchResolveMutation.isPending}
+          >
+            Resolve All ({activeCount})
+          </Button>
+        )}
       </div>
 
       <ConflictList conflicts={conflicts} isLoading={isLoading} />

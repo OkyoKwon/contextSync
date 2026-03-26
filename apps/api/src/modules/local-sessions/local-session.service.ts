@@ -169,6 +169,17 @@ export async function listLocalSessions(
     groupMap.set(session.projectPath, [...existing, session]);
   }
 
+  // Build an encoded-key lookup for directoryOwners so that paths with hyphens
+  // (e.g. "crypto-talk" encoded as "crypto-talk" → decoded as "crypto/talk")
+  // still match the original DB local_directory value.
+  const encodedOwnerMap = new Map<
+    string,
+    { readonly name: string; readonly avatarUrl: string | null }
+  >();
+  for (const [dir, owner] of directoryOwners) {
+    encodedOwnerMap.set(encodeProjectPath(dir), owner);
+  }
+
   // Build groups, sorted by most recent activity
   const groups: LocalProjectGroup[] = [...groupMap.entries()].map(([projectPath, sessions]) => {
     const sorted = [...sessions].sort((a, b) => (b.lastModifiedAt > a.lastModifiedAt ? 1 : -1));
@@ -178,7 +189,9 @@ export async function listLocalSessions(
     // Determine which sessions to include in the list
     const displaySessions = activeOnly ? sorted.filter((s) => s.isActive) : sorted;
 
-    const owner = directoryOwners.get(projectPath);
+    // Match owner by both decoded path and encoded path to handle hyphenated directory names
+    const owner =
+      directoryOwners.get(projectPath) ?? encodedOwnerMap.get(encodeProjectPath(projectPath));
 
     return {
       projectPath,

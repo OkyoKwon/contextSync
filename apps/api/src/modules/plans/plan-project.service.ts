@@ -76,6 +76,10 @@ interface ProjectRecord {
   readonly local_directory: string;
 }
 
+function encodeProjectPath(absolutePath: string): string {
+  return absolutePath.replace(/\//g, '-');
+}
+
 async function fetchProjectDirectoryMap(db: Db): Promise<ReadonlyMap<string, ProjectRecord>> {
   const projects = await db
     .selectFrom('projects')
@@ -94,13 +98,18 @@ async function fetchProjectDirectoryMap(db: Db): Promise<ReadonlyMap<string, Pro
 
   for (const p of projects) {
     if (p.local_directory) {
-      map.set(p.local_directory, { id: p.id, name: p.name, local_directory: p.local_directory });
+      const record = { id: p.id, name: p.name, local_directory: p.local_directory };
+      map.set(p.local_directory, record);
+      // Also index by decoded form so hyphenated dirs (e.g. "crypto-talk" → "crypto/talk") match
+      map.set(decodeProjectPath(encodeProjectPath(p.local_directory)), record);
     }
   }
 
   for (const c of collaborators) {
     if (c.local_directory && !map.has(c.local_directory)) {
-      map.set(c.local_directory, { id: c.id, name: c.name, local_directory: c.local_directory });
+      const record = { id: c.id, name: c.name, local_directory: c.local_directory };
+      map.set(c.local_directory, record);
+      map.set(decodeProjectPath(encodeProjectPath(c.local_directory)), record);
     }
   }
 
