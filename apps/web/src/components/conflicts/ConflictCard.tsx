@@ -3,7 +3,9 @@ import { Card } from '../ui/Card';
 import { Badge, SeverityBadge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { timeAgo } from '../../lib/date';
-import { useUpdateConflict } from '../../hooks/use-conflicts';
+import { useUpdateConflict, useAiVerifyConflict } from '../../hooks/use-conflicts';
+import { showToast } from '../../lib/toast';
+import { ConflictAiVerdict } from './ConflictAiVerdict';
 
 interface ConflictCardProps {
   conflict: Conflict;
@@ -18,13 +20,37 @@ const statusColors: Record<string, 'default' | 'info' | 'success' | 'warning'> =
 
 export function ConflictCard({ conflict }: ConflictCardProps) {
   const updateMutation = useUpdateConflict();
+  const aiVerifyMutation = useAiVerifyConflict();
+
+  const isActive = conflict.status === 'detected' || conflict.status === 'reviewing';
+  const hasVerdict = !!conflict.aiVerdict;
+  const isFalsePositive = conflict.aiVerdict === 'false_positive';
 
   const handleResolve = () => {
-    updateMutation.mutate({ id: conflict.id, input: { status: 'resolved' } });
+    updateMutation.mutate(
+      { id: conflict.id, input: { status: 'resolved' } },
+      {
+        onSuccess: () => showToast.success('Conflict resolved'),
+        onError: (err) => showToast.error(err.message),
+      },
+    );
   };
 
   const handleDismiss = () => {
-    updateMutation.mutate({ id: conflict.id, input: { status: 'dismissed' } });
+    updateMutation.mutate(
+      { id: conflict.id, input: { status: 'dismissed' } },
+      {
+        onSuccess: () => showToast.success('Conflict dismissed'),
+        onError: (err) => showToast.error(err.message),
+      },
+    );
+  };
+
+  const handleAiVerify = () => {
+    aiVerifyMutation.mutate(conflict.id, {
+      onSuccess: () => showToast.success('AI 분석 완료'),
+      onError: (err) => showToast.error(err.message),
+    });
   };
 
   return (
@@ -52,9 +78,30 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
         </div>
       )}
 
-      {(conflict.status === 'detected' || conflict.status === 'reviewing') && (
-        <div className="mt-3 flex gap-2">
-          <Button size="sm" onClick={handleResolve} disabled={updateMutation.isPending}>
+      <ConflictAiVerdict conflict={conflict} variant="compact" />
+
+      {isActive && (
+        <div className="mt-3">
+          <Button
+            size="sm"
+            variant={hasVerdict ? 'ghost' : 'primary'}
+            onClick={handleAiVerify}
+            disabled={aiVerifyMutation.isPending}
+            isLoading={aiVerifyMutation.isPending}
+          >
+            {aiVerifyMutation.isPending ? 'Analyzing...' : hasVerdict ? 'Re-verify' : 'AI Verify'}
+          </Button>
+        </div>
+      )}
+
+      {isActive && (
+        <div className="mt-2 flex gap-2">
+          <Button
+            size="sm"
+            onClick={handleResolve}
+            disabled={updateMutation.isPending}
+            isLoading={updateMutation.isPending}
+          >
             Resolve
           </Button>
           <Button
@@ -62,8 +109,9 @@ export function ConflictCard({ conflict }: ConflictCardProps) {
             variant="ghost"
             onClick={handleDismiss}
             disabled={updateMutation.isPending}
+            isLoading={updateMutation.isPending}
           >
-            Dismiss
+            Dismiss{isFalsePositive ? ' (Suggested)' : ''}
           </Button>
         </div>
       )}

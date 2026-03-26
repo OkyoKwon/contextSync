@@ -6,9 +6,10 @@ import {
   updateConflictSchema,
   assignReviewerSchema,
   reviewNotesSchema,
+  batchResolveSchema,
 } from './conflict.schema.js';
 import { findConflictById } from './conflict.repository.js';
-import { NotFoundError } from '../../plugins/error-handler.plugin.js';
+import { NotFoundError, AppError } from '../../plugins/error-handler.plugin.js';
 
 export const conflictRoutes: FastifyPluginAsync = async (app) => {
   app.addHook('preHandler', app.authenticate);
@@ -27,6 +28,21 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
 
       const meta = buildPaginationMeta(result.total, filter.page, filter.limit);
       return reply.send(paginated(result.conflicts, meta));
+    },
+  );
+
+  app.patch<{ Params: { projectId: string }; Body: unknown }>(
+    '/projects/:projectId/conflicts/batch-resolve',
+    async (request, reply) => {
+      const db = await app.resolveDb(request.params.projectId);
+      const input = batchResolveSchema.parse(request.body);
+      const result = await conflictService.batchResolveConflicts(
+        db,
+        request.params.projectId,
+        request.user.userId,
+        input.status,
+      );
+      return reply.send(ok(result));
     },
   );
 
@@ -62,6 +78,34 @@ export const conflictRoutes: FastifyPluginAsync = async (app) => {
         conflictId,
         request.user.userId,
         input.status,
+      );
+      return reply.send(ok(updated));
+    },
+  );
+
+  app.post<{ Params: { conflictId: string } }>(
+    '/conflicts/:conflictId/ai-verify',
+    async (request, reply) => {
+      const apiKey = app.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        throw new AppError('Anthropic API Key가 설정되지 않았습니다', 400);
+      }
+
+      const { conflictId } = request.params;
+      let db = app.localDb;
+      let conflict = await findConflictById(db, conflictId);
+      if (!conflict && app.remoteDb) {
+        db = app.remoteDb;
+        conflict = await findConflictById(db, conflictId);
+      }
+      if (!conflict) throw new NotFoundError('Conflict');
+
+      const updated = await conflictService.aiVerifyConflict(
+        db,
+        apiKey,
+        app.env.ANTHROPIC_MODEL,
+        conflictId,
+        request.user.userId,
       );
       return reply.send(ok(updated));
     },

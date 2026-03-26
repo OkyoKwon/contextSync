@@ -20,11 +20,23 @@ export interface Conflict {
   readonly reviewerName?: string | null;
   readonly reviewNotes: string | null;
   readonly assignedAt: string | null;
+  readonly aiVerdict: AiVerdict | null;
+  readonly aiConfidence: number | null;
+  readonly aiOverlapType: AiOverlapType | null;
+  readonly aiSummary: string | null;
+  readonly aiRiskAreas: readonly string[] | null;
+  readonly aiRecommendation: AiRecommendation | null;
+  readonly aiRecommendationDetail: string | null;
+  readonly aiAnalyzedAt: string | null;
+  readonly aiModelUsed: string | null;
 }
 
 export type ConflictType = 'file' | 'design' | 'dependency' | 'plan';
 export type ConflictSeverity = 'info' | 'warning' | 'critical';
 export type ConflictStatus = 'detected' | 'reviewing' | 'resolved' | 'dismissed';
+export type AiVerdict = 'real_conflict' | 'likely_conflict' | 'low_risk' | 'false_positive';
+export type AiOverlapType = 'same_function' | 'same_feature' | 'shared_utility' | 'independent';
+export type AiRecommendation = 'coordinate' | 'review_together' | 'no_action' | 'merge_carefully';
 
 export interface ConflictFilterQuery {
   readonly severity?: ConflictSeverity;

@@ -1,6 +1,7 @@
 import type { FastifyPluginAsync } from 'fastify';
 import { ok, fail, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import { getUserApiKey } from '../auth/auth.service.js';
+import { getProject } from '../projects/project.service.js';
 import * as prdService from './prd-analysis.service.js';
 import {
   uploadPrdSchema,
@@ -111,6 +112,14 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
 
       const db = await app.resolveDb(request.params.projectId);
       const input = startAnalysisSchema.parse(request.body);
+
+      // localDb에서 현재 사용자의 local_directory 조회 (remoteDb의 경로는 현재 머신과 다를 수 있음)
+      const localProject = await getProject(
+        app.localDb,
+        request.params.projectId,
+        request.user.userId,
+      );
+
       const result = await prdService.startAnalysis(
         db,
         apiKey,
@@ -118,6 +127,7 @@ export const prdAnalysisRoutes: FastifyPluginAsync = async (app) => {
         request.params.projectId,
         request.user.userId,
         input.prdDocumentId,
+        localProject.myLocalDirectory ?? null,
       );
       return reply.send(ok(result));
     },

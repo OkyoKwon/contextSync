@@ -4,9 +4,16 @@ import { SeverityBadge, Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { formatDate } from '../../lib/date';
-import { useUpdateConflict, useAssignReviewer, useAddReviewNotes } from '../../hooks/use-conflicts';
+import {
+  useUpdateConflict,
+  useAssignReviewer,
+  useAddReviewNotes,
+  useAiVerifyConflict,
+} from '../../hooks/use-conflicts';
 import { useCollaborators } from '../../hooks/use-collaborators';
 import { useAuthStore } from '../../stores/auth.store';
+import { ConflictAiVerdict } from './ConflictAiVerdict';
+import { showToast } from '../../lib/toast';
 
 interface ConflictDetailViewProps {
   conflict: Conflict;
@@ -16,6 +23,7 @@ export function ConflictDetailView({ conflict }: ConflictDetailViewProps) {
   const updateMutation = useUpdateConflict();
   const assignMutation = useAssignReviewer();
   const notesMutation = useAddReviewNotes();
+  const aiVerifyMutation = useAiVerifyConflict();
   const currentProjectId = useAuthStore((s) => s.currentProjectId);
   const currentUserId = useAuthStore((s) => s.user?.id);
   const { data: collabData } = useCollaborators(currentProjectId);
@@ -52,7 +60,10 @@ export function ConflictDetailView({ conflict }: ConflictDetailViewProps) {
         <h4 className="text-sm font-medium text-text-primary">Overlapping Files</h4>
         <div className="mt-2 space-y-1">
           {conflict.overlappingPaths.map((path) => (
-            <div key={path} className="rounded bg-red-500/10 px-3 py-1.5 text-sm font-mono text-red-400">
+            <div
+              key={path}
+              className="rounded bg-red-500/10 px-3 py-1.5 text-sm font-mono text-red-400"
+            >
               {path}
             </div>
           ))}
@@ -78,9 +89,13 @@ export function ConflictDetailView({ conflict }: ConflictDetailViewProps) {
         {conflict.reviewerId ? (
           <div className="mt-2 flex items-center gap-2">
             <Avatar name={conflict.reviewerName ?? 'Reviewer'} size="sm" />
-            <span className="text-sm text-text-secondary">{conflict.reviewerName ?? conflict.reviewerId}</span>
+            <span className="text-sm text-text-secondary">
+              {conflict.reviewerName ?? conflict.reviewerId}
+            </span>
             {conflict.assignedAt && (
-              <span className="text-xs text-text-tertiary">Assigned {formatDate(conflict.assignedAt)}</span>
+              <span className="text-xs text-text-tertiary">
+                Assigned {formatDate(conflict.assignedAt)}
+              </span>
             )}
           </div>
         ) : (
@@ -125,7 +140,9 @@ export function ConflictDetailView({ conflict }: ConflictDetailViewProps) {
       {conflict.reviewNotes && (
         <div className="mt-4 rounded-lg border border-border-default p-4">
           <h4 className="text-sm font-medium text-text-primary">Review Notes</h4>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-text-secondary">{conflict.reviewNotes}</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-text-secondary">
+            {conflict.reviewNotes}
+          </p>
         </div>
       )}
 
@@ -149,20 +166,62 @@ export function ConflictDetailView({ conflict }: ConflictDetailViewProps) {
         </div>
       )}
 
+      {/* AI Analysis */}
+      <div className="mt-4">
+        <ConflictAiVerdict conflict={conflict} variant="full" />
+        {isActive && (
+          <Button
+            size="sm"
+            variant={conflict.aiVerdict ? 'ghost' : 'primary'}
+            className="mt-3"
+            onClick={() =>
+              aiVerifyMutation.mutate(conflict.id, {
+                onSuccess: () => showToast.success('AI 분석 완료'),
+                onError: (err) => showToast.error(err.message),
+              })
+            }
+            disabled={aiVerifyMutation.isPending}
+            isLoading={aiVerifyMutation.isPending}
+          >
+            {aiVerifyMutation.isPending
+              ? 'Analyzing...'
+              : conflict.aiVerdict
+                ? 'Re-verify'
+                : 'AI Verify'}
+          </Button>
+        )}
+      </div>
+
       {isActive && (
         <div className="mt-6 flex gap-2">
           <Button
-            onClick={() => updateMutation.mutate({ id: conflict.id, input: { status: 'resolved' } })}
+            onClick={() =>
+              updateMutation.mutate(
+                { id: conflict.id, input: { status: 'resolved' } },
+                {
+                  onSuccess: () => showToast.success('Conflict resolved'),
+                  onError: (err) => showToast.error(err.message),
+                },
+              )
+            }
             disabled={updateMutation.isPending}
           >
             Mark as Resolved
           </Button>
           <Button
             variant="secondary"
-            onClick={() => updateMutation.mutate({ id: conflict.id, input: { status: 'dismissed' } })}
+            onClick={() =>
+              updateMutation.mutate(
+                { id: conflict.id, input: { status: 'dismissed' } },
+                {
+                  onSuccess: () => showToast.success('Conflict dismissed'),
+                  onError: (err) => showToast.error(err.message),
+                },
+              )
+            }
             disabled={updateMutation.isPending}
           >
-            Dismiss
+            Dismiss{conflict.aiVerdict === 'false_positive' ? ' (Suggested)' : ''}
           </Button>
         </div>
       )}

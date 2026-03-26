@@ -1,12 +1,22 @@
 import type { Db } from '../../database/client.js';
-import type { Session, Conflict, DetectedConflict, ConflictFilterQuery } from '@context-sync/shared';
-import { CONFLICT_DETECTION_WINDOW_DAYS } from '@context-sync/shared';
-import { NotFoundError } from '../../plugins/error-handler.plugin.js';
+import type {
+  Session,
+  Conflict,
+  DetectedConflict,
+  ConflictFilterQuery,
+} from '@context-sync/shared';
+import { CONFLICT_DETECTION_WINDOW_DAYS, AI_VERIFY_COOLDOWN_MINUTES } from '@context-sync/shared';
+import { NotFoundError, ForbiddenError, AppError } from '../../plugins/error-handler.plugin.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 import { detectFileConflicts } from './conflict-detector.js';
 import * as conflictRepo from './conflict.repository.js';
-import { findRecentSessionsByProject } from '../sessions/session.repository.js';
+import {
+  findRecentSessionsByProject,
+  findSessionById,
+  findMessagesBySessionId,
+} from '../sessions/session.repository.js';
 import { logActivity } from '../activity/activity.service.js';
+import { analyzeConflict } from './conflict-ai-analyzer.js';
 
 export async function detectConflicts(
   db: Db,
@@ -95,6 +105,83 @@ export async function updateConflictStatus(
     });
   }
   return updated;
+}
+
+export async function batchResolveConflicts(
+  db: Db,
+  projectId: string,
+  userId: string,
+  status: 'resolved' | 'dismissed',
+): Promise<{ count: number }> {
+  await assertProjectAccess(db, projectId, userId);
+  const count = await conflictRepo.batchUpdateConflictStatus(
+    db,
+    projectId,
+    ['detected', 'reviewing'],
+    status,
+    userId,
+  );
+  if (count > 0) {
+    logActivity(db, {
+      projectId,
+      userId,
+      action: 'conflict_resolved',
+      entityType: 'conflict',
+      entityId: projectId,
+      metadata: { status, count },
+    });
+  }
+  return { count };
+}
+
+export async function aiVerifyConflict(
+  db: Db,
+  apiKey: string,
+  model: string,
+  conflictId: string,
+  userId: string,
+): Promise<Conflict> {
+  const conflict = await conflictRepo.findConflictById(db, conflictId);
+  if (!conflict) throw new NotFoundError('Conflict');
+  await assertProjectAccess(db, conflict.projectId, userId);
+
+  // Cooldown check
+  if (conflict.aiAnalyzedAt) {
+    const cooldownEnd = new Date(conflict.aiAnalyzedAt);
+    cooldownEnd.setMinutes(cooldownEnd.getMinutes() + AI_VERIFY_COOLDOWN_MINUTES);
+    if (new Date() < cooldownEnd) {
+      const remainingMs = cooldownEnd.getTime() - Date.now();
+      const remainingMin = Math.ceil(remainingMs / 60_000);
+      throw new ForbiddenError(`AI 분석 쿨다운 중입니다. ${remainingMin}분 후 다시 시도해주세요`);
+    }
+  }
+
+  // Fetch both sessions with user info
+  const [sessionA, sessionB] = await Promise.all([
+    findSessionById(db, conflict.sessionAId),
+    findSessionById(db, conflict.sessionBId),
+  ]);
+  if (!sessionA || !sessionB) {
+    throw new AppError('충돌에 연결된 세션을 찾을 수 없습니다', 400);
+  }
+
+  // Fetch messages for both sessions
+  const [messagesA, messagesB] = await Promise.all([
+    findMessagesBySessionId(db, conflict.sessionAId),
+    findMessagesBySessionId(db, conflict.sessionBId),
+  ]);
+
+  const analysis = await analyzeConflict(
+    apiKey,
+    model,
+    sessionA,
+    messagesA,
+    sessionB,
+    messagesB,
+    conflict,
+  );
+
+  return conflictRepo.updateAiAnalysis(db, conflictId, analysis);
 }
 
 export async function assignReviewer(

@@ -104,6 +104,17 @@ export interface ConflictsTable {
   reviewer_id: string | null;
   review_notes: string | null;
   assigned_at: Date | null;
+  ai_verdict: string | null;
+  ai_confidence: number | null;
+  ai_overlap_type: string | null;
+  ai_summary: string | null;
+  ai_risk_areas: string[] | null;
+  ai_recommendation: string | null;
+  ai_recommendation_detail: string | null;
+  ai_analyzed_at: Date | null;
+  ai_model_used: string | null;
+  ai_input_tokens: number | null;
+  ai_output_tokens: number | null;
 }
 
 export interface SyncedSessionsTable {

@@ -55,6 +55,9 @@ export type {
   ConflictFilterQuery,
   UpdateConflictInput,
   DetectedConflict,
+  AiVerdict,
+  AiOverlapType,
+  AiRecommendation,
 } from './types/conflict.js';
 export type {
   PrdDocument,
@@ -132,6 +135,10 @@ export {
   CONFLICT_STATUSES,
   SEVERITY_THRESHOLDS,
   CONFLICT_DETECTION_WINDOW_DAYS,
+  AI_VERDICTS,
+  AI_OVERLAP_TYPES,
+  AI_RECOMMENDATIONS,
+  AI_VERIFY_COOLDOWN_MINUTES,
 } from './constants/conflict-severity.js';
 
 export { MODEL_PRICING, DEFAULT_PRICE_PER_MILLION } from './constants/model-pricing.js';

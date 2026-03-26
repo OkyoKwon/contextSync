@@ -6,6 +6,7 @@ import type {
 } from '@context-sync/shared';
 import { SUPPORTED_PRD_EXTENSIONS, MAX_PRD_FILE_SIZE } from '@context-sync/shared';
 import { NotFoundError, ForbiddenError } from '../../plugins/error-handler.plugin.js';
+import { toAppError } from '../../lib/claude-utils.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 import * as prdRepo from './prd-analysis.repository.js';
 import { scanCodebase } from './codebase-scanner.js';
@@ -65,10 +66,11 @@ export async function startAnalysis(
   projectId: string,
   userId: string,
   prdDocumentId: string,
+  localDirectory: string | null,
 ): Promise<PrdAnalysisWithRequirements> {
-  const project = await assertProjectAccess(db, projectId, userId);
+  await assertProjectAccess(db, projectId, userId);
 
-  if (!project.localDirectory) {
+  if (!localDirectory) {
     throw new ForbiddenError(
       'Project has no local_directory configured. Set it in project settings to enable codebase scanning.',
     );
@@ -88,7 +90,7 @@ export async function startAnalysis(
   try {
     await prdRepo.updatePrdAnalysis(db, analysis.id, { status: 'analyzing' });
 
-    const codebaseSummary = await scanCodebase(project.localDirectory);
+    const codebaseSummary = await scanCodebase(localDirectory);
 
     const result = await analyzePrd(apiKey, model, document.content, codebaseSummary);
 
@@ -128,12 +130,12 @@ export async function startAnalysis(
       documentFileName: document.fileName,
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    const appError = toAppError(error);
     await prdRepo.updatePrdAnalysis(db, analysis.id, {
       status: 'failed',
-      errorMessage,
+      errorMessage: appError.message,
     });
-    throw error;
+    throw appError;
   }
 }
 

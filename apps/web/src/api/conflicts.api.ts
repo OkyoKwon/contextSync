@@ -23,4 +23,9 @@ export const conflictsApi = {
 
   addReviewNotes: (conflictId: string, reviewNotes: string) =>
     api.patch<Conflict>(`/conflicts/${conflictId}/review-notes`, { reviewNotes }),
+
+  batchResolve: (projectId: string, status: 'resolved' | 'dismissed') =>
+    api.patch<{ count: number }>(`/projects/${projectId}/conflicts/batch-resolve`, { status }),
+
+  aiVerify: (conflictId: string) => api.post<Conflict>(`/conflicts/${conflictId}/ai-verify`),
 };

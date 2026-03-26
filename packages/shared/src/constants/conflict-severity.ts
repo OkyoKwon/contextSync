@@ -9,3 +9,23 @@ export const SEVERITY_THRESHOLDS = {
 } as const;
 
 export const CONFLICT_DETECTION_WINDOW_DAYS = 3;
+
+export const AI_VERDICTS = [
+  'real_conflict',
+  'likely_conflict',
+  'low_risk',
+  'false_positive',
+] as const;
+export const AI_OVERLAP_TYPES = [
+  'same_function',
+  'same_feature',
+  'shared_utility',
+  'independent',
+] as const;
+export const AI_RECOMMENDATIONS = [
+  'coordinate',
+  'review_together',
+  'no_action',
+  'merge_carefully',
+] as const;
+export const AI_VERIFY_COOLDOWN_MINUTES = 10;

@@ -18,3 +18,7 @@ export const assignReviewerSchema = z.object({
 export const reviewNotesSchema = z.object({
   reviewNotes: z.string().min(1).max(5000),
 });
+
+export const batchResolveSchema = z.object({
+  status: z.enum(['resolved', 'dismissed']),
+});

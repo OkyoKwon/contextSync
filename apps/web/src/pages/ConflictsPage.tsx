@@ -19,9 +19,15 @@ export function ConflictsPage() {
   const isTeam = projectData?.data?.isTeam ?? false;
   const [severity, setSeverity] = useState<ConflictSeverity | undefined>();
   const [status, setStatus] = useState<ConflictStatus | undefined>();
+  const [verdictFilter, setVerdictFilter] = useState<string>('');
 
   const { data, isLoading } = useConflicts({ severity, status }, { enabled: isTeam });
-  const conflicts = data?.data ?? [];
+  const allConflicts = data?.data ?? [];
+  const conflicts = verdictFilter
+    ? allConflicts.filter((c) =>
+        verdictFilter === 'not_analyzed' ? c.aiVerdict === null : c.aiVerdict === verdictFilter,
+      )
+    : allConflicts;
   const batchResolveMutation = useBatchResolveConflicts();
   const activeCount = conflicts.filter(
     (c) => c.status === 'detected' || c.status === 'reviewing',
@@ -118,6 +124,19 @@ export function ConflictsPage() {
           <option value="reviewing">Reviewing</option>
           <option value="resolved">Resolved</option>
           <option value="dismissed">Dismissed</option>
+        </Select>
+
+        <Select
+          value={verdictFilter}
+          onChange={(e) => setVerdictFilter(e.target.value)}
+          className="w-auto py-1.5"
+        >
+          <option value="">All Verdicts</option>
+          <option value="not_analyzed">Not Analyzed</option>
+          <option value="real_conflict">Real Conflict</option>
+          <option value="likely_conflict">Likely Conflict</option>
+          <option value="low_risk">Low Risk</option>
+          <option value="false_positive">False Positive</option>
         </Select>
 
         <SeverityGuide />

@@ -54,6 +54,31 @@ export function useAssignReviewer() {
   });
 }
 
+export function useBatchResolveConflicts() {
+  const queryClient = useQueryClient();
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useMutation({
+    mutationFn: (status: 'resolved' | 'dismissed') => conflictsApi.batchResolve(projectId!, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conflicts'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+    },
+  });
+}
+
+export function useAiVerifyConflict() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (conflictId: string) => conflictsApi.aiVerify(conflictId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conflicts'] });
+      queryClient.invalidateQueries({ queryKey: ['conflict'] });
+    },
+  });
+}
+
 export function useAddReviewNotes() {
   const queryClient = useQueryClient();
 
