@@ -125,6 +125,18 @@ export async function findPendingOrAnalyzingGroup(
   projectId: string,
   targetUserId: string,
 ): Promise<boolean> {
+  // Stuck 방지: 10분 이상 pending/analyzing 상태인 레코드는 자동으로 failed 처리
+  const stuckThreshold = new Date(Date.now() - 10 * 60 * 1000);
+
+  await db
+    .updateTable('ai_evaluations')
+    .set({ status: 'failed', error_message: 'Timed out after 10 minutes' })
+    .where('project_id', '=', projectId)
+    .where('target_user_id', '=', targetUserId)
+    .where('status', 'in', ['pending', 'analyzing'])
+    .where('created_at', '<', stuckThreshold)
+    .execute();
+
   const row = await db
     .selectFrom('ai_evaluations')
     .select('id')
