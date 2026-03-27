@@ -87,9 +87,13 @@ export function toDimension(row: Record<string, unknown>): AiEvaluationDimension
     score: Number(row['score']),
     confidence: Number(row['confidence']),
     summary: row['summary'] as string,
+    summaryKo: (row['summary_ko'] as string) ?? null,
     strengths: (row['strengths'] as string[]) ?? [],
+    strengthsKo: (row['strengths_ko'] as string[]) ?? null,
     weaknesses: (row['weaknesses'] as string[]) ?? [],
+    weaknessesKo: (row['weaknesses_ko'] as string[]) ?? null,
     suggestions: (row['suggestions'] as string[]) ?? [],
+    suggestionsKo: (row['suggestions_ko'] as string[]) ?? null,
     sortOrder: Number(row['sort_order'] ?? 0),
   };
 }
@@ -103,6 +107,54 @@ export function toEvidence(row: Record<string, unknown>): AiEvaluationEvidence {
     excerpt: row['excerpt'] as string,
     sentiment: row['sentiment'] as EvidenceSentiment,
     annotation: row['annotation'] as string,
+    annotationKo: (row['annotation_ko'] as string) ?? null,
     sortOrder: Number(row['sort_order'] ?? 0),
   };
+}
+
+export async function updateDimensionTranslation(
+  db: Db,
+  dimensionId: string,
+  translation: {
+    readonly summaryKo: string;
+    readonly strengthsKo: readonly string[];
+    readonly weaknessesKo: readonly string[];
+    readonly suggestionsKo: readonly string[];
+  },
+): Promise<void> {
+  await db
+    .updateTable('ai_evaluation_dimensions')
+    .set({
+      summary_ko: translation.summaryKo,
+      strengths_ko: translation.strengthsKo as string[],
+      weaknesses_ko: translation.weaknessesKo as string[],
+      suggestions_ko: translation.suggestionsKo as string[],
+    })
+    .where('id', '=', dimensionId)
+    .execute();
+}
+
+export async function updateEvidenceTranslations(
+  db: Db,
+  dimensionId: string,
+  annotationsKo: readonly string[],
+): Promise<void> {
+  const evidenceRows = await db
+    .selectFrom('ai_evaluation_evidence')
+    .select(['id'])
+    .where('dimension_id', '=', dimensionId)
+    .orderBy('sort_order', 'asc')
+    .execute();
+
+  for (let i = 0; i < evidenceRows.length; i++) {
+    const row = evidenceRows[i]!;
+    const annotationKo = annotationsKo[i] ?? null;
+    if (annotationKo) {
+      await db
+        .updateTable('ai_evaluation_evidence')
+        .set({ annotation_ko: annotationKo })
+        .where('id', '=', row.id)
+        .execute();
+    }
+  }
 }

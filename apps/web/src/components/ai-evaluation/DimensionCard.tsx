@@ -1,14 +1,28 @@
 import type { AiEvaluationDimensionDetail, EvaluationPerspective } from '@context-sync/shared';
 import { PERSPECTIVE_DIMENSION_LABELS } from '@context-sync/shared';
 import { Card } from '../ui/Card';
+import type { EvalContentLang } from './EvalLanguageToggle';
 
 interface DimensionCardProps {
   dimension: AiEvaluationDimensionDetail;
   perspective?: EvaluationPerspective;
+  contentLang?: EvalContentLang;
 }
 
-export function DimensionCard({ dimension, perspective = 'claude' }: DimensionCardProps) {
+export function DimensionCard({
+  dimension,
+  perspective = 'claude',
+  contentLang = 'en',
+}: DimensionCardProps) {
   const labels = PERSPECTIVE_DIMENSION_LABELS[perspective];
+  const isKo = contentLang === 'ko';
+
+  const summary = isKo ? (dimension.summaryKo ?? dimension.summary) : dimension.summary;
+  const strengths = isKo ? (dimension.strengthsKo ?? dimension.strengths) : dimension.strengths;
+  const weaknesses = isKo ? (dimension.weaknessesKo ?? dimension.weaknesses) : dimension.weaknesses;
+  const suggestions = isKo
+    ? (dimension.suggestionsKo ?? dimension.suggestions)
+    : dimension.suggestions;
 
   return (
     <Card>
@@ -21,13 +35,13 @@ export function DimensionCard({ dimension, perspective = 'claude' }: DimensionCa
           <span className="text-xs text-text-tertiary">({dimension.confidence}% confidence)</span>
         </div>
       </div>
-      <p className="mb-3 text-sm text-text-secondary">{dimension.summary}</p>
+      <p className="mb-3 text-sm text-text-secondary">{summary}</p>
 
-      {dimension.strengths.length > 0 && (
+      {strengths.length > 0 && (
         <div className="mb-2">
           <p className="mb-1 text-xs font-medium text-green-400">Strengths</p>
           <ul className="space-y-1">
-            {dimension.strengths.map((s, i) => (
+            {strengths.map((s, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs text-text-secondary">
                 <span className="mt-0.5 text-green-400">+</span>
                 {s}
@@ -37,11 +51,11 @@ export function DimensionCard({ dimension, perspective = 'claude' }: DimensionCa
         </div>
       )}
 
-      {dimension.weaknesses.length > 0 && (
+      {weaknesses.length > 0 && (
         <div className="mb-2">
           <p className="mb-1 text-xs font-medium text-red-400">Weaknesses</p>
           <ul className="space-y-1">
-            {dimension.weaknesses.map((w, i) => (
+            {weaknesses.map((w, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs text-text-secondary">
                 <span className="mt-0.5 text-red-400">-</span>
                 {w}
@@ -51,11 +65,11 @@ export function DimensionCard({ dimension, perspective = 'claude' }: DimensionCa
         </div>
       )}
 
-      {dimension.suggestions.length > 0 && (
+      {suggestions.length > 0 && (
         <div>
           <p className="mb-1 text-xs font-medium text-blue-400">Suggestions</p>
           <ul className="space-y-1">
-            {dimension.suggestions.map((s, i) => (
+            {suggestions.map((s, i) => (
               <li key={i} className="flex items-start gap-1.5 text-xs text-text-secondary">
                 <span className="mt-0.5 text-blue-400">*</span>
                 {s}

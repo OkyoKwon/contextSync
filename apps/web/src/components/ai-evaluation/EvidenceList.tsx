@@ -6,6 +6,7 @@ import type {
 import { PERSPECTIVE_DIMENSION_LABELS } from '@context-sync/shared';
 import { Badge } from '../ui/Badge';
 import type { ComponentPropsWithoutRef } from 'react';
+import type { EvalContentLang } from './EvalLanguageToggle';
 
 type BadgeVariant = ComponentPropsWithoutRef<typeof Badge>['variant'];
 
@@ -13,6 +14,7 @@ interface EvidenceListProps {
   evidence: readonly AiEvaluationEvidence[];
   dimensions: readonly AiEvaluationDimensionDetail[];
   perspective?: EvaluationPerspective;
+  contentLang?: EvalContentLang;
 }
 
 const sentimentVariants: Record<string, BadgeVariant> = {
@@ -21,7 +23,12 @@ const sentimentVariants: Record<string, BadgeVariant> = {
   neutral: 'default',
 };
 
-export function EvidenceList({ evidence, dimensions, perspective = 'claude' }: EvidenceListProps) {
+export function EvidenceList({
+  evidence,
+  dimensions,
+  perspective = 'claude',
+  contentLang = 'en',
+}: EvidenceListProps) {
   const dimensionMap = new Map(dimensions.map((d) => [d.id, d]));
   const labels = PERSPECTIVE_DIMENSION_LABELS[perspective];
 
@@ -47,7 +54,9 @@ export function EvidenceList({ evidence, dimensions, perspective = 'claude' }: E
             <blockquote className="mb-2 border-l-2 border-blue-500/30 pl-3 text-sm italic text-text-secondary">
               {item.excerpt}
             </blockquote>
-            <p className="text-xs text-text-tertiary">{item.annotation}</p>
+            <p className="text-xs text-text-tertiary">
+              {contentLang === 'ko' ? (item.annotationKo ?? item.annotation) : item.annotation}
+            </p>
           </div>
         );
       })}

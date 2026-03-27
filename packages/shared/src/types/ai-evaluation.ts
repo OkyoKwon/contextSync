@@ -52,6 +52,7 @@ export interface AiEvaluation {
   readonly outputTokensUsed: number;
   readonly errorMessage: string | null;
   readonly improvementSummary: string | null;
+  readonly improvementSummaryKo: string | null;
   readonly perspective: EvaluationPerspective;
   readonly evaluationGroupId: string | null;
   readonly createdAt: string;
@@ -65,9 +66,13 @@ export interface AiEvaluationDimensionDetail {
   readonly score: number;
   readonly confidence: number;
   readonly summary: string;
+  readonly summaryKo: string | null;
   readonly strengths: readonly string[];
+  readonly strengthsKo: readonly string[] | null;
   readonly weaknesses: readonly string[];
+  readonly weaknessesKo: readonly string[] | null;
   readonly suggestions: readonly string[];
+  readonly suggestionsKo: readonly string[] | null;
   readonly sortOrder: number;
 }
 
@@ -79,6 +84,7 @@ export interface AiEvaluationEvidence {
   readonly excerpt: string;
   readonly sentiment: EvidenceSentiment;
   readonly annotation: string;
+  readonly annotationKo: string | null;
   readonly sortOrder: number;
 }
 

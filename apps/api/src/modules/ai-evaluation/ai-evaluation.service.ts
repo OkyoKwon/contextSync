@@ -24,6 +24,12 @@ import { toAppError, delay } from '../../lib/claude-utils.js';
 import { assertProjectAccess, getUserRoleInProject } from '../projects/project.service.js';
 import * as evalRepo from './ai-evaluation.repository.js';
 import { analyzeEvaluation } from './claude-client.js';
+import {
+  translateEvaluationToKorean,
+  translateStoredEvaluationToKorean,
+  translateStoredEvaluationToEnglish,
+} from './translate-evaluation.js';
+import type { StoredEvaluationText } from './translate-evaluation.js';
 
 export async function triggerEvaluation(
   db: Db,
@@ -193,6 +199,40 @@ async function analyzeAndSavePerspective(
     }
 
     await evalRepo.updateEvaluation(db, evaluation.id, updateData);
+
+    // Translate evaluation results to Korean (non-blocking — failure doesn't affect evaluation)
+    try {
+      const translation = await translateEvaluationToKorean(apiKey, model, result);
+
+      // Update improvement_summary_ko on the evaluation
+      await evalRepo.updateEvaluation(db, evaluation.id, {
+        improvementSummaryKo: translation.improvementSummaryKo,
+      });
+
+      // Update dimension translations
+      for (const dimTranslation of translation.dimensions) {
+        const dim = dimensions.find((d) => d.dimension === dimTranslation.dimension);
+        if (dim) {
+          await evalRepo.updateDimensionTranslation(db, dim.id, {
+            summaryKo: dimTranslation.summaryKo,
+            strengthsKo: dimTranslation.strengthsKo,
+            weaknessesKo: dimTranslation.weaknessesKo,
+            suggestionsKo: dimTranslation.suggestionsKo,
+          });
+          await evalRepo.updateEvidenceTranslations(
+            db,
+            dim.id,
+            dimTranslation.evidenceAnnotationsKo,
+          );
+        }
+      }
+    } catch (translationError) {
+      // Translation failure is non-critical — English results are already saved
+      console.warn(
+        `[ai-evaluation] Translation to Korean failed for ${perspective}:`,
+        translationError instanceof Error ? translationError.message : translationError,
+      );
+    }
   } catch (error) {
     const appError = toAppError(error);
     await evalRepo.updateEvaluation(db, evaluation.id, {
@@ -308,6 +348,141 @@ export async function getTeamSummary(
   }
 
   return evalRepo.findTeamEvaluationSummary(db, projectId);
+}
+
+// === Backfill ===
+
+export async function backfillTranslations(
+  db: Db,
+  apiKey: string,
+  model: string,
+  projectId: string,
+  requestingUserId: string,
+  limit: number,
+): Promise<{ processed: number; failed: number }> {
+  await assertProjectAccess(db, projectId, requestingUserId);
+
+  const role = await getUserRoleInProject(db, projectId, requestingUserId);
+  if (role !== 'owner') {
+    throw new ForbiddenError('Only project owners can backfill translations');
+  }
+
+  const evaluationIds = await evalRepo.findEvaluationsNeedingBackfill(db, projectId, limit);
+  let processed = 0;
+  let failed = 0;
+
+  for (const evaluationId of evaluationIds) {
+    try {
+      await backfillSingleEvaluation(db, apiKey, model, evaluationId);
+      processed++;
+    } catch (error) {
+      console.warn(
+        `[ai-evaluation] Backfill failed for evaluation ${evaluationId}:`,
+        error instanceof Error ? error.message : error,
+      );
+      failed++;
+    }
+  }
+
+  return { processed, failed };
+}
+
+async function backfillSingleEvaluation(
+  db: Db,
+  apiKey: string,
+  model: string,
+  evaluationId: string,
+): Promise<void> {
+  const evaluation = await evalRepo.findEvaluationById(db, evaluationId);
+  if (!evaluation) return;
+
+  // Build text structure from stored data
+  const dimensionEvidenceMap = buildDimensionEvidenceMap(evaluation);
+  const storedText: StoredEvaluationText = {
+    improvementSummary: evaluation.improvementSummary ?? '',
+    dimensions: evaluation.dimensions.map((d) => ({
+      dimensionId: d.id,
+      dimension: d.dimension,
+      summary: d.summary,
+      strengths: [...d.strengths],
+      weaknesses: [...d.weaknesses],
+      suggestions: [...d.suggestions],
+      evidenceAnnotations: dimensionEvidenceMap.get(d.id) ?? [],
+    })),
+  };
+
+  if (evaluation.perspective === 'claude') {
+    // Claude: main columns are English → translate to Korean → store in _ko columns
+    const translation = await translateStoredEvaluationToKorean(apiKey, model, storedText);
+
+    await evalRepo.updateEvaluation(db, evaluationId, {
+      improvementSummaryKo: translation.translatedImprovementSummary,
+    });
+
+    for (const dimTr of translation.dimensions) {
+      await evalRepo.updateDimensionTranslation(db, dimTr.dimensionId, {
+        summaryKo: dimTr.translatedSummary,
+        strengthsKo: dimTr.translatedStrengths,
+        weaknessesKo: dimTr.translatedWeaknesses,
+        suggestionsKo: dimTr.translatedSuggestions,
+      });
+      await evalRepo.updateEvidenceTranslations(
+        db,
+        dimTr.dimensionId,
+        dimTr.translatedEvidenceAnnotations,
+      );
+    }
+  } else {
+    // ChatGPT/Gemini: main columns are Korean → copy to _ko → translate to English → update main
+
+    // 1. Copy existing Korean text to _ko columns
+    await evalRepo.updateEvaluation(db, evaluationId, {
+      improvementSummaryKo: evaluation.improvementSummary,
+    });
+
+    for (const dim of evaluation.dimensions) {
+      await evalRepo.updateDimensionTranslation(db, dim.id, {
+        summaryKo: dim.summary,
+        strengthsKo: [...dim.strengths],
+        weaknessesKo: [...dim.weaknesses],
+        suggestionsKo: [...dim.suggestions],
+      });
+      const annotations = dimensionEvidenceMap.get(dim.id) ?? [];
+      await evalRepo.updateEvidenceTranslations(db, dim.id, annotations);
+    }
+
+    // 2. Translate Korean to English → update main columns
+    const translation = await translateStoredEvaluationToEnglish(apiKey, model, storedText);
+
+    await evalRepo.updateEvaluation(db, evaluationId, {
+      improvementSummary: translation.translatedImprovementSummary,
+    });
+
+    for (const dimTr of translation.dimensions) {
+      await evalRepo.updateDimensionMainText(db, dimTr.dimensionId, {
+        summary: dimTr.translatedSummary,
+        strengths: dimTr.translatedStrengths,
+        weaknesses: dimTr.translatedWeaknesses,
+        suggestions: dimTr.translatedSuggestions,
+      });
+      await evalRepo.updateEvidenceMainAnnotations(
+        db,
+        dimTr.dimensionId,
+        dimTr.translatedEvidenceAnnotations,
+      );
+    }
+  }
+}
+
+function buildDimensionEvidenceMap(
+  evaluation: AiEvaluationWithDetails,
+): Map<string, readonly string[]> {
+  const map = new Map<string, string[]>();
+  for (const ev of evaluation.evidence) {
+    const existing = map.get(ev.dimensionId) ?? [];
+    map.set(ev.dimensionId, [...existing, ev.annotation]);
+  }
+  return map;
 }
 
 // === Helpers ===

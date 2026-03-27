@@ -4,15 +4,18 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { DimensionCard } from './DimensionCard';
 import { EvidenceList } from './EvidenceList';
+import type { EvalContentLang } from './EvalLanguageToggle';
 
 interface EvaluationDashboardProps {
   evaluation: AiEvaluationWithDetails;
   perspective?: EvaluationPerspective;
+  contentLang?: EvalContentLang;
 }
 
 export function EvaluationDashboard({
   evaluation,
   perspective = 'claude',
+  contentLang = 'en',
 }: EvaluationDashboardProps) {
   const dimensionLabels = PERSPECTIVE_DIMENSION_LABELS[perspective];
   const tierLabels = PERSPECTIVE_TIER_LABELS[perspective];
@@ -73,7 +76,12 @@ export function EvaluationDashboard({
       {/* Dimension Details */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {evaluation.dimensions.map((dim) => (
-          <DimensionCard key={dim.dimension} dimension={dim} perspective={perspective} />
+          <DimensionCard
+            key={dim.dimension}
+            dimension={dim}
+            perspective={perspective}
+            contentLang={contentLang}
+          />
         ))}
       </div>
 
@@ -87,6 +95,7 @@ export function EvaluationDashboard({
             evidence={evaluation.evidence}
             dimensions={evaluation.dimensions}
             perspective={perspective}
+            contentLang={contentLang}
           />
         </Card>
       )}
@@ -98,7 +107,9 @@ export function EvaluationDashboard({
             Improvement Guide
           </h2>
           <div className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-            {evaluation.improvementSummary}
+            {contentLang === 'ko'
+              ? (evaluation.improvementSummaryKo ?? evaluation.improvementSummary)
+              : evaluation.improvementSummary}
           </div>
         </Card>
       )}

@@ -201,6 +201,7 @@ export interface AiEvaluationsTable {
   output_tokens_used: Generated<number>;
   error_message: string | null;
   improvement_summary: string | null;
+  improvement_summary_ko: string | null;
   perspective: Generated<string>;
   evaluation_group_id: string | null;
   created_at: Generated<Date>;
@@ -214,9 +215,13 @@ export interface AiEvaluationDimensionsTable {
   score: number;
   confidence: number;
   summary: string;
+  summary_ko: string | null;
   strengths: Generated<string[]>;
+  strengths_ko: string[] | null;
   weaknesses: Generated<string[]>;
+  weaknesses_ko: string[] | null;
   suggestions: Generated<string[]>;
+  suggestions_ko: string[] | null;
   sort_order: Generated<number>;
 }
 
@@ -228,6 +233,7 @@ export interface AiEvaluationEvidenceTable {
   excerpt: string;
   sentiment: Generated<string>;
   annotation: string;
+  annotation_ko: string | null;
   sort_order: Generated<number>;
 }
 

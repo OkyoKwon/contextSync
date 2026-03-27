@@ -30,6 +30,20 @@ export function useStartEvaluation() {
   });
 }
 
+export function useBackfillTranslations() {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (limit?: number) => aiEvaluationApi.backfillTranslations(projectId!, limit),
+    onSuccess: () => {
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-latest-group'] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-group-history'] });
+      queryClient.refetchQueries({ queryKey: ['ai-evaluation-detail'] });
+    },
+  });
+}
+
 export function useLatestEvaluationGroup(targetUserId: string | null) {
   const projectId = useAuthStore((s) => s.currentProjectId);
 

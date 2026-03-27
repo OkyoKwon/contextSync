@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { EvaluationPerspective } from '@context-sync/shared';
+import type { EvalContentLang } from '../components/ai-evaluation/EvalLanguageToggle';
+import { EvalLanguageToggle } from '../components/ai-evaluation/EvalLanguageToggle';
 import { showToast } from '../lib/toast';
 import {
   useTeamEvaluationSummary,
@@ -7,6 +9,7 @@ import {
   useLatestEvaluationGroup,
   useEvaluationGroupHistory,
   useEvaluationDetail,
+  useBackfillTranslations,
 } from '../hooks/use-ai-evaluation';
 import { useRequireProject } from '../hooks/use-require-project';
 import { useAuthStore } from '../stores/auth.store';
@@ -31,6 +34,7 @@ export function AiEvaluationPage() {
   const openApiKeyGuard = useApiKeyGuard((s) => s.openApiKeyGuard);
   const { data: summaryData, isLoading: isSummaryLoading } = useTeamEvaluationSummary();
   const startEvaluation = useStartEvaluation();
+  const backfillTranslations = useBackfillTranslations();
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showTriggerDialog, setShowTriggerDialog] = useState(false);
@@ -42,6 +46,7 @@ export function AiEvaluationPage() {
 
   // For viewing a specific evaluation from history
   const [selectedEvaluationId, setSelectedEvaluationId] = useState<string | null>(null);
+  const [contentLang, setContentLang] = useState<EvalContentLang>('en');
   const { data: detailData } = useEvaluationDetail(selectedEvaluationId);
 
   const members = summaryData?.data ?? [];
@@ -118,17 +123,44 @@ export function AiEvaluationPage() {
             Multi-perspective AI utilization evaluation
           </p>
         </div>
-        <Button
-          onClick={() => {
-            if (hasKey) {
-              setShowTriggerDialog(true);
-            } else {
-              openApiKeyGuard(() => setShowTriggerDialog(true));
-            }
-          }}
-        >
-          Run Evaluation
-        </Button>
+        <div className="flex items-center gap-3">
+          <EvalLanguageToggle value={contentLang} onChange={setContentLang} />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              if (!hasKey) {
+                openApiKeyGuard(() => {});
+                return;
+              }
+              backfillTranslations.mutate(50, {
+                onSuccess: (res) => {
+                  const data = res.data;
+                  if (data) {
+                    showToast.success(
+                      `Translated ${data.processed} evaluations${data.failed > 0 ? ` (${data.failed} failed)` : ''}`,
+                    );
+                  }
+                },
+                onError: (err) => showToast.error(err.message),
+              });
+            }}
+            disabled={backfillTranslations.isPending}
+          >
+            {backfillTranslations.isPending ? 'Translating...' : 'Translate Existing'}
+          </Button>
+          <Button
+            onClick={() => {
+              if (hasKey) {
+                setShowTriggerDialog(true);
+              } else {
+                openApiKeyGuard(() => setShowTriggerDialog(true));
+              }
+            }}
+          >
+            Run Evaluation
+          </Button>
+        </div>
       </div>
 
       <ApiKeyMissingBanner />
@@ -192,6 +224,7 @@ export function AiEvaluationPage() {
                       perspective={
                         selectedEvaluationId ? activeEvaluation.perspective : activePerspective
                       }
+                      contentLang={contentLang}
                     />
                   ) : activeEvaluation?.status === 'analyzing' ||
                     activeEvaluation?.status === 'pending' ? (

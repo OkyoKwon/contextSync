@@ -11,7 +11,12 @@ import type {
 } from '@context-sync/shared';
 import { EVALUATION_PERSPECTIVES } from '@context-sync/shared';
 import { toDimension, toEvidence } from './ai-evaluation-detail.repository.js';
-export { createDimensions, createEvidence } from './ai-evaluation-detail.repository.js';
+export {
+  createDimensions,
+  createEvidence,
+  updateDimensionTranslation,
+  updateEvidenceTranslations,
+} from './ai-evaluation-detail.repository.js';
 
 interface CreateEvaluationInput {
   readonly projectId: string;
@@ -39,6 +44,7 @@ interface UpdateEvaluationInput {
   readonly outputTokensUsed?: number;
   readonly errorMessage?: string | null;
   readonly improvementSummary?: string | null;
+  readonly improvementSummaryKo?: string | null;
   readonly completedAt?: Date;
   readonly [key: string]: unknown;
 }
@@ -61,6 +67,7 @@ export async function createEvaluation(
       overall_score: null,
       error_message: null,
       improvement_summary: null,
+      improvement_summary_ko: null,
       completed_at: null,
       prompt_quality_score: null,
       task_complexity_score: null,
@@ -106,6 +113,8 @@ export async function updateEvaluation(
   if (updates.errorMessage !== undefined) setValues['error_message'] = updates.errorMessage;
   if (updates.improvementSummary !== undefined)
     setValues['improvement_summary'] = updates.improvementSummary;
+  if (updates.improvementSummaryKo !== undefined)
+    setValues['improvement_summary_ko'] = updates.improvementSummaryKo;
   if (updates.completedAt !== undefined) setValues['completed_at'] = updates.completedAt;
 
   const row = await db
@@ -389,6 +398,7 @@ export async function findEvaluationById(
       'ai_evaluations.output_tokens_used',
       'ai_evaluations.error_message',
       'ai_evaluations.improvement_summary',
+      'ai_evaluations.improvement_summary_ko',
       'ai_evaluations.perspective',
       'ai_evaluations.evaluation_group_id',
       'ai_evaluations.created_at',
@@ -663,6 +673,72 @@ export async function findUserMessagesForEvaluation(
   };
 }
 
+export async function findEvaluationsNeedingBackfill(
+  db: Db,
+  projectId: string,
+  limit: number,
+): Promise<readonly string[]> {
+  const rows = await db
+    .selectFrom('ai_evaluations')
+    .select('id')
+    .where('project_id', '=', projectId)
+    .where('status', '=', 'completed')
+    .where('improvement_summary', 'is not', null)
+    .where('improvement_summary_ko', 'is', null)
+    .orderBy('created_at', 'desc')
+    .limit(limit)
+    .execute();
+
+  return rows.map((r) => r.id as string);
+}
+
+export async function updateDimensionMainText(
+  db: Db,
+  dimensionId: string,
+  update: {
+    readonly summary: string;
+    readonly strengths: readonly string[];
+    readonly weaknesses: readonly string[];
+    readonly suggestions: readonly string[];
+  },
+): Promise<void> {
+  await db
+    .updateTable('ai_evaluation_dimensions')
+    .set({
+      summary: update.summary,
+      strengths: update.strengths as string[],
+      weaknesses: update.weaknesses as string[],
+      suggestions: update.suggestions as string[],
+    })
+    .where('id', '=', dimensionId)
+    .execute();
+}
+
+export async function updateEvidenceMainAnnotations(
+  db: Db,
+  dimensionId: string,
+  annotations: readonly string[],
+): Promise<void> {
+  const evidenceRows = await db
+    .selectFrom('ai_evaluation_evidence')
+    .select(['id'])
+    .where('dimension_id', '=', dimensionId)
+    .orderBy('sort_order', 'asc')
+    .execute();
+
+  for (let i = 0; i < evidenceRows.length; i++) {
+    const row = evidenceRows[i]!;
+    const annotation = annotations[i];
+    if (annotation) {
+      await db
+        .updateTable('ai_evaluation_evidence')
+        .set({ annotation })
+        .where('id', '=', row.id)
+        .execute();
+    }
+  }
+}
+
 function toEvaluation(row: Record<string, unknown>): AiEvaluation {
   return {
     id: row['id'] as string,
@@ -693,6 +769,7 @@ function toEvaluation(row: Record<string, unknown>): AiEvaluation {
     outputTokensUsed: Number(row['output_tokens_used'] ?? 0),
     errorMessage: (row['error_message'] as string) ?? null,
     improvementSummary: (row['improvement_summary'] as string) ?? null,
+    improvementSummaryKo: (row['improvement_summary_ko'] as string) ?? null,
     perspective: ((row['perspective'] as string) ?? 'claude') as EvaluationPerspective,
     evaluationGroupId: (row['evaluation_group_id'] as string) ?? null,
     createdAt: (row['created_at'] as Date).toISOString(),

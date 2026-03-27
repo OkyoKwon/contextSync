@@ -57,4 +57,10 @@ export const aiEvaluationApi = {
 
   getTeamSummary: (projectId: string) =>
     api.get<readonly TeamEvaluationSummaryEntry[]>(`/projects/${projectId}/ai-evaluation/summary`),
+
+  backfillTranslations: (projectId: string, limit = 10) =>
+    api.post<{ processed: number; failed: number }>(
+      `/projects/${projectId}/ai-evaluation/backfill-translations`,
+      { limit },
+    ),
 };
