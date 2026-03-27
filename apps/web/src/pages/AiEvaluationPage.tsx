@@ -191,15 +191,17 @@ export function AiEvaluationPage() {
               {/* Evaluation Progress */}
               <EvaluationProgressBar group={evaluationGroup} />
 
-              {/* 3-perspective Score Summary */}
-              <PerspectiveScoreSummary
-                group={evaluationGroup}
-                activePerspective={activePerspective}
-                onSelectPerspective={(p) => {
-                  setActivePerspective(p);
-                  setSelectedEvaluationId(null);
-                }}
-              />
+              {/* 3-perspective Score Summary — only relevant for Evaluation Results */}
+              {activeSection === 'results' && (
+                <PerspectiveScoreSummary
+                  group={evaluationGroup}
+                  activePerspective={activePerspective}
+                  onSelectPerspective={(p) => {
+                    setActivePerspective(p);
+                    setSelectedEvaluationId(null);
+                  }}
+                />
+              )}
 
               {/* Section Tabs */}
               {/* Section Tabs */}
