@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useLocalSessions, useSyncSessions } from '../hooks/use-session-sync';
+import { useDeleteSession } from '../hooks/use-sessions';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { LocalSessionList } from '../components/local-sessions/LocalSessionList';
 import { LocalSessionConversation } from '../components/local-sessions/LocalSessionConversation';
@@ -22,6 +23,7 @@ import { showToast } from '../lib/toast';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
 import { NoProjectState } from '../components/shared/NoProjectState';
 import { SessionUploadModal } from '../components/sessions/SessionUploadModal';
+import { DeleteSessionModal } from '../components/sessions/DeleteSessionModal';
 
 type Selection =
   | { readonly type: 'none' }
@@ -33,6 +35,11 @@ export function ProjectPage() {
   const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
   const [isChangeDirectoryOpen, setIsChangeDirectoryOpen] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    readonly id: string;
+    readonly title: string;
+  } | null>(null);
+  const deleteMutation = useDeleteSession();
 
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
   const projectId = useAuthStore((s) => s.currentProjectId);
@@ -353,7 +360,10 @@ export function ProjectPage() {
             )}
             {selection.type === 'session' &&
               (selection.dbSessionId ? (
-                <RemoteSessionConversation sessionId={selection.dbSessionId} />
+                <RemoteSessionConversation
+                  sessionId={selection.dbSessionId}
+                  onDelete={(id, title) => setDeleteTarget({ id, title })}
+                />
               ) : (
                 <LocalSessionConversation
                   sessionId={selection.sessionId}
@@ -383,6 +393,25 @@ export function ProjectPage() {
       )}
 
       <SessionUploadModal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)} />
+
+      <DeleteSessionModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          deleteMutation.mutate(deleteTarget.id, {
+            onSuccess: () => {
+              showToast.success('Session deleted');
+              setDeleteTarget(null);
+              setSelection({ type: 'none' });
+            },
+            onError: (err) =>
+              showToast.error(err instanceof Error ? err.message : 'Failed to delete session'),
+          });
+        }}
+        isDeleting={deleteMutation.isPending}
+        sessionTitle={deleteTarget?.title ?? ''}
+      />
     </div>
   );
 }

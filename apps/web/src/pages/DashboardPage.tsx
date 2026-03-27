@@ -1,4 +1,5 @@
-import { useTimeline, useDashboardStats } from '../hooks/use-sessions';
+import { useState } from 'react';
+import { useTimeline, useDashboardStats, useDeleteSession } from '../hooks/use-sessions';
 import { useAuthStore } from '../stores/auth.store';
 import { useCurrentProject } from '../hooks/use-current-project';
 import { useRequireProject } from '../hooks/use-require-project';
@@ -15,9 +16,17 @@ import { Spinner } from '../components/ui/Spinner';
 import { DashboardSkeleton } from '../components/dashboard/DashboardSkeleton';
 import { getGreeting } from '../lib/date';
 import { PageBreadcrumb } from '../components/layout/PageBreadcrumb';
+import { DeleteSessionModal } from '../components/sessions/DeleteSessionModal';
+import { showToast } from '../lib/toast';
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const { isProjectSelected, isLoading: isProjectLoading } = useRequireProject();
+
+  const [deleteTarget, setDeleteTarget] = useState<{
+    readonly id: string;
+    readonly title: string;
+  } | null>(null);
+  const deleteMutation = useDeleteSession();
 
   const { data: statsData, isLoading: statsLoading } = useDashboardStats();
   const { data: timelineData, isLoading: timelineLoading } = useTimeline();
@@ -119,7 +128,11 @@ export function DashboardPage() {
             <div className="mb-3">
               <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
             </div>
-            <Timeline entries={entries} isLoading={timelineLoading} />
+            <Timeline
+              entries={entries}
+              isLoading={timelineLoading}
+              onDeleteSession={(id, title) => setDeleteTarget({ id, title })}
+            />
           </div>
           <div className="space-y-4">
             <TeamActivityPanel />
@@ -135,10 +148,32 @@ export function DashboardPage() {
             <div className="mb-3">
               <h2 className="text-sm font-semibold text-text-secondary">Timeline</h2>
             </div>
-            <Timeline entries={entries} isLoading={timelineLoading} />
+            <Timeline
+              entries={entries}
+              isLoading={timelineLoading}
+              onDeleteSession={(id, title) => setDeleteTarget({ id, title })}
+            />
           </div>
         </div>
       )}
+
+      <DeleteSessionModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (!deleteTarget) return;
+          deleteMutation.mutate(deleteTarget.id, {
+            onSuccess: () => {
+              showToast.success('Session deleted');
+              setDeleteTarget(null);
+            },
+            onError: (err) =>
+              showToast.error(err instanceof Error ? err.message : 'Failed to delete session'),
+          });
+        }}
+        isDeleting={deleteMutation.isPending}
+        sessionTitle={deleteTarget?.title ?? ''}
+      />
     </div>
   );
 }

@@ -37,6 +37,22 @@ export function useImportSession() {
   });
 }
 
+export function useDeleteSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sessionId: string) => sessionsApi.delete(sessionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['timeline'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.invalidateQueries({ queryKey: ['token-usage'] });
+      queryClient.invalidateQueries({ queryKey: ['local-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['conflicts'] });
+    },
+  });
+}
+
 export function useUpdateSession() {
   const queryClient = useQueryClient();
 

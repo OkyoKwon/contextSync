@@ -3,11 +3,12 @@ import { TimelineItem } from './TimelineItem';
 import { Spinner } from '../ui/Spinner';
 
 interface TimelineProps {
-  entries: readonly TimelineEntry[];
-  isLoading: boolean;
+  readonly entries: readonly TimelineEntry[];
+  readonly isLoading: boolean;
+  readonly onDeleteSession?: (id: string, title: string) => void;
 }
 
-export function Timeline({ entries, isLoading }: TimelineProps) {
+export function Timeline({ entries, isLoading, onDeleteSession }: TimelineProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -33,7 +34,7 @@ export function Timeline({ entries, isLoading }: TimelineProps) {
   return (
     <div className="space-y-3">
       {entries.map((entry) => (
-        <TimelineItem key={entry.id} entry={entry} />
+        <TimelineItem key={entry.id} entry={entry} onDelete={onDeleteSession} />
       ))}
     </div>
   );
