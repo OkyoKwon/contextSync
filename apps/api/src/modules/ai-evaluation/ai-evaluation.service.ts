@@ -387,7 +387,7 @@ export async function backfillTranslations(
   return { processed, failed };
 }
 
-async function backfillSingleEvaluation(
+export async function backfillSingleEvaluation(
   db: Db,
   apiKey: string,
   model: string,
