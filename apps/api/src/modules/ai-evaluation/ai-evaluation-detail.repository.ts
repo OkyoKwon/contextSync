@@ -60,10 +60,25 @@ export async function createEvidence(
 ): Promise<readonly AiEvaluationEvidence[]> {
   if (items.length === 0) return [];
 
+  // Validate that referenced message IDs actually exist to avoid FK violations
+  const messageIds = [...new Set(items.map((i) => i.messageId).filter(Boolean))] as string[];
+  const validMessageIds = new Set<string>();
+
+  if (messageIds.length > 0) {
+    const existingRows = await db
+      .selectFrom('messages')
+      .select('id')
+      .where('id', 'in', messageIds)
+      .execute();
+    for (const row of existingRows) {
+      validMessageIds.add(row.id);
+    }
+  }
+
   const values = items.map((item) => ({
     dimension_id: item.dimensionId,
-    message_id: item.messageId,
-    session_id: item.sessionId,
+    message_id: item.messageId && validMessageIds.has(item.messageId) ? item.messageId : null,
+    session_id: item.messageId && validMessageIds.has(item.messageId) ? item.sessionId : null,
     excerpt: item.excerpt,
     sentiment: item.sentiment,
     annotation: item.annotation,

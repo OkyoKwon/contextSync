@@ -2,6 +2,7 @@ import type { FastifyPluginAsync } from 'fastify';
 import { ok, fail, paginated, buildPaginationMeta } from '../../lib/api-response.js';
 import { getUserApiKey } from '../auth/auth.service.js';
 import * as evaluationService from './ai-evaluation.service.js';
+import * as learningGuideService from './learning-guide.service.js';
 import {
   triggerEvaluationSchema,
   latestEvaluationQuerySchema,
@@ -165,6 +166,57 @@ export const aiEvaluationRoutes: FastifyPluginAsync = async (app) => {
         input.limit,
       );
       return reply.send(ok(result));
+    },
+  );
+
+  // Get learning guide for an evaluation group
+  app.get<{ Params: { projectId: string; groupId: string } }>(
+    '/projects/:projectId/ai-evaluation/group/:groupId/learning-guide',
+    async (request, reply) => {
+      const db = await app.resolveDb(request.params.projectId);
+      const guide = await learningGuideService.getLearningGuide(db, request.params.groupId);
+      return reply.send(ok(guide));
+    },
+  );
+
+  // Regenerate learning guide
+  app.post<{ Params: { projectId: string; groupId: string } }>(
+    '/projects/:projectId/ai-evaluation/group/:groupId/learning-guide/regenerate',
+    async (request, reply) => {
+      const userApiKey = await getUserApiKey(app.localDb, request.user.userId);
+      const apiKey = userApiKey ?? app.env.ANTHROPIC_API_KEY;
+      if (!apiKey) {
+        return reply
+          .status(400)
+          .send(
+            fail('Anthropic API Key가 설정되지 않았습니다. Settings에서 API Key를 설정해주세요.'),
+          );
+      }
+
+      const db = await app.resolveDb(request.params.projectId);
+      const guide = await learningGuideService.regenerateLearningGuide(
+        db,
+        apiKey,
+        app.env.ANTHROPIC_MODEL,
+        request.params.groupId,
+        request.user.userId,
+      );
+      return reply.send(ok(guide));
+    },
+  );
+
+  // Delete evaluation group
+  app.delete<{ Params: { projectId: string; groupId: string } }>(
+    '/projects/:projectId/ai-evaluation/group/:groupId',
+    async (request, reply) => {
+      const db = await app.resolveDb(request.params.projectId);
+      await evaluationService.deleteEvaluationGroup(
+        db,
+        request.params.projectId,
+        request.params.groupId,
+        request.user.userId,
+      );
+      return reply.send(ok({ deleted: true }));
     },
   );
 

@@ -8,9 +8,18 @@ interface PerspectiveTabsProps {
   onSelectPerspective: (p: EvaluationPerspective) => void;
 }
 
-const PERSPECTIVES: EvaluationPerspective[] = ['claude', 'chatgpt', 'gemini'];
+/** Model perspectives only — 4D Framework is shown in its own section tab */
+const MODEL_PERSPECTIVES: EvaluationPerspective[] = ['claude', 'chatgpt', 'gemini'];
 
-const tabColors: Record<EvaluationPerspective, string> = {
+function getGroupEval(group: EvaluationGroupResult, p: EvaluationPerspective) {
+  if (p === 'claude') return group.claude;
+  if (p === 'chatgpt') return group.chatgpt;
+  if (p === 'gemini') return group.gemini;
+  if (p === '4d_framework') return group.fourDFramework;
+  return null;
+}
+
+const tabColors: Record<string, string> = {
   claude: 'border-orange-500 text-orange-400',
   chatgpt: 'border-emerald-500 text-emerald-400',
   gemini: 'border-blue-500 text-blue-400',
@@ -23,8 +32,8 @@ export function PerspectiveTabs({
 }: PerspectiveTabsProps) {
   return (
     <div className="flex border-b border-border-default">
-      {PERSPECTIVES.map((p) => {
-        const evaluation = group[p];
+      {MODEL_PERSPECTIVES.map((p) => {
+        const evaluation = getGroupEval(group, p);
         const isActive = activePerspective === p;
         const score = evaluation?.overallScore;
         const isFailed = evaluation?.status === 'failed';
@@ -36,7 +45,7 @@ export function PerspectiveTabs({
             onClick={() => onSelectPerspective(p)}
             className={`relative flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
               isActive
-                ? tabColors[p]
+                ? (tabColors[p] ?? '')
                 : 'border-transparent text-text-tertiary hover:text-text-secondary'
             }`}
           >

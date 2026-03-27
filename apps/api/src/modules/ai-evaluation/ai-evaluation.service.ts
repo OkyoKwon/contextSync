@@ -30,6 +30,8 @@ import {
   translateStoredEvaluationToEnglish,
 } from './translate-evaluation.js';
 import type { StoredEvaluationText } from './translate-evaluation.js';
+import { generateLearningGuide } from './learning-guide.service.js';
+import { deleteLearningGuidesByGroupId } from './learning-guide.repository.js';
 
 export async function triggerEvaluation(
   db: Db,
@@ -111,6 +113,21 @@ export async function triggerEvaluation(
   );
   // Use allSettled so partial failures don't block other perspectives
   await Promise.allSettled(analysisPromises);
+
+  // Generate learning guide from combined results (non-blocking)
+  try {
+    const guide = await generateLearningGuide(db, apiKey, model, groupId, input.targetUserId);
+    if (guide) {
+      console.log(`[ai-evaluation] Learning guide generated: ${guide.id}`);
+    } else {
+      console.warn('[ai-evaluation] Learning guide not generated (returned null)');
+    }
+  } catch (guideError) {
+    console.warn(
+      '[ai-evaluation] Learning guide generation failed (non-blocking):',
+      guideError instanceof Error ? guideError.message : guideError,
+    );
+  }
 
   return {
     groupId,
@@ -254,6 +271,9 @@ export async function getLatestEvaluationGroup(
   await assertProjectAccess(db, projectId, requestingUserId);
   await assertViewPermission(db, projectId, requestingUserId, targetUserId);
 
+  // Auto-fail stuck evaluations on every query (prevents infinite polling)
+  await evalRepo.failStuckEvaluations(db, projectId, targetUserId);
+
   return evalRepo.findLatestEvaluationGroup(db, projectId, targetUserId);
 }
 
@@ -348,6 +368,29 @@ export async function getTeamSummary(
   }
 
   return evalRepo.findTeamEvaluationSummary(db, projectId);
+}
+
+// === Delete ===
+
+export async function deleteEvaluationGroup(
+  db: Db,
+  projectId: string,
+  groupId: string,
+  requestingUserId: string,
+): Promise<void> {
+  await assertProjectAccess(db, projectId, requestingUserId);
+
+  // Verify the group belongs to this project
+  const group = await evalRepo.findEvaluationGroup(db, groupId);
+  if (!group) {
+    throw new NotFoundError('Evaluation group not found');
+  }
+
+  // Delete learning guides first (not cascaded from ai_evaluations)
+  await deleteLearningGuidesByGroupId(db, groupId);
+
+  // Delete evaluations (dimensions + evidence cascade automatically)
+  await evalRepo.deleteEvaluationGroup(db, groupId);
 }
 
 // === Backfill ===

@@ -106,6 +106,50 @@ export function useEvaluationDetail(evaluationId: string | null) {
   });
 }
 
+export function useLearningGuide(groupId: string | null) {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+
+  return useQuery({
+    queryKey: ['learning-guide', projectId, groupId],
+    queryFn: () => aiEvaluationApi.getLearningGuide(projectId!, groupId!),
+    enabled: !!projectId && projectId !== 'skipped' && !!groupId,
+    refetchInterval: (query) => {
+      const guide = query.state.data?.data;
+      if (!guide || guide.status === 'completed' || guide.status === 'failed') return false;
+      const createdAt = guide.createdAt;
+      if (createdAt && Date.now() - new Date(createdAt).getTime() > 5 * 60 * 1000) return false;
+      return 3000;
+    },
+  });
+}
+
+export function useRegenerateLearningGuide() {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (groupId: string) => aiEvaluationApi.regenerateLearningGuide(projectId!, groupId),
+    onSuccess: (_data, groupId) => {
+      queryClient.invalidateQueries({ queryKey: ['learning-guide', projectId, groupId] });
+    },
+  });
+}
+
+export function useDeleteEvaluationGroup() {
+  const projectId = useAuthStore((s) => s.currentProjectId);
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (groupId: string) => aiEvaluationApi.deleteEvaluationGroup(projectId!, groupId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ai-evaluation-summary', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['ai-evaluation-group-history'] });
+      queryClient.invalidateQueries({ queryKey: ['ai-evaluation-latest-group'] });
+      queryClient.invalidateQueries({ queryKey: ['learning-guide'] });
+    },
+  });
+}
+
 export function useEvaluationHistory(targetUserId: string | null, page = 1) {
   const projectId = useAuthStore((s) => s.currentProjectId);
 

@@ -11,12 +11,18 @@ interface PerspectiveScoreSummaryProps {
   onSelectPerspective: (p: EvaluationPerspective) => void;
 }
 
-const PERSPECTIVES: EvaluationPerspective[] = ['claude', 'chatgpt', 'gemini'];
+/** Model perspectives only — 4D Framework shown in separate section tab */
+const MODEL_PERSPECTIVES: EvaluationPerspective[] = ['claude', 'chatgpt', 'gemini'];
 
-const perspectiveColors: Record<
-  EvaluationPerspective,
-  { bg: string; border: string; text: string }
-> = {
+function getGroupEval(group: EvaluationGroupResult, p: EvaluationPerspective) {
+  if (p === 'claude') return group.claude;
+  if (p === 'chatgpt') return group.chatgpt;
+  if (p === 'gemini') return group.gemini;
+  if (p === '4d_framework') return group.fourDFramework;
+  return null;
+}
+
+const perspectiveColors: Record<string, { bg: string; border: string; text: string }> = {
   claude: { bg: 'bg-orange-500/10', border: 'border-orange-500/30', text: 'text-orange-400' },
   chatgpt: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', text: 'text-emerald-400' },
   gemini: { bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400' },
@@ -29,9 +35,13 @@ export function PerspectiveScoreSummary({
 }: PerspectiveScoreSummaryProps) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      {PERSPECTIVES.map((p) => {
-        const evaluation = group[p];
-        const colors = perspectiveColors[p];
+      {MODEL_PERSPECTIVES.map((p) => {
+        const evaluation = getGroupEval(group, p);
+        const colors = perspectiveColors[p] ?? {
+          bg: 'bg-gray-500/10',
+          border: 'border-gray-500/30',
+          text: 'text-gray-400',
+        };
         const isActive = activePerspective === p;
         const tierLabels = PERSPECTIVE_TIER_LABELS[p];
 

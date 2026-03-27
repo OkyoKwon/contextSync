@@ -127,14 +127,13 @@ export async function updateEvaluation(
   return toEvaluation(row);
 }
 
-// === Group-aware guards ===
+// === Stuck evaluation cleanup ===
 
-export async function findPendingOrAnalyzingGroup(
+export async function failStuckEvaluations(
   db: Db,
   projectId: string,
   targetUserId: string,
-): Promise<boolean> {
-  // Stuck 방지: 10분 이상 pending/analyzing 상태인 레코드는 자동으로 failed 처리
+): Promise<void> {
   const stuckThreshold = new Date(Date.now() - 10 * 60 * 1000);
 
   await db
@@ -145,6 +144,16 @@ export async function findPendingOrAnalyzingGroup(
     .where('status', 'in', ['pending', 'analyzing'])
     .where('created_at', '<', stuckThreshold)
     .execute();
+}
+
+// === Group-aware guards ===
+
+export async function findPendingOrAnalyzingGroup(
+  db: Db,
+  projectId: string,
+  targetUserId: string,
+): Promise<boolean> {
+  await failStuckEvaluations(db, projectId, targetUserId);
 
   const row = await db
     .selectFrom('ai_evaluations')
@@ -199,6 +208,7 @@ export async function findEvaluationGroup(
   let claude: AiEvaluationWithDetails | null = null;
   let chatgpt: AiEvaluationWithDetails | null = null;
   let gemini: AiEvaluationWithDetails | null = null;
+  let fourDFramework: AiEvaluationWithDetails | null = null;
 
   for (const perspective of EVALUATION_PERSPECTIVES) {
     const eval_ = evaluationsMap.get(perspective);
@@ -210,10 +220,11 @@ export async function findEvaluationGroup(
 
     if (perspective === 'claude') claude = detail;
     else if (perspective === 'chatgpt') chatgpt = detail;
-    else gemini = detail;
+    else if (perspective === 'gemini') gemini = detail;
+    else if (perspective === '4d_framework') fourDFramework = detail;
   }
 
-  return { groupId, claude, chatgpt, gemini };
+  return { groupId, claude, chatgpt, gemini, fourDFramework };
 }
 
 export async function findLatestEvaluationGroup(
@@ -240,6 +251,7 @@ export async function findLatestEvaluationGroup(
       claude: legacyEval,
       chatgpt: null,
       gemini: null,
+      fourDFramework: null,
     };
   }
 
@@ -572,6 +584,7 @@ export async function findTeamEvaluationSummary(
     let claudeScore: { readonly score: number; readonly tier: string } | null = null;
     let chatgptScore: { readonly score: number; readonly tier: string } | null = null;
     let geminiScore: { readonly score: number; readonly tier: string } | null = null;
+    let fourDScore: { readonly score: number; readonly tier: string } | null = null;
 
     if (latestGroupId) {
       for (const e of userEvals) {
@@ -584,6 +597,7 @@ export async function findTeamEvaluationSummary(
           if (p === 'claude') claudeScore = entry;
           else if (p === 'chatgpt') chatgptScore = entry;
           else if (p === 'gemini') geminiScore = entry;
+          else if (p === '4d_framework') fourDScore = entry;
         }
       }
     } else if (latestEval) {
@@ -597,6 +611,7 @@ export async function findTeamEvaluationSummary(
       claude: claudeScore,
       chatgpt: chatgptScore,
       gemini: geminiScore,
+      '4d_framework': fourDScore,
     };
 
     // Build legacy latestEvaluation for backward compat (use the claude one)
@@ -775,4 +790,20 @@ function toEvaluation(row: Record<string, unknown>): AiEvaluation {
     createdAt: (row['created_at'] as Date).toISOString(),
     completedAt: row['completed_at'] ? (row['completed_at'] as Date).toISOString() : null,
   };
+}
+
+export async function deleteEvaluationGroup(db: Db, groupId: string): Promise<number> {
+  // Try group-based delete first
+  const result = await db
+    .deleteFrom('ai_evaluations')
+    .where('evaluation_group_id', '=', groupId)
+    .executeTakeFirst();
+
+  const deleted = Number(result.numDeletedRows ?? 0);
+  if (deleted > 0) return deleted;
+
+  // Fallback: legacy single evaluation (id used as pseudo-groupId)
+  const legacy = await db.deleteFrom('ai_evaluations').where('id', '=', groupId).executeTakeFirst();
+
+  return Number(legacy.numDeletedRows ?? 0);
 }

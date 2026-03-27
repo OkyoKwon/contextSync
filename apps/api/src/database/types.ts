@@ -16,6 +16,9 @@ export interface Database {
   ai_evaluations: AiEvaluationsTable;
   ai_evaluation_dimensions: AiEvaluationDimensionsTable;
   ai_evaluation_evidence: AiEvaluationEvidenceTable;
+  ai_evaluation_learning_guides: AiEvaluationLearningGuidesTable;
+  ai_evaluation_learning_steps: AiEvaluationLearningStepsTable;
+  ai_evaluation_learning_resources: AiEvaluationLearningResourcesTable;
 }
 
 export interface UsersTable {
@@ -234,6 +237,54 @@ export interface AiEvaluationEvidenceTable {
   sentiment: Generated<string>;
   annotation: string;
   annotation_ko: string | null;
+  sort_order: Generated<number>;
+}
+
+export interface AiEvaluationLearningGuidesTable {
+  id: Generated<string>;
+  evaluation_group_id: string;
+  target_user_id: string;
+  status: Generated<string>;
+  current_tier_summary: string | null;
+  current_tier_summary_ko: string | null;
+  next_tier_goal: string | null;
+  next_tier_goal_ko: string | null;
+  priority_areas: Generated<string[]>;
+  model_used: string;
+  input_tokens_used: Generated<number>;
+  output_tokens_used: Generated<number>;
+  error_message: string | null;
+  created_at: Generated<Date>;
+  completed_at: Date | null;
+}
+
+export interface AiEvaluationLearningStepsTable {
+  id: Generated<string>;
+  learning_guide_id: string;
+  step_number: number;
+  title: string;
+  title_ko: string | null;
+  objective: string;
+  objective_ko: string | null;
+  target_dimensions: Generated<string[]>;
+  key_actions: Generated<string[]>;
+  key_actions_ko: string[] | null;
+  practice_prompt: string | null;
+  practice_prompt_ko: string | null;
+  sort_order: Generated<number>;
+}
+
+export interface AiEvaluationLearningResourcesTable {
+  id: Generated<string>;
+  learning_step_id: string;
+  title: string;
+  title_ko: string | null;
+  url: string;
+  type: string;
+  level: string;
+  description: string;
+  description_ko: string | null;
+  estimated_minutes: number | null;
   sort_order: Generated<number>;
 }
 

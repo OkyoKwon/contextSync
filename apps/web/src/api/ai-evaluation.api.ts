@@ -6,6 +6,7 @@ import type {
   TriggerEvaluationGroupResult,
   EvaluationGroupResult,
   EvaluationGroupHistoryEntry,
+  LearningGuide,
 } from '@context-sync/shared';
 import { api } from './client';
 
@@ -63,4 +64,17 @@ export const aiEvaluationApi = {
       `/projects/${projectId}/ai-evaluation/backfill-translations`,
       { limit },
     ),
+
+  getLearningGuide: (projectId: string, groupId: string) =>
+    api.get<LearningGuide | null>(
+      `/projects/${projectId}/ai-evaluation/group/${groupId}/learning-guide`,
+    ),
+
+  regenerateLearningGuide: (projectId: string, groupId: string) =>
+    api.post<LearningGuide | null>(
+      `/projects/${projectId}/ai-evaluation/group/${groupId}/learning-guide/regenerate`,
+    ),
+
+  deleteEvaluationGroup: (projectId: string, groupId: string) =>
+    api.delete<{ deleted: boolean }>(`/projects/${projectId}/ai-evaluation/group/${groupId}`),
 };

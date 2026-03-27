@@ -6,7 +6,7 @@ export const EVIDENCE_SENTIMENTS = ['positive', 'negative', 'neutral'] as const;
 
 // === Perspectives ===
 
-export const EVALUATION_PERSPECTIVES = ['claude', 'chatgpt', 'gemini'] as const;
+export const EVALUATION_PERSPECTIVES = ['claude', 'chatgpt', 'gemini', '4d_framework'] as const;
 
 // === Claude Dimensions (existing) ===
 
@@ -41,10 +41,15 @@ export const GEMINI_DIMENSIONS = [
   'ethics_security',
 ] as const;
 
+// === 4D Framework Dimensions ===
+
+export const FOUR_D_DIMENSIONS = ['delegation', 'description', 'discernment', 'diligence'] as const;
+
 export const PERSPECTIVE_DIMENSIONS = {
   claude: CLAUDE_DIMENSIONS,
   chatgpt: CHATGPT_DIMENSIONS,
   gemini: GEMINI_DIMENSIONS,
+  '4d_framework': FOUR_D_DIMENSIONS,
 } as const;
 
 // === Proficiency Tiers ===
@@ -86,10 +91,18 @@ export const GEMINI_DIMENSION_WEIGHTS: Record<(typeof GEMINI_DIMENSIONS)[number]
   ethics_security: 0.2,
 } as const;
 
+export const FOUR_D_DIMENSION_WEIGHTS: Record<(typeof FOUR_D_DIMENSIONS)[number], number> = {
+  delegation: 0.25,
+  description: 0.25,
+  discernment: 0.25,
+  diligence: 0.25,
+} as const;
+
 export const PERSPECTIVE_WEIGHTS = {
   claude: CLAUDE_DIMENSION_WEIGHTS,
   chatgpt: CHATGPT_DIMENSION_WEIGHTS,
   gemini: GEMINI_DIMENSION_WEIGHTS,
+  '4d_framework': FOUR_D_DIMENSION_WEIGHTS,
 } as const;
 
 // === Tier Ranges ===
@@ -119,10 +132,19 @@ export const GEMINI_TIER_RANGES = {
   innovator: { min: 81, max: 100 },
 } as const;
 
+export const FOUR_D_TIER_RANGES = {
+  foundational: { min: 0, max: 25 },
+  developing: { min: 26, max: 50 },
+  proficient: { min: 51, max: 70 },
+  advanced: { min: 71, max: 85 },
+  fluent: { min: 86, max: 100 },
+} as const;
+
 export const PERSPECTIVE_TIER_RANGES = {
   claude: CLAUDE_TIER_RANGES,
   chatgpt: CHATGPT_TIER_RANGES,
   gemini: GEMINI_TIER_RANGES,
+  '4d_framework': FOUR_D_TIER_RANGES,
 } as const;
 
 // === Dimension Labels ===
@@ -147,6 +169,11 @@ export const DIMENSION_LABELS: Record<string, string> = {
   critical_thinking: 'Critical Thinking',
   integration_problem_solving: 'Integration & Problem Solving',
   ethics_security: 'Ethics & Security',
+  // 4D Framework
+  delegation: 'Delegation',
+  description: 'Description',
+  discernment: 'Discernment',
+  diligence: 'Diligence',
 } as const;
 
 export const CLAUDE_DIMENSION_LABELS: Record<string, string> = {
@@ -174,10 +201,18 @@ export const GEMINI_DIMENSION_LABELS: Record<string, string> = {
   ethics_security: 'Ethics & Security',
 } as const;
 
+export const FOUR_D_DIMENSION_LABELS: Record<string, string> = {
+  delegation: 'Delegation',
+  description: 'Description',
+  discernment: 'Discernment',
+  diligence: 'Diligence',
+} as const;
+
 export const PERSPECTIVE_DIMENSION_LABELS = {
   claude: CLAUDE_DIMENSION_LABELS,
   chatgpt: CHATGPT_DIMENSION_LABELS,
   gemini: GEMINI_DIMENSION_LABELS,
+  '4d_framework': FOUR_D_DIMENSION_LABELS,
 } as const;
 
 // === Tier Labels ===
@@ -205,10 +240,19 @@ export const GEMINI_TIER_LABELS: Record<string, string> = {
   innovator: 'Innovator',
 } as const;
 
+export const FOUR_D_TIER_LABELS: Record<string, string> = {
+  foundational: 'Foundational',
+  developing: 'Developing',
+  proficient: 'Proficient',
+  advanced: 'Advanced',
+  fluent: 'Fluent',
+} as const;
+
 export const PERSPECTIVE_TIER_LABELS = {
   claude: CLAUDE_TIER_LABELS,
   chatgpt: CHATGPT_TIER_LABELS,
   gemini: GEMINI_TIER_LABELS,
+  '4d_framework': FOUR_D_TIER_LABELS,
 } as const;
 
 // === Perspective Labels ===
@@ -217,6 +261,7 @@ export const PERSPECTIVE_LABELS: Record<string, string> = {
   claude: 'Claude',
   chatgpt: 'ChatGPT',
   gemini: 'Gemini',
+  '4d_framework': '4D Framework',
 } as const;
 
 // === Constraints ===

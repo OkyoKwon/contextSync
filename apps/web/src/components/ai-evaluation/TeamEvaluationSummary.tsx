@@ -10,18 +10,21 @@ interface TeamEvaluationSummaryProps {
   onSelectUser: (userId: string) => void;
 }
 
+/** Model perspectives only — 4D Framework shown in separate section tab */
 const PERSPECTIVES: EvaluationPerspective[] = ['claude', 'chatgpt', 'gemini'];
 
-const perspectiveColors: Record<EvaluationPerspective, string> = {
+const perspectiveColors: Record<string, string> = {
   claude: 'text-orange-400',
   chatgpt: 'text-emerald-400',
   gemini: 'text-blue-400',
+  '4d_framework': 'text-purple-400',
 };
 
-const barColors: Record<EvaluationPerspective, string> = {
+const barColors: Record<string, string> = {
   claude: 'bg-orange-500',
   chatgpt: 'bg-emerald-500',
   gemini: 'bg-blue-500',
+  '4d_framework': 'bg-purple-500',
 };
 
 export function TeamEvaluationSummary({ members, onSelectUser }: TeamEvaluationSummaryProps) {
