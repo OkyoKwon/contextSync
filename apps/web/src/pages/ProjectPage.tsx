@@ -189,7 +189,7 @@ export function ProjectPage() {
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border-default px-6 py-3">
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           <PageBreadcrumb pageName="Conversations" />
           {myDirectory && (
             <span className="flex items-center gap-1.5 text-sm text-text-tertiary">
@@ -208,45 +208,7 @@ export function ProjectPage() {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          {showOwnerDropdown && (
-            <div className="flex items-center gap-1 rounded-lg border border-border-default bg-bg-secondary p-1">
-              <button
-                type="button"
-                onClick={() => setOwnerFilter(null)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  ownerFilter === null
-                    ? 'bg-blue-500/20 text-blue-400'
-                    : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary'
-                }`}
-              >
-                All
-              </button>
-              {uniqueOwners.map((owner) => (
-                <button
-                  key={owner.name}
-                  type="button"
-                  onClick={() => setOwnerFilter(owner.name)}
-                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                    ownerFilter === owner.name
-                      ? 'bg-blue-500/20 text-blue-400'
-                      : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary'
-                  }`}
-                >
-                  <span
-                    className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-medium ${
-                      ownerFilter === owner.name
-                        ? 'bg-blue-500/30 text-blue-400'
-                        : 'bg-zinc-600/50 text-text-muted'
-                    }`}
-                  >
-                    {owner.name.charAt(0).toUpperCase()}
-                  </span>
-                  {owner.name === userName ? 'Mine' : owner.name}
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => setShowUploadModal(true)}
             className="flex items-center gap-1.5 rounded-md border border-border-primary bg-bg-secondary px-3 py-1.5 text-sm text-text-secondary transition-colors hover:bg-bg-tertiary disabled:opacity-50"
@@ -285,9 +247,10 @@ export function ProjectPage() {
           <Button variant="secondary" onClick={() => setIsChangeDirectoryOpen(true)}>
             {myDirectory ? 'Change My Directory' : 'Link My Directory'}
           </Button>
+          <div className="h-5 w-px bg-border-default" />
+          <SyncStatusIndicator syncMutation={syncMutation} />
+          <span className="whitespace-nowrap text-xs text-text-muted">Auto-sync every 30s</span>
         </div>
-        <SyncStatusIndicator syncMutation={syncMutation} />
-        <span className="text-xs text-text-muted">Auto-sync every 30s</span>
       </div>
 
       {/* Content */}
@@ -315,6 +278,10 @@ export function ProjectPage() {
               onSyncProject={handleSyncProject}
               isSyncing={syncMutation.isPending}
               ownerFilter={ownerFilter}
+              uniqueOwners={uniqueOwners}
+              userName={userName}
+              showOwnerDropdown={showOwnerDropdown}
+              onOwnerFilterChange={setOwnerFilter}
             />
           </div>
 

@@ -26,6 +26,11 @@ type VirtualItem =
   | { readonly type: 'group'; readonly group: LocalProjectGroup }
   | { readonly type: 'session'; readonly session: LocalSessionInfo; readonly groupPath: string };
 
+interface OwnerInfo {
+  readonly name: string;
+  readonly avatarUrl: string | null;
+}
+
 interface LocalSessionListProps {
   readonly groups: readonly LocalProjectGroup[];
   readonly selectedSessionId: string | null;
@@ -35,6 +40,10 @@ interface LocalSessionListProps {
   readonly onSyncProject: (group: LocalProjectGroup) => void;
   readonly isSyncing: boolean;
   readonly ownerFilter?: string | null;
+  readonly uniqueOwners?: readonly OwnerInfo[];
+  readonly userName?: string | null;
+  readonly showOwnerDropdown?: boolean;
+  readonly onOwnerFilterChange?: (owner: string | null) => void;
 }
 
 export function LocalSessionList({
@@ -44,6 +53,10 @@ export function LocalSessionList({
   onSelectSession,
   onSelectProject,
   ownerFilter,
+  uniqueOwners,
+  userName,
+  showOwnerDropdown,
+  onOwnerFilterChange,
 }: LocalSessionListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -99,6 +112,57 @@ export function LocalSessionList({
   return (
     <div className="flex h-full flex-col">
       <div className="border-b border-border-default p-3">
+        {showOwnerDropdown && (
+          <div className="mb-2 flex items-center gap-1 rounded-lg border border-border-default bg-bg-secondary p-1">
+            <button
+              type="button"
+              onClick={() => onOwnerFilterChange?.(null)}
+              className={`rounded-md px-2 py-1 transition-colors ${
+                ownerFilter === null
+                  ? 'bg-violet-500/20 text-violet-400'
+                  : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary'
+              }`}
+            >
+              <svg
+                className="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </button>
+            {uniqueOwners?.map((owner) => (
+              <button
+                key={owner.name}
+                type="button"
+                onClick={() => onOwnerFilterChange?.(owner.name)}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  ownerFilter === owner.name
+                    ? 'bg-violet-500/20 text-violet-400'
+                    : 'text-text-muted hover:bg-surface-hover hover:text-text-secondary'
+                }`}
+              >
+                <span
+                  className={`inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-medium ${
+                    ownerFilter === owner.name
+                      ? 'bg-violet-500/30 text-violet-400'
+                      : 'bg-zinc-600/50 text-text-muted'
+                  }`}
+                >
+                  {owner.name.charAt(0).toUpperCase()}
+                </span>
+                {owner.name === userName ? 'Mine' : owner.name}
+              </button>
+            ))}
+          </div>
+        )}
         <input
           type="text"
           placeholder="Search sessions..."

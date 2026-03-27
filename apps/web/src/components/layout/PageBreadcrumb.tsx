@@ -12,7 +12,7 @@ export function PageBreadcrumb({ pageName }: PageBreadcrumbProps) {
   }
 
   return (
-    <h1 className="text-xl font-bold text-text-primary">
+    <h1 className="whitespace-nowrap text-xl font-bold text-text-primary">
       <span className="text-text-tertiary">{projectName}</span>
       <span className="mx-2 text-text-muted">&gt;</span>
       <span>{pageName}</span>
