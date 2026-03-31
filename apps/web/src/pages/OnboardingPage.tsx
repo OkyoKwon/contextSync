@@ -8,6 +8,7 @@ import { Card } from '../components/ui/Card';
 import { IdentifyStep } from '../components/onboarding/IdentifyStep';
 import { ProjectStep } from '../components/onboarding/ProjectStep';
 import { DirectoryStep } from '../components/onboarding/DirectoryStep';
+import { ConnectionError } from '../components/auth/ConnectionError';
 import type { User } from '@context-sync/shared';
 
 const LiquidGradientBackground = lazy(() =>
@@ -20,13 +21,17 @@ type WizardStep = 'identify' | 'project' | 'directory';
 
 export function OnboardingPage() {
   const token = useAuthStore((s) => s.token);
+  const user = useAuthStore((s) => s.user);
   const setAuth = useAuthStore((s) => s.setAuth);
   const setCurrentProject = useAuthStore((s) => s.setCurrentProject);
   const currentProjectId = useAuthStore((s) => s.currentProjectId);
+  const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [wizardStep, setWizardStep] = useState<WizardStep>(token ? 'project' : 'identify');
+  const [wizardStepOverride, setWizardStepOverride] = useState<WizardStep | null>(null);
+  const wizardStep: WizardStep = !token ? 'identify' : (wizardStepOverride ?? 'project');
+  const setWizardStep = setWizardStepOverride;
   const [localDirectory, setLocalDirectory] = useState<string | null>(null);
   const [checkingProjects, setCheckingProjects] = useState(false);
   const projectNameRef = useRef('');
@@ -40,10 +45,15 @@ export function OnboardingPage() {
   const directories = useMemo(() => dirData?.data ?? [], [dirData?.data]);
   const hasDirectories = directories.length > 0;
 
-  const { data: existingProjectsData, isLoading: isCheckingExisting } = useQuery({
+  const {
+    data: existingProjectsData,
+    isLoading: isCheckingExisting,
+    isError: isProjectsError,
+  } = useQuery({
     queryKey: ['projects'],
     queryFn: () => projectsApi.list(),
     enabled: !!token && !currentProjectId,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -112,9 +122,18 @@ export function OnboardingPage() {
     navigate('/dashboard');
   }, [setCurrentProject, navigate]);
 
+  const handleSwitchUser = useCallback(() => {
+    logout();
+    setWizardStep('identify');
+  }, [logout]);
+
   // Early returns after all hooks
   if (token && currentProjectId) {
     return <Navigate to="/dashboard" replace />;
+  }
+
+  if (isProjectsError && wizardStep !== 'identify') {
+    return <ConnectionError onRetry={() => window.location.reload()} />;
   }
 
   if (checkingProjects || (token && !currentProjectId && isCheckingExisting)) {
@@ -170,8 +189,10 @@ export function OnboardingPage() {
               <ProjectStep
                 onNext={handleProjectNext}
                 onSkip={handleSkip}
+                onSwitchUser={handleSwitchUser}
                 hasDirectories={hasDirectories}
                 isPending={createMutation.isPending}
+                userName={user?.name}
               />
             )}
 

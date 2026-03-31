@@ -4,6 +4,7 @@ import { useAuthStore } from './stores/auth.store';
 import { useOnboardingStatus } from './hooks/use-onboarding-status';
 import { AppLayout } from './components/layout/AppLayout';
 import { AppEntryRedirect } from './components/auth/AppEntryRedirect';
+import { ConnectionError } from './components/auth/ConnectionError';
 
 const OnboardingPage = lazy(() =>
   import('./pages/OnboardingPage').then((m) => ({ default: m.OnboardingPage })),
@@ -45,6 +46,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!token) return <Navigate to="/onboarding" replace />;
   if (status === 'loading') return null;
+  if (status === 'error') return <ConnectionError onRetry={() => window.location.reload()} />;
   if (status === 'needs-project') return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 }

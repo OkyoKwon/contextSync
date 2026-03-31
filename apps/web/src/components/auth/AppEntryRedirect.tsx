@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router';
 import { useAuthStore } from '@/stores/auth.store';
 import { useOnboardingStatus } from '@/hooks/use-onboarding-status';
 import { authApi } from '@/api/auth.api';
+import { ConnectionError } from '@/components/auth/ConnectionError';
 
 export function AppEntryRedirect() {
   const token = useAuthStore((s) => s.token);
   const setAuth = useAuthStore((s) => s.setAuth);
   const logout = useAuthStore((s) => s.logout);
+  const [connectionError, setConnectionError] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -17,11 +19,17 @@ export function AppEntryRedirect() {
       try {
         const response = await authApi.getMe();
         if (cancelled) return;
+        setConnectionError(false);
         if (response.data) {
           setAuth(token!, response.data);
         }
-      } catch {
-        if (!cancelled) {
+      } catch (err) {
+        if (cancelled) return;
+        const isNetworkError =
+          err instanceof TypeError || (err instanceof Error && !('statusCode' in err));
+        if (isNetworkError) {
+          setConnectionError(true);
+        } else {
           logout();
         }
       }
@@ -31,6 +39,10 @@ export function AppEntryRedirect() {
       cancelled = true;
     };
   }, [token, setAuth, logout]);
+
+  if (connectionError) {
+    return <ConnectionError onRetry={() => setConnectionError(false)} />;
+  }
 
   if (!token) {
     return <Navigate to="/onboarding" replace />;
@@ -44,6 +56,9 @@ function AuthenticatedRedirect() {
 
   if (status === 'loading') {
     return null;
+  }
+  if (status === 'error') {
+    return <ConnectionError onRetry={() => window.location.reload()} />;
   }
   if (status === 'needs-project') {
     return <Navigate to="/onboarding" replace />;

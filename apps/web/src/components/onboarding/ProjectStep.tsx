@@ -5,15 +5,40 @@ import { Button } from '../ui/Button';
 interface ProjectStepProps {
   readonly onNext: (name: string) => void;
   readonly onSkip: () => void;
+  readonly onSwitchUser?: () => void;
   readonly hasDirectories: boolean;
   readonly isPending: boolean;
+  readonly userName?: string;
 }
 
-export function ProjectStep({ onNext, onSkip, hasDirectories, isPending }: ProjectStepProps) {
+export function ProjectStep({
+  onNext,
+  onSkip,
+  onSwitchUser,
+  hasDirectories,
+  isPending,
+  userName,
+}: ProjectStepProps) {
   const [name, setName] = useState('');
 
   return (
     <div className="space-y-4">
+      {userName && (
+        <div className="flex items-center justify-between rounded-lg bg-surface-secondary px-3 py-2">
+          <span className="text-sm text-text-secondary">
+            Signed in as <span className="font-medium text-text-primary">{userName}</span>
+          </span>
+          {onSwitchUser && (
+            <button
+              type="button"
+              onClick={onSwitchUser}
+              className="text-xs text-blue-400 hover:text-blue-300"
+            >
+              Switch user
+            </button>
+          )}
+        </div>
+      )}
       <Input
         label="Project Name"
         value={name}
