@@ -64,6 +64,13 @@ function DirectoryItem({
         <p className="text-xs text-text-tertiary">
           {dir.sessionCount} session{dir.sessionCount !== 1 ? 's' : ''}
           {showActivity && ` · ${relativeTime(dir.lastActivityAt)}`}
+          <span className="ml-1.5 inline-flex rounded bg-zinc-700/60 px-1 py-0.5 text-[10px] font-medium leading-none text-text-muted">
+            {dir.source === 'claude_code'
+              ? 'CLI'
+              : dir.source === 'claude_ai'
+                ? 'Desktop'
+                : 'CLI + Desktop'}
+          </span>
         </p>
       </div>
     </label>
@@ -245,7 +252,8 @@ export function DirectoryPicker({
         Link Working Directory
       </label>
       <p className="text-xs text-text-tertiary">
-        Active directories (marked with green dot) have running Claude Code sessions.
+        Active directories (marked with green dot) have running sessions. Source labels show CLI or
+        Desktop App origin.
       </p>
       <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">Detected</p>
       <div className="relative">

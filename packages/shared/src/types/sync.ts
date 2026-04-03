@@ -3,6 +3,8 @@ export interface LocalDirectory {
   readonly sessionCount: number;
   readonly lastActivityAt: string;
   readonly isActive: boolean;
+  /** Source of detection: 'claude_code' (CLI only), 'claude_ai' (Desktop only), undefined (both) */
+  readonly source?: 'claude_code' | 'claude_ai';
 }
 
 export interface LocalSessionInfo {

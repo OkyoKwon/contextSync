@@ -85,30 +85,62 @@ function encodeProjectPath(absolutePath: string): string {
 }
 
 export async function listLocalDirectories(): Promise<readonly LocalDirectory[]> {
+  // Collect CLI directories
   const sessionFiles = await findSessionFiles();
-
-  // Group files by directory, track counts and latest modification
-  const dirMap = new Map<string, { count: number; latestMs: number }>();
+  const cliDirMap = new Map<string, { count: number; latestMs: number }>();
 
   for (const file of sessionFiles) {
-    const existing = dirMap.get(file.dir);
+    const path = decodeProjectPath(file.dir);
+    const existing = cliDirMap.get(path);
     if (existing) {
-      dirMap.set(file.dir, {
+      cliDirMap.set(path, {
         count: existing.count + 1,
         latestMs: Math.max(existing.latestMs, file.lastModifiedMs),
       });
     } else {
-      dirMap.set(file.dir, { count: 1, latestMs: file.lastModifiedMs });
+      cliDirMap.set(path, { count: 1, latestMs: file.lastModifiedMs });
     }
   }
 
+  // Collect Desktop directories
+  const desktopFiles = await findDesktopSessionFiles();
+  const desktopDirMap = new Map<string, { count: number; latestMs: number }>();
+
+  for (const file of desktopFiles) {
+    for (const folder of file.metadata.userSelectedFolders) {
+      const existing = desktopDirMap.get(folder);
+      if (existing) {
+        desktopDirMap.set(folder, {
+          count: existing.count + 1,
+          latestMs: Math.max(existing.latestMs, file.lastModifiedMs),
+        });
+      } else {
+        desktopDirMap.set(folder, { count: 1, latestMs: file.lastModifiedMs });
+      }
+    }
+  }
+
+  // Merge: determine source per path
+  const allPaths = new Set([...cliDirMap.keys(), ...desktopDirMap.keys()]);
   const now = Date.now();
-  const directories: LocalDirectory[] = [...dirMap.entries()].map(([dirName, info]) => ({
-    path: decodeProjectPath(dirName),
-    sessionCount: info.count,
-    lastActivityAt: new Date(info.latestMs).toISOString(),
-    isActive: now - info.latestMs < ACTIVE_THRESHOLD_MS,
-  }));
+
+  const directories: LocalDirectory[] = [...allPaths].map((path) => {
+    const cli = cliDirMap.get(path);
+    const desktop = desktopDirMap.get(path);
+    const count = (cli?.count ?? 0) + (desktop?.count ?? 0);
+    const latestMs = Math.max(cli?.latestMs ?? 0, desktop?.latestMs ?? 0);
+
+    const source: 'claude_code' | 'claude_ai' | undefined =
+      cli && desktop ? undefined : cli ? 'claude_code' : 'claude_ai';
+
+    return {
+      path,
+      sessionCount: count,
+      lastActivityAt: new Date(latestMs).toISOString(),
+      isActive: now - latestMs < ACTIVE_THRESHOLD_MS,
+      ...(source !== undefined ? { source } : {}),
+    };
+  });
 
   // Sort by most recent activity first
   directories.sort((a, b) => (b.lastActivityAt > a.lastActivityAt ? 1 : -1));
