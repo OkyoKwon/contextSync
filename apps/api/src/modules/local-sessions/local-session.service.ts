@@ -7,7 +7,6 @@ import type {
   LocalProjectGroup,
   LocalSessionInfo,
   LocalSessionDetail,
-  LocalSessionMessage,
   ProjectConversation,
   UnifiedMessage,
   BrowseDirectoryEntry,
@@ -16,6 +15,11 @@ import {
   parseClaudeCodeSession,
   parseClaudeCodeSessionWithTimestamps,
 } from '../sessions/parsers/claude-code-session.parser.js';
+import {
+  parseDesktopAuditSession,
+  parseDesktopAuditSessionWithTimestamps,
+} from '../sessions/parsers/desktop-audit-session.parser.js';
+import { findDesktopSessionFiles } from './desktop-session.discovery.js';
 import { getProjectSessionFiles, getProjectDirectoryOwners } from './local-session.sync.js';
 
 const CLAUDE_PROJECTS_DIR = join(homedir(), '.claude', 'projects');
@@ -28,6 +32,8 @@ export interface SessionFile {
   readonly fileName: string;
   readonly fullPath: string;
   readonly lastModifiedMs: number;
+  readonly sourceType?: 'claude_code' | 'claude_desktop';
+  readonly desktopTitle?: string;
 }
 
 export async function findSessionFiles(): Promise<readonly SessionFile[]> {
@@ -137,13 +143,18 @@ export async function listLocalSessions(
   const allSessions: LocalSessionInfo[] = [];
 
   for (const file of sessionFiles) {
-    const sessionId = file.fileName.replace('.jsonl', '');
+    const isDesktop = file.sourceType === 'claude_desktop';
+    const sessionId = isDesktop
+      ? file.fileName.replace('.audit', '')
+      : file.fileName.replace('.jsonl', '');
     const projectPath = decodeProjectPath(file.dir);
     const isActive = now - file.lastModifiedMs < ACTIVE_THRESHOLD_MS;
 
     try {
       const content = await readFile(file.fullPath, 'utf-8');
-      const result = parseClaudeCodeSessionWithTimestamps(content);
+      const result = isDesktop
+        ? parseDesktopAuditSessionWithTimestamps(content, file.desktopTitle)
+        : parseClaudeCodeSessionWithTimestamps(content);
 
       if (result.messages.length === 0) continue;
 
@@ -157,6 +168,7 @@ export async function listLocalSessions(
         lastModifiedAt: new Date(file.lastModifiedMs).toISOString(),
         isSynced: syncedIds.has(sessionId),
         isActive,
+        source: isDesktop ? 'claude_ai' : 'claude_code',
         ...(syncedDbIdMap.has(sessionId) ? { dbSessionId: syncedDbIdMap.get(sessionId) } : {}),
       });
     } catch {
@@ -331,38 +343,61 @@ async function getTeamDbSessionGroups(
 }
 
 export async function getLocalSessionDetail(sessionId: string): Promise<LocalSessionDetail> {
+  // Try Claude Code sessions first
   const sessionFiles = await findSessionFiles();
-  const file = sessionFiles.find((f) => f.fileName.replace('.jsonl', '') === sessionId);
+  const codeFile = sessionFiles.find((f) => f.fileName.replace('.jsonl', '') === sessionId);
 
-  if (!file) {
-    const err = new Error(`Local session not found: ${sessionId}`);
-    (err as NodeJS.ErrnoException).code = 'NOT_FOUND';
-    throw err;
+  if (codeFile) {
+    const content = await readFile(codeFile.fullPath, 'utf-8');
+    const { parsed, filePaths } = parseClaudeCodeSession(content);
+    const projectPath = decodeProjectPath(codeFile.dir);
+
+    return {
+      sessionId,
+      projectPath,
+      title: parsed.title,
+      branch: parsed.branch ?? null,
+      filePaths,
+      messages: parsed.messages.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+        modelUsed: m.modelUsed,
+        tokensUsed: m.tokensUsed,
+      })),
+      startedAt: findFirstTimestamp(content),
+      lastModifiedAt: new Date(codeFile.lastModifiedMs).toISOString(),
+    };
   }
 
-  const content = await readFile(file.fullPath, 'utf-8');
-  const { parsed, filePaths } = parseClaudeCodeSession(content);
-  const projectPath = decodeProjectPath(file.dir);
+  // Try Desktop App sessions
+  const desktopFiles = await findDesktopSessionFiles();
+  const desktopFile = desktopFiles.find((d) => d.sessionId === sessionId);
 
-  const messages: readonly LocalSessionMessage[] = parsed.messages.map((m) => ({
-    role: m.role as 'user' | 'assistant',
-    content: m.content,
-    modelUsed: m.modelUsed,
-    tokensUsed: m.tokensUsed,
-  }));
+  if (desktopFile) {
+    const content = await readFile(desktopFile.auditLogPath, 'utf-8');
+    const { parsed, filePaths } = parseDesktopAuditSession(content, desktopFile.metadata.title);
+    const projectPath = desktopFile.metadata.userSelectedFolders[0] ?? '';
 
-  const firstTimestamp = findFirstTimestamp(content);
+    return {
+      sessionId,
+      projectPath,
+      title: parsed.title,
+      branch: parsed.branch ?? null,
+      filePaths,
+      messages: parsed.messages.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+        modelUsed: m.modelUsed,
+        tokensUsed: m.tokensUsed,
+      })),
+      startedAt: findFirstTimestamp(content),
+      lastModifiedAt: new Date(desktopFile.lastModifiedMs).toISOString(),
+    };
+  }
 
-  return {
-    sessionId,
-    projectPath,
-    title: parsed.title,
-    branch: parsed.branch ?? null,
-    filePaths,
-    messages,
-    startedAt: firstTimestamp,
-    lastModifiedAt: new Date(file.lastModifiedMs).toISOString(),
-  };
+  const err = new Error(`Local session not found: ${sessionId}`);
+  (err as NodeJS.ErrnoException).code = 'NOT_FOUND';
+  throw err;
 }
 
 export function findFirstTimestamp(raw: string): string | null {
@@ -372,6 +407,10 @@ export function findFirstTimestamp(raw: string): string | null {
       const record = JSON.parse(line) as Record<string, unknown>;
       if ('timestamp' in record && record['timestamp']) {
         return String(record['timestamp']);
+      }
+      // Desktop App uses _audit_timestamp
+      if ('_audit_timestamp' in record && record['_audit_timestamp']) {
+        return String(record['_audit_timestamp']);
       }
     } catch {
       continue;

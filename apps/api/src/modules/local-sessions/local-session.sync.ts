@@ -7,9 +7,14 @@ import type {
   RecalculateTokenResult,
 } from '@context-sync/shared';
 import { parseClaudeCodeSession } from '../sessions/parsers/claude-code-session.parser.js';
+import { parseDesktopAuditSession } from '../sessions/parsers/desktop-audit-session.parser.js';
 import { importParsedSession } from '../sessions/session-import.service.js';
 import { assertProjectAccess } from '../projects/project.service.js';
 import { findSessionFiles, type SessionFile } from './local-session.service.js';
+import {
+  findDesktopSessionFiles,
+  filterDesktopSessionsByDirectories,
+} from './desktop-session.discovery.js';
 
 export async function getProjectSessionFiles(
   db: Db,
@@ -42,9 +47,34 @@ export async function getProjectSessionFiles(
   if (directoriesToScan.length === 0) return [];
 
   const encodedDirs = new Set(directoriesToScan.map(encodeProjectPath));
+  const dirSet = new Set(directoriesToScan);
 
+  // Claude Code CLI sessions
   const allSessionFiles = await findSessionFiles();
-  return allSessionFiles.filter((f) => encodedDirs.has(f.dir));
+  const codeFiles = allSessionFiles.filter((f) => encodedDirs.has(f.dir));
+
+  // Desktop App sessions
+  const allDesktopFiles = await findDesktopSessionFiles();
+  const matchingDesktop = filterDesktopSessionsByDirectories(allDesktopFiles, dirSet);
+
+  const desktopAsSessionFiles: SessionFile[] = matchingDesktop.map((d) => {
+    // Use the first matching folder as the group directory
+    const matchingFolder =
+      d.metadata.userSelectedFolders.find((f) => dirSet.has(f)) ??
+      d.metadata.userSelectedFolders[0] ??
+      '';
+
+    return {
+      dir: encodeProjectPath(matchingFolder),
+      fileName: `${d.sessionId}.audit`,
+      fullPath: d.auditLogPath,
+      lastModifiedMs: d.lastModifiedMs,
+      sourceType: 'claude_desktop' as const,
+      desktopTitle: d.metadata.title || undefined,
+    };
+  });
+
+  return [...codeFiles, ...desktopAsSessionFiles];
 }
 
 function encodeProjectPath(absolutePath: string): string {
@@ -104,8 +134,24 @@ export async function syncSessions(
   userId: string,
   sessionIds: readonly string[],
 ): Promise<SyncSessionResult> {
-  const sessionFiles = await findSessionFiles();
-  const fileMap = new Map(sessionFiles.map((f) => [f.fileName.replace('.jsonl', ''), f]));
+  // Collect both Claude Code and Desktop session files
+  const codeSessionFiles = await findSessionFiles();
+  const desktopSessionFiles = await findDesktopSessionFiles();
+
+  const fileMap = new Map<string, SessionFile>();
+  for (const f of codeSessionFiles) {
+    fileMap.set(f.fileName.replace('.jsonl', ''), f);
+  }
+  for (const d of desktopSessionFiles) {
+    fileMap.set(d.sessionId, {
+      dir: '',
+      fileName: `${d.sessionId}.audit`,
+      fullPath: d.auditLogPath,
+      lastModifiedMs: d.lastModifiedMs,
+      sourceType: 'claude_desktop',
+      desktopTitle: d.metadata.title || undefined,
+    });
+  }
 
   const results: SyncSingleResult[] = [];
   let syncedCount = 0;
@@ -119,7 +165,7 @@ export async function syncSessions(
       }
 
       const content = await readFile(file.fullPath, 'utf-8');
-      const { parsed, filePaths } = parseClaudeCodeSession(content);
+      const { parsed, filePaths } = parseSessionBySourceType(content, file);
 
       const importResult = await importParsedSession(db, projectId, userId, parsed, filePaths);
 
@@ -187,7 +233,10 @@ export async function recalculateTokenUsage(
   for (const row of syncedRows) {
     try {
       const content = await readFile(row.source_path, 'utf-8');
-      const { parsed } = parseClaudeCodeSession(content);
+      const isDesktop = row.source_path.endsWith('/audit.jsonl');
+      const { parsed } = isDesktop
+        ? parseDesktopAuditSession(content)
+        : parseClaudeCodeSession(content);
 
       // Re-parsed data may have more messages (tool-use turns) than old parse.
       // Delete all messages and re-insert from scratch.
@@ -230,7 +279,7 @@ export async function updateSyncedSession(
   file: SessionFile,
 ): Promise<{ readonly messageCount: number }> {
   const content = await readFile(file.fullPath, 'utf-8');
-  const { parsed, filePaths } = parseClaudeCodeSession(content);
+  const { parsed, filePaths } = parseSessionBySourceType(content, file);
 
   // Delete old messages and re-insert from re-parsed content
   await db.deleteFrom('messages').where('session_id', '=', internalSessionId).execute();
@@ -269,4 +318,17 @@ export async function updateSyncedSession(
     .execute();
 
   return { messageCount: values.length };
+}
+
+function parseSessionBySourceType(
+  content: string,
+  file: SessionFile,
+): {
+  readonly parsed: import('@context-sync/shared').SessionImportData;
+  readonly filePaths: readonly string[];
+} {
+  if (file.sourceType === 'claude_desktop') {
+    return parseDesktopAuditSession(content, file.desktopTitle);
+  }
+  return parseClaudeCodeSession(content);
 }

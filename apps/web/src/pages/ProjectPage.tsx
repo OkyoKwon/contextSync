@@ -30,8 +30,11 @@ type Selection =
   | { readonly type: 'session'; readonly sessionId: string; readonly dbSessionId?: string }
   | { readonly type: 'project'; readonly projectPath: string };
 
+type SourceTab = 'claude_code' | 'claude_desktop';
+
 export function ProjectPage() {
   const [selection, setSelection] = useState<Selection>({ type: 'none' });
+  const [sourceTab, setSourceTab] = useState<SourceTab>('claude_code');
   const [isSyncedExpanded, setIsSyncedExpanded] = useState(false);
   const [isChangeDirectoryOpen, setIsChangeDirectoryOpen] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -74,7 +77,48 @@ export function ProjectPage() {
     }
   }, [projectId, exporting]);
 
-  const groups = useMemo(() => data?.data ?? [], [data]);
+  const allGroups = useMemo(() => data?.data ?? [], [data]);
+
+  const groups = useMemo(() => {
+    const targetSource = sourceTab === 'claude_desktop' ? 'claude_ai' : 'claude_code';
+    return allGroups
+      .map((group) => {
+        const filtered = group.sessions.filter((s) => {
+          // Remote (team) sessions don't have source — show in Claude Code tab
+          if (s.isRemote) return sourceTab === 'claude_code';
+          return (s.source ?? 'claude_code') === targetSource;
+        });
+        if (filtered.length === 0) return null;
+        return {
+          ...group,
+          sessions: filtered,
+          totalSessionCount: filtered.length,
+          totalMessages: filtered.reduce((sum, s) => sum + s.messageCount, 0),
+        };
+      })
+      .filter((g): g is NonNullable<typeof g> => g !== null);
+  }, [allGroups, sourceTab]);
+
+  const desktopSessionCount = useMemo(
+    () =>
+      allGroups.reduce(
+        (sum, g) => sum + g.sessions.filter((s) => s.source === 'claude_ai').length,
+        0,
+      ),
+    [allGroups],
+  );
+
+  const codeSessionCount = useMemo(
+    () =>
+      allGroups.reduce(
+        (sum, g) =>
+          sum +
+          g.sessions.filter((s) => (s.source ?? 'claude_code') === 'claude_code' || s.isRemote)
+            .length,
+        0,
+      ),
+    [allGroups],
+  );
 
   const isTeamProject = !!currentProject?.isTeam;
   const collaborators = collaboratorsData?.data ?? [];
@@ -275,7 +319,48 @@ export function ProjectPage() {
       ) : (
         <div className="flex flex-1 overflow-hidden">
           {/* Left panel — session list */}
-          <div className="w-96 flex-shrink-0 border-r border-border-default">
+          <div className="w-96 flex-shrink-0 border-r border-border-default flex flex-col">
+            {/* Source tabs */}
+            <div className="flex border-b border-border-default">
+              <button
+                type="button"
+                onClick={() => {
+                  setSourceTab('claude_code');
+                  setSelection({ type: 'none' });
+                }}
+                className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${
+                  sourceTab === 'claude_code'
+                    ? 'border-b-2 border-blue-500 text-blue-400'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                Claude Code (CLI)
+                {codeSessionCount > 0 && (
+                  <span className="ml-1.5 rounded-full bg-zinc-700 px-1.5 py-0.5 text-[10px]">
+                    {codeSessionCount}
+                  </span>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSourceTab('claude_desktop');
+                  setSelection({ type: 'none' });
+                }}
+                className={`flex-1 px-3 py-2 text-xs font-medium transition-colors ${
+                  sourceTab === 'claude_desktop'
+                    ? 'border-b-2 border-violet-500 text-violet-400'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                Desktop App
+                {desktopSessionCount > 0 && (
+                  <span className="ml-1.5 rounded-full bg-zinc-700 px-1.5 py-0.5 text-[10px]">
+                    {desktopSessionCount}
+                  </span>
+                )}
+              </button>
+            </div>
             <LocalSessionList
               groups={groups}
               selectedSessionId={selectedSessionId}

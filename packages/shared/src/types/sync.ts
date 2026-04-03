@@ -19,6 +19,8 @@ export interface LocalSessionInfo {
   readonly isRemote?: boolean;
   /** Internal DB session ID for remote sessions */
   readonly dbSessionId?: string;
+  /** Session source: 'claude_code' for CLI, 'claude_ai' for Desktop App */
+  readonly source?: 'claude_code' | 'claude_ai';
 }
 
 export interface LocalProjectGroup {

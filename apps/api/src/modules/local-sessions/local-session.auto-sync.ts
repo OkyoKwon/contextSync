@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import type { Db } from '../../database/client.js';
 import type { SessionFile } from './local-session.service.js';
 import { parseClaudeCodeSession } from '../sessions/parsers/claude-code-session.parser.js';
+import { parseDesktopAuditSession } from '../sessions/parsers/desktop-audit-session.parser.js';
 import { importParsedSession } from '../sessions/session-import.service.js';
 import { getProjectSessionFiles, updateSyncedSession } from './local-session.sync.js';
 import { sql } from 'kysely';
@@ -66,7 +67,11 @@ export async function detectSyncTasks(
     if (sessionFiles.length === 0) continue;
 
     const dataDb = await resolveDb(project.projectId);
-    const externalIds = sessionFiles.map((f) => f.fileName.replace('.jsonl', ''));
+    const externalIds = sessionFiles.map((f) =>
+      f.sourceType === 'claude_desktop'
+        ? f.fileName.replace('.audit', '')
+        : f.fileName.replace('.jsonl', ''),
+    );
 
     const syncedRows = await dataDb
       .selectFrom('synced_sessions')
@@ -83,7 +88,10 @@ export async function detectSyncTasks(
     );
 
     for (const file of sessionFiles) {
-      const externalId = file.fileName.replace('.jsonl', '');
+      const externalId =
+        file.sourceType === 'claude_desktop'
+          ? file.fileName.replace('.audit', '')
+          : file.fileName.replace('.jsonl', '');
       const synced = syncedMap.get(externalId);
 
       if (!synced) {
@@ -124,7 +132,10 @@ export async function executeAutoSync(
         updated++;
       } else {
         const content = await readFile(task.file.fullPath, 'utf-8');
-        const { parsed, filePaths } = parseClaudeCodeSession(content);
+        const { parsed, filePaths } =
+          task.file.sourceType === 'claude_desktop'
+            ? parseDesktopAuditSession(content, task.file.desktopTitle)
+            : parseClaudeCodeSession(content);
         const result = await importParsedSession(db, task.projectId, userId, parsed, filePaths);
 
         await db

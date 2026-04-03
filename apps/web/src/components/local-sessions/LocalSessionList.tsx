@@ -336,6 +336,11 @@ function SessionRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p className="truncate text-sm font-medium text-text-primary">{session.firstMessage}</p>
+          {session.source === 'claude_ai' && (
+            <Badge variant="default" title="Desktop App session">
+              Desktop
+            </Badge>
+          )}
           {session.isRemote && (
             <Badge variant="default" title="Synced from team member">
               Team
