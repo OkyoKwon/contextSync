@@ -110,7 +110,7 @@ describe('useAiEvaluation hooks', () => {
 
     it('fetches evaluation detail', async () => {
       setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
-      const detail = { id: 'ev-1', score: 85, categories: [] };
+      const detail = { id: 'ev-1', overallScore: 85, categories: [] };
       server.use(
         http.get('/api/projects/p1/ai-evaluation/ev-1', () =>
           HttpResponse.json({ success: true, data: detail, error: null }),
