@@ -33,11 +33,21 @@ vi.mock('../../auth/auth.service.js', () => ({
   getUserApiKey: vi.fn(),
 }));
 
+vi.mock('../../projects/project.repository.js', () => ({
+  updateDatabaseMode: vi.fn(),
+}));
+
+vi.mock('../../../lib/project-sync.js', () => ({
+  syncProjectToRemote: vi.fn(),
+}));
+
 import * as onboardingService from '../supabase-onboarding.service.js';
 import { supabaseOnboardingRoutes } from '../supabase-onboarding.routes.js';
 
 const mockGetProjects = vi.mocked(onboardingService.getProjectsForUser);
 const mockGetOrgs = vi.mocked(onboardingService.getOrganizationsForUser);
+const mockAutoSetup = vi.mocked(onboardingService.autoSetupExisting);
+const mockCreateAndSetup = vi.mocked(onboardingService.createAndSetup);
 
 let app: FastifyInstance;
 
@@ -133,6 +143,81 @@ describe('Supabase Onboarding Routes Integration', () => {
 
       expect(res.statusCode).toBe(200);
       expect(res.json().data).toHaveLength(1);
+    });
+  });
+
+  describe('POST /api/supabase/auto-setup', () => {
+    it('should setup existing project', async () => {
+      mockAutoSetup.mockResolvedValue({ requiresRestart: false, migrationsApplied: [] });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/supabase/auto-setup',
+        headers: { authorization: await authHeader() },
+        payload: {
+          projectId: '00000000-0000-0000-0000-000000000001',
+          supabaseProjectRef: 'ref-123',
+          dbPassword: 'pass',
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should return 400 for invalid input', async () => {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/supabase/auto-setup',
+        headers: { authorization: await authHeader() },
+        payload: {},
+      });
+
+      expect(res.statusCode).toBe(400);
+    });
+  });
+
+  describe('POST /api/supabase/create-and-setup', () => {
+    it('should create and setup project', async () => {
+      mockCreateAndSetup.mockResolvedValue({ requiresRestart: false, migrationsApplied: [] });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/supabase/create-and-setup',
+        headers: { authorization: await authHeader() },
+        payload: {
+          projectId: '00000000-0000-0000-0000-000000000001',
+          name: 'new-db',
+          organizationId: 'org-1',
+          dbPassword: 'password123',
+          region: 'us-east-1',
+        },
+      });
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should return 504 on recovery result', async () => {
+      mockCreateAndSetup.mockResolvedValue({
+        recovered: true,
+        projectRef: 'ref-123',
+        region: 'us-east-1',
+        error: 'Timeout',
+      } as any);
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/supabase/create-and-setup',
+        headers: { authorization: await authHeader() },
+        payload: {
+          projectId: '00000000-0000-0000-0000-000000000001',
+          name: 'new-db',
+          organizationId: 'org-1',
+          dbPassword: 'password123',
+          region: 'us-east-1',
+        },
+      });
+
+      expect(res.statusCode).toBe(504);
     });
   });
 });
