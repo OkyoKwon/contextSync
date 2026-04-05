@@ -182,9 +182,13 @@ describe('useSessions hooks', () => {
             success: true,
             data: {
               period: '30d',
-              totalInputTokens: 100,
-              totalOutputTokens: 50,
+              totalTokens: 100,
               totalCost: 0.5,
+              totalMessages: 10,
+              measuredMessages: 8,
+              periodStart: '2025-02-01',
+              periodEnd: '2025-03-01',
+              modelBreakdown: [],
               dailyUsage: [],
             },
             error: null,
@@ -195,7 +199,7 @@ describe('useSessions hooks', () => {
       const { result } = renderHookWithProviders(() => useTokenUsage());
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(capturedUrl).toContain('period=30d');
-      expect(result.current.data?.data?.totalInputTokens).toBe(100);
+      expect(result.current.data?.data?.totalTokens).toBe(100);
     });
 
     it('accepts custom period', async () => {
@@ -227,7 +231,7 @@ describe('useSessions hooks', () => {
   describe('useDashboardStats', () => {
     it('fetches dashboard stats', async () => {
       setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
-      const stats = { totalSessions: 10, activeSessions: 3, totalTokens: 5000, totalCost: 1.5 };
+      const stats = { todaySessions: 10, activeSessions: 3, totalTokens: 5000, totalCost: 1.5 };
       server.use(
         http.get('/api/projects/p1/stats', () =>
           HttpResponse.json({ success: true, data: stats, error: null }),
@@ -236,7 +240,7 @@ describe('useSessions hooks', () => {
 
       const { result } = renderHookWithProviders(() => useDashboardStats());
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
-      expect(result.current.data?.data?.totalSessions).toBe(10);
+      expect(result.current.data?.data?.todaySessions).toBe(10);
     });
 
     it('is disabled without projectId', () => {

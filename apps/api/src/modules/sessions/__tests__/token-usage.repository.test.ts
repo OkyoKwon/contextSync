@@ -38,7 +38,7 @@ describe('getModelBreakdown', () => {
     ]);
     const result = await getModelBreakdown(db, 'proj-1', new Date(), new Date());
     expect(result).toHaveLength(1);
-    expect(result[0].model_used).toBe('claude-3');
+    expect(result[0]!.model_used).toBe('claude-3');
   });
 });
 

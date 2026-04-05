@@ -17,7 +17,7 @@ vi.mock('../perspective-prompts.js', () => ({
 }));
 
 import { callWithRetry } from '../../../lib/claude-utils.js';
-import { analyzeEvaluation, sampleMessages } from '../claude-client.js';
+import { analyzeEvaluation } from '../claude-client.js';
 import type { SampledMessage } from '../claude-client.js';
 
 const mockCallWithRetry = vi.mocked(callWithRetry);

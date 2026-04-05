@@ -73,14 +73,11 @@ describe('sessionsApi', () => {
   });
 
   it('import uploads file via FormData', async () => {
-    let wasFormData = false;
     server.use(
-      http.post('/api/projects/proj-1/sessions/import', async ({ request }) => {
-        const contentType = request.headers.get('Content-Type') ?? '';
-        wasFormData = contentType.includes('multipart/form-data') || contentType === '';
+      http.post('/api/projects/proj-1/sessions/import', async () => {
         return HttpResponse.json({
           success: true,
-          data: { sessionId: 'new-sess', messageCount: 3 },
+          data: { session: { id: 'new-sess' }, messageCount: 3, detectedConflicts: 0 },
           error: null,
         });
       }),
@@ -88,7 +85,7 @@ describe('sessionsApi', () => {
 
     const file = new File(['{"messages":[]}'], 'test.json', { type: 'application/json' });
     const result = await sessionsApi.import('proj-1', file);
-    expect(result.data?.sessionId).toBe('new-sess');
+    expect(result.data?.session.id).toBe('new-sess');
   });
 
   it('update sends PATCH with input', async () => {
@@ -135,7 +132,7 @@ describe('sessionsApi', () => {
   });
 
   it('stats returns dashboard stats', async () => {
-    const stats = { totalSessions: 5, activeSessions: 2, totalTokens: 1000, totalCost: 0.5 };
+    const stats = { todaySessions: 5, activeSessions: 2, totalTokens: 1000, totalCost: 0.5 };
     server.use(
       http.get('/api/projects/proj-1/stats', () =>
         HttpResponse.json({ success: true, data: stats, error: null }),
@@ -143,7 +140,7 @@ describe('sessionsApi', () => {
     );
 
     const result = await sessionsApi.stats('proj-1');
-    expect(result.data?.totalSessions).toBe(5);
+    expect(result.data?.todaySessions).toBe(5);
   });
 
   it('teamStats returns member activities', async () => {

@@ -51,7 +51,7 @@ const MOCK_DOC = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockAssertAccess.mockResolvedValue(undefined);
+  mockAssertAccess.mockResolvedValue(undefined as any);
 });
 
 describe('uploadPrdDocument', () => {

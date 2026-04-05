@@ -13,12 +13,10 @@ import {
   findLatestEvaluationGroup,
   findEvaluationGroupHistory,
   findPendingOrAnalyzing,
-  findLatestCompleted,
   findEvaluationHistory,
   findTeamEvaluationSummary,
   findEvaluationsNeedingBackfill,
   findLatestCompletedGroupTime,
-  findEvaluationById,
 } from '../ai-evaluation.repository.js';
 
 const now = new Date('2025-01-01T00:00:00.000Z');
@@ -52,11 +50,9 @@ function createMockDb() {
     deleteFrom: vi.fn().mockReturnValue(chain),
     fn: {
       countAll: vi.fn().mockReturnValue({ as: vi.fn().mockReturnValue('c') }),
-      count: vi
-        .fn()
-        .mockReturnValue({
-          distinct: vi.fn().mockReturnValue({ as: vi.fn().mockReturnValue('c') }),
-        }),
+      count: vi.fn().mockReturnValue({
+        distinct: vi.fn().mockReturnValue({ as: vi.fn().mockReturnValue('c') }),
+      }),
       max: vi.fn().mockReturnValue({ as: vi.fn().mockReturnValue('m') }),
     },
     _chain: chain,

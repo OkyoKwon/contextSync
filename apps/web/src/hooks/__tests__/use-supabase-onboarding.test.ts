@@ -45,7 +45,7 @@ describe('useSupabaseOnboarding hooks', () => {
       const { result } = renderHookWithProviders(() => useSupabaseProjects(true));
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.data).toHaveLength(1);
-      expect(result.current.data?.data?.[0].name).toBe('My Supabase Project');
+      expect(result.current.data?.data?.[0]!.name).toBe('My Supabase Project');
     });
 
     it('transitions to error on API failure', async () => {
@@ -79,7 +79,7 @@ describe('useSupabaseOnboarding hooks', () => {
       const { result } = renderHookWithProviders(() => useSupabaseOrganizations(true));
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.data).toHaveLength(1);
-      expect(result.current.data?.data?.[0].name).toBe('My Org');
+      expect(result.current.data?.data?.[0]!.name).toBe('My Org');
     });
   });
 

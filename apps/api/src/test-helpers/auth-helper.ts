@@ -61,7 +61,7 @@ export async function generateExpiredToken(user: TestUser = DEFAULT_TEST_USER): 
   const app = await getSigner();
   const pastIat = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
   return app.jwt.sign(
-    { userId: user.userId, email: user.email, iat: pastIat },
+    { userId: user.userId, email: user.email, iat: pastIat } as any,
     { expiresIn: 1 }, // 1 second from iat (which is 1hr ago) → already expired
   );
 }

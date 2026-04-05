@@ -41,8 +41,8 @@ describe('listPlans', () => {
     const result = await listPlans(db);
 
     expect(result).toHaveLength(2);
-    expect(result[0].title).toBe('My Plan');
-    expect(result[0].sizeBytes).toBe(1024);
+    expect(result[0]!.title).toBe('My Plan');
+    expect(result[0]!.sizeBytes).toBe(1024);
   });
 
   it('should return empty array when directory does not exist', async () => {
@@ -70,7 +70,7 @@ describe('listPlans', () => {
     mockReadFile.mockResolvedValue('No heading here\nJust content');
 
     const result = await listPlans(db);
-    expect(result[0].title).toBe('Untitled');
+    expect(result[0]!.title).toBe('Untitled');
   });
 
   it('should include project mapping', async () => {
@@ -83,7 +83,7 @@ describe('listPlans', () => {
     mockReadFile.mockResolvedValue('# Plan');
 
     const result = await listPlans(db);
-    expect(result[0].projects).toHaveLength(1);
+    expect(result[0]!.projects).toHaveLength(1);
   });
 });
 

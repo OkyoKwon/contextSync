@@ -79,7 +79,7 @@ const db = {} as any;
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockAssertAccess.mockResolvedValue(undefined);
+  mockAssertAccess.mockResolvedValue(undefined as any);
 });
 
 describe('triggerEvaluation', () => {
@@ -95,7 +95,7 @@ describe('triggerEvaluation', () => {
   });
 
   it('should throw ForbiddenError when insufficient messages', async () => {
-    mockFindPending.mockResolvedValue(null);
+    mockFindPending.mockResolvedValue(null as any);
     mockFindMessages.mockResolvedValue({
       messages: [{ id: 'm1', sessionId: 's1', content: 'hello', createdAt: '2025-01-01' }],
       sessionCount: 1,
@@ -202,7 +202,7 @@ describe('getTeamSummary', () => {
   });
 
   it('should throw ForbiddenError for non-owner', async () => {
-    mockGetRole.mockResolvedValue('collaborator');
+    mockGetRole.mockResolvedValue('member' as const);
 
     await expect(getTeamSummary(db, 'proj-1', 'user-1')).rejects.toThrow(ForbiddenError);
   });
@@ -211,8 +211,8 @@ describe('getTeamSummary', () => {
 describe('deleteEvaluationGroup', () => {
   it('should delete group and learning guides', async () => {
     mockFindGroup.mockResolvedValue({ claude: null, chatgpt: null, gemini: null } as any);
-    mockDeleteGuides.mockResolvedValue(undefined);
-    mockDeleteGroup.mockResolvedValue(undefined);
+    mockDeleteGuides.mockResolvedValue(undefined as any);
+    mockDeleteGroup.mockResolvedValue(undefined as any);
 
     await deleteEvaluationGroup(db, 'proj-1', 'group-1', 'user-1');
 

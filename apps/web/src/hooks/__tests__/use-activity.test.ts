@@ -47,7 +47,7 @@ describe('useActivity', () => {
     expect(result.current.isLoading).toBe(true);
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.data).toHaveLength(2);
-    expect(result.current.data?.data?.[0].id).toBe('a1');
+    expect(result.current.data?.data?.[0]!.id).toBe('a1');
   });
 
   it('passes page and limit as query params', async () => {

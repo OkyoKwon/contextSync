@@ -49,7 +49,7 @@ describe('scanCodebase', () => {
     expect(result.files.length).toBeGreaterThanOrEqual(1);
     expect(result.totalFiles).toBeGreaterThanOrEqual(1);
     // package.json should be prioritized
-    expect(result.files[0].isPriority).toBe(true);
+    expect(result.files[0]!.isPriority).toBe(true);
   });
 
   it('should skip node_modules directory', async () => {

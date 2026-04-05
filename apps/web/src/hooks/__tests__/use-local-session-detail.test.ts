@@ -47,7 +47,7 @@ describe('useLocalSessionDetail', () => {
 
     const { result } = renderHookWithProviders(() => useLocalSessionDetail('session-1'));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.data?.id).toBe('session-1');
+    expect(result.current.data?.data?.sessionId).toBe('session-1');
     expect(result.current.data?.data?.title).toBe('Test Session');
   });
 

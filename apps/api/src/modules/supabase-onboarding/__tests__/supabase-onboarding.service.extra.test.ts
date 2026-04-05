@@ -51,8 +51,8 @@ describe('listProjects', () => {
     const result = await listProjects('token-123');
 
     expect(result).toHaveLength(1);
-    expect(result[0].ref).toBe('proj-ref');
-    expect(result[0].name).toBe('My Project');
+    expect(result[0]!.ref).toBe('proj-ref');
+    expect(result[0]!.name).toBe('My Project');
   });
 
   it('should throw AppError on 401', async () => {
@@ -93,8 +93,8 @@ describe('listOrganizations', () => {
     const result = await listOrganizations('token-123');
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('org-1');
-    expect(result[0].name).toBe('My Org');
+    expect(result[0]!.id).toBe('org-1');
+    expect(result[0]!.name).toBe('My Org');
   });
 });
 

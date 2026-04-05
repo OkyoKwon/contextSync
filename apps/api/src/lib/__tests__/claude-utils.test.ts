@@ -5,7 +5,7 @@ import { AppError } from '../../plugins/error-handler.plugin.js';
 
 const emptyHeaders = { get: () => null } as any;
 
-function makeApiError(status: number, message: string): Anthropic.APIError {
+function makeApiError(status: number, message: string): InstanceType<typeof Anthropic.APIError> {
   return new Anthropic.APIError(
     status,
     { type: 'error', error: { type: 'api_error', message } },

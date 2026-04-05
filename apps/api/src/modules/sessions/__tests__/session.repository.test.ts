@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   createSession,
   createMessages,
-  findSessionsByProjectId,
   findSessionById,
   findMessagesBySessionId,
   updateSession,
@@ -130,9 +129,9 @@ describe('createMessages', () => {
     ]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('msg-1');
-    expect(result[0].content).toBe('Hello');
-    expect(result[0].tokensUsed).toBe(100);
+    expect(result[0]!.id).toBe('msg-1');
+    expect(result[0]!.content).toBe('Hello');
+    expect(result[0]!.tokensUsed).toBe(100);
   });
 
   it('should use defaults for optional message fields', async () => {
@@ -239,8 +238,8 @@ describe('findAllSessionsWithMessages', () => {
     const result = await findAllSessionsWithMessages(db, 'proj-1');
 
     expect(result).toHaveLength(1);
-    expect(result[0].session.id).toBe('sess-1');
-    expect(result[0].messages).toHaveLength(1);
+    expect(result[0]!.session.id).toBe('sess-1');
+    expect(result[0]!.messages).toHaveLength(1);
   });
 
   it('should return empty array when no sessions', async () => {

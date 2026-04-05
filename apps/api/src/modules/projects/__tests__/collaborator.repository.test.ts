@@ -56,9 +56,9 @@ describe('findCollaboratorsByProjectId', () => {
     const result = await findCollaboratorsByProjectId(db, 'proj-1');
 
     expect(result).toHaveLength(1);
-    expect(result[0].userId).toBe('user-1');
-    expect(result[0].userName).toBe('User 1');
-    expect(result[0].addedAt).toBe('2025-01-01T00:00:00.000Z');
+    expect(result[0]!.userId).toBe('user-1');
+    expect(result[0]!.userName).toBe('User 1');
+    expect(result[0]!.addedAt).toBe('2025-01-01T00:00:00.000Z');
   });
 
   it('should return empty array when no collaborators', async () => {

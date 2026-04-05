@@ -56,7 +56,7 @@ describe('analyzePrd', () => {
     } as any);
 
     expect(result.requirements).toHaveLength(2);
-    expect(result.requirements[0].status).toBe('achieved');
+    expect(result.requirements[0]!.status).toBe('achieved');
     expect(result.overallRate).toBe(72.5);
     expect(result.inputTokens).toBe(2000);
     expect(result.modelUsed).toBe('model');

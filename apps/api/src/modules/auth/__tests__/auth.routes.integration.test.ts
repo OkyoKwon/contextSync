@@ -37,7 +37,7 @@ const MOCK_USER = {
   email: 'test@example.com',
   name: 'Test User',
   avatarUrl: null,
-  role: 'user' as const,
+  role: 'member' as const,
   claudePlan: 'free' as const,
   hasAnthropicApiKey: false,
   hasSupabaseToken: false,

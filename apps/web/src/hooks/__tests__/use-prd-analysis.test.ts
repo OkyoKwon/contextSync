@@ -53,7 +53,7 @@ describe('usePrdAnalysis hooks', () => {
       const { result } = renderHookWithProviders(() => usePrdDocuments());
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.data).toHaveLength(1);
-      expect(result.current.data?.data?.[0].id).toBe('doc-1');
+      expect(result.current.data?.data?.[0]!.id).toBe('doc-1');
     });
 
     it('transitions to error on API failure', async () => {

@@ -118,8 +118,8 @@ describe('searchInProject', () => {
     const result = await searchInProject(db, 'proj-1', 'test', 'all');
 
     expect(result.results).toHaveLength(2);
-    expect(result.results[0].type).toBe('session');
-    expect(result.results[1].type).toBe('message');
+    expect(result.results[0]!.type).toBe('session');
+    expect(result.results[1]!.type).toBe('message');
     expect(result.total).toBe(2);
   });
 

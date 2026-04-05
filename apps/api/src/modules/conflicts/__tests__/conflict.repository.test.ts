@@ -54,7 +54,7 @@ function makeConflictRow(overrides: Record<string, unknown> = {}) {
     project_id: 'proj-1',
     session_a_id: 'sess-a',
     session_b_id: 'sess-b',
-    conflict_type: 'file_overlap',
+    conflict_type: 'file',
     severity: 'warning',
     status: 'detected',
     description: 'Overlapping files',
@@ -92,7 +92,7 @@ describe('createConflict', () => {
     const detected: DetectedConflict = {
       sessionAId: 'sess-a',
       sessionBId: 'sess-b',
-      conflictType: 'file_overlap',
+      conflictType: 'file' as const,
       severity: 'warning',
       description: 'Overlapping files',
       overlappingPaths: ['src/index.ts'],
@@ -106,7 +106,7 @@ describe('createConflict', () => {
         project_id: 'proj-1',
         session_a_id: 'sess-a',
         session_b_id: 'sess-b',
-        conflict_type: 'file_overlap',
+        conflict_type: 'file',
         severity: 'warning',
         description: 'Overlapping files',
         overlapping_paths: ['src/index.ts'],
@@ -114,7 +114,7 @@ describe('createConflict', () => {
     );
     expect(result.id).toBe('conflict-1');
     expect(result.projectId).toBe('proj-1');
-    expect(result.conflictType).toBe('file_overlap');
+    expect(result.conflictType).toBe('file');
   });
 
   it('should set diff_data to empty JSON and resolved fields to null', async () => {
@@ -124,7 +124,7 @@ describe('createConflict', () => {
     const detected: DetectedConflict = {
       sessionAId: 'sess-a',
       sessionBId: 'sess-b',
-      conflictType: 'file_overlap',
+      conflictType: 'file' as const,
       severity: 'info',
       description: 'test',
       overlappingPaths: [],
@@ -153,7 +153,7 @@ describe('findConflictsByProjectId', () => {
 
     expect(db.selectFrom).toHaveBeenCalledWith('conflicts');
     expect(result.conflicts).toHaveLength(1);
-    expect(result.conflicts[0].id).toBe('conflict-1');
+    expect(result.conflicts[0]!.id).toBe('conflict-1');
     expect(result.total).toBe(1);
   });
 
@@ -335,12 +335,12 @@ describe('updateAiAnalysis', () => {
   it('should update all AI analysis fields', async () => {
     const db = createMockDb();
     const analysis: ConflictAnalysisResult = {
-      verdict: 'conflict',
+      verdict: 'real_conflict' as const,
       confidence: 0.95,
-      overlapType: 'direct',
+      overlapType: 'same_function' as const,
       summary: 'Direct conflict found',
       riskAreas: ['src/index.ts'],
-      recommendation: 'merge',
+      recommendation: 'merge_carefully' as const,
       recommendationDetail: 'Merge changes carefully',
       modelUsed: 'claude-sonnet-4-20250514',
       inputTokens: 100,

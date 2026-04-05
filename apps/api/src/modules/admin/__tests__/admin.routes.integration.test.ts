@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { createTestApp, createMockDb } from '../../../test-helpers/create-test-app.js';
-import { authHeader, DEFAULT_TEST_USER } from '../../../test-helpers/auth-helper.js';
+import { authHeader } from '../../../test-helpers/auth-helper.js';
 
 vi.mock('../admin.service.js', () => ({
   assertOwnerRole: vi.fn(),
@@ -14,8 +14,6 @@ import * as adminService from '../admin.service.js';
 
 const mockAssertOwnerRole = vi.mocked(adminService.assertOwnerRole);
 const mockGetAdminStatus = vi.mocked(adminService.getAdminStatus);
-const mockGetAdminConfig = vi.mocked(adminService.getAdminConfig);
-
 let app: FastifyInstance;
 
 beforeAll(async () => {
@@ -41,10 +39,14 @@ describe('Admin Routes Integration', () => {
     it('should return admin status for owner', async () => {
       mockAssertOwnerRole.mockReturnValue(undefined);
       mockGetAdminStatus.mockResolvedValue({
-        totalUsers: 10,
-        totalProjects: 5,
-        totalSessions: 100,
-        dbSizeMb: '50.00',
+        database: {
+          connected: true,
+          latencyMs: 5,
+          version: 'PostgreSQL 16.0',
+          pool: { active: 2, idle: 8, max: 20 },
+        },
+        migrations: [{ name: '001_initial', executedAt: '2025-01-01T00:00:00.000Z' }],
+        ssl: { enabled: false, sslConnections: 0, nonSslConnections: 1 },
       });
 
       // Need to set up the db mock to return user role

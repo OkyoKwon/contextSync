@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { createTestApp } from '../../../test-helpers/create-test-app.js';
-import {
-  authHeader,
-  DEFAULT_TEST_USER,
-  SECOND_TEST_USER,
-} from '../../../test-helpers/auth-helper.js';
+import { authHeader, DEFAULT_TEST_USER } from '../../../test-helpers/auth-helper.js';
 
 vi.mock('../project.service.js', () => ({
   createProject: vi.fn(),
@@ -42,6 +38,8 @@ const MOCK_PROJECT = {
   joinCode: null,
   databaseMode: 'local' as const,
   collaborators: [],
+  collaboratorCount: 0,
+  isTeam: false,
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2025-01-01T00:00:00.000Z',
 };

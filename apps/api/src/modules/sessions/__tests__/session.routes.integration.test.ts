@@ -33,8 +33,6 @@ import { exportProjectAsMarkdown } from '../session-export.service.js';
 
 const mockGetSessionsByProject = vi.mocked(sessionService.getSessionsByProject);
 const mockGetSessionDetail = vi.mocked(sessionService.getSessionDetail);
-const mockUpdateSession = vi.mocked(sessionService.updateSession);
-const mockDeleteSession = vi.mocked(sessionService.deleteSession);
 const mockFindSessionById = vi.mocked(findSessionById);
 const mockExportMarkdown = vi.mocked(exportProjectAsMarkdown);
 
@@ -43,8 +41,8 @@ const MOCK_SESSION = {
   projectId: 'proj-1',
   userId: DEFAULT_TEST_USER.userId,
   title: 'Test Session',
-  source: 'manual',
-  status: 'active',
+  source: 'manual' as const,
+  status: 'active' as const,
   filePaths: [],
   moduleNames: [],
   branch: null,

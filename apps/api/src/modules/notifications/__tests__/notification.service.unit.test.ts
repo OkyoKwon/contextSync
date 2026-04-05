@@ -78,7 +78,13 @@ describe('getUserNotificationSettings', () => {
 describe('updateUserNotificationSettings', () => {
   it('should update settings and return them', async () => {
     const db = createMockDb();
-    const settings = { email: true, slack: false, severityThreshold: 'critical' as const };
+    const settings = {
+      email: true,
+      slack: false,
+      slackWebhookUrl: null,
+      teamEvents: true,
+      severityThreshold: 'critical' as const,
+    };
 
     const result = await updateUserNotificationSettings(db, 'user-1', settings);
 

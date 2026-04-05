@@ -162,8 +162,8 @@ describe('sampleSessionMessages', () => {
       },
     ];
     const result = sampleSessionMessages(messages as any);
-    expect(result[0].content.length).toBeLessThan(5000);
-    expect(result[0].content).toContain('[truncated]');
+    expect(result[0]!.content.length).toBeLessThan(5000);
+    expect(result[0]!.content).toContain('[truncated]');
   });
 });
 

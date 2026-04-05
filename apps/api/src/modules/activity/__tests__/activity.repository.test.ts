@@ -158,7 +158,7 @@ describe('findActivitiesByProjectId', () => {
 
     const result = await findActivitiesByProjectId(db, 'proj-1', 1, 20);
 
-    expect(result.entries[0].metadata).toEqual({ already: 'parsed' });
-    expect(result.entries[0].userAvatarUrl).toBe('https://avatar.url');
+    expect(result.entries[0]!.metadata).toEqual({ already: 'parsed' });
+    expect(result.entries[0]!.userAvatarUrl).toBe('https://avatar.url');
   });
 });

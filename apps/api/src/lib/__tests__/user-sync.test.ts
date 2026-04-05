@@ -40,7 +40,7 @@ describe('syncUserToRemote', () => {
     email: 'test@example.com',
     avatarUrl: 'https://avatar.url',
     githubId: null,
-    role: 'user' as const,
+    role: 'member' as const,
     claudePlan: 'free' as const,
     hasAnthropicApiKey: false,
     hasSupabaseToken: false,

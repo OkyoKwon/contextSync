@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { readdir, stat } from 'node:fs/promises';
 
 vi.mock('node:fs/promises', () => ({
   readdir: vi.fn(),
@@ -30,11 +30,9 @@ import {
   findSessionFiles,
   listLocalDirectories,
   browseDirectory,
-  findFirstTimestamp,
 } from '../local-session.service.js';
 
 const mockReaddir = vi.mocked(readdir);
-const mockReadFile = vi.mocked(readFile);
 const mockStat = vi.mocked(stat);
 
 beforeEach(() => {
@@ -55,8 +53,8 @@ describe('findSessionFiles', () => {
     const result = await findSessionFiles();
 
     expect(result).toHaveLength(1);
-    expect(result[0].fileName).toBe('session1.jsonl');
-    expect(result[0].dir).toBe('-Users-test-project');
+    expect(result[0]!.fileName).toBe('session1.jsonl');
+    expect(result[0]!.dir).toBe('-Users-test-project');
   });
 
   it('should return empty array when directory does not exist', async () => {
@@ -88,9 +86,9 @@ describe('browseDirectory', () => {
     const result = await browseDirectory('/test');
 
     expect(result).toHaveLength(2); // hidden and files filtered
-    expect(result[0].name).toBe('alpha');
-    expect(result[1].name).toBe('zebra');
-    expect(result[0].isDirectory).toBe(true);
+    expect(result[0]!.name).toBe('alpha');
+    expect(result[1]!.name).toBe('zebra');
+    expect(result[0]!.isDirectory).toBe(true);
   });
 
   it('should handle null byte in path', async () => {

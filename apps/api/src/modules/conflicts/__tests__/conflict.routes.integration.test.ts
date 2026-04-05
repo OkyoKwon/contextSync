@@ -32,25 +32,39 @@ vi.mock('../../auth/auth.service.js', () => ({
 
 import * as conflictService from '../conflict.service.js';
 import { findConflictById } from '../conflict.repository.js';
-import { getUserApiKey } from '../../auth/auth.service.js';
 
 const mockGetConflictsByProject = vi.mocked(conflictService.getConflictsByProject);
 const mockGetConflictDetail = vi.mocked(conflictService.getConflictDetail);
 const mockUpdateConflictStatus = vi.mocked(conflictService.updateConflictStatus);
 const mockBatchResolve = vi.mocked(conflictService.batchResolveConflicts);
 const mockFindConflictById = vi.mocked(findConflictById);
-const mockGetUserApiKey = vi.mocked(getUserApiKey);
 
 const MOCK_CONFLICT = {
   id: 'conflict-1',
   projectId: 'proj-1',
   sessionAId: 'sess-a',
   sessionBId: 'sess-b',
-  conflictType: 'file_overlap',
-  severity: 'medium',
-  status: 'detected',
+  conflictType: 'file' as const,
+  severity: 'warning' as const,
+  status: 'detected' as const,
   description: 'Test conflict',
   overlappingPaths: ['src/index.ts'],
+  diffData: {},
+  resolvedBy: null,
+  resolvedAt: null,
+  reviewerId: null,
+  reviewerName: null,
+  reviewNotes: null,
+  assignedAt: null,
+  aiVerdict: null,
+  aiConfidence: null,
+  aiOverlapType: null,
+  aiSummary: null,
+  aiRiskAreas: null,
+  aiRecommendation: null,
+  aiRecommendationDetail: null,
+  aiAnalyzedAt: null,
+  aiModelUsed: null,
   createdAt: '2025-01-01T00:00:00.000Z',
 };
 
@@ -129,7 +143,7 @@ describe('Conflict Routes Integration', () => {
 
   describe('PATCH /api/conflicts/:conflictId', () => {
     it('should update conflict status', async () => {
-      const updated = { ...MOCK_CONFLICT, status: 'resolved' };
+      const updated = { ...MOCK_CONFLICT, status: 'resolved' as const };
       mockFindConflictById.mockResolvedValue(MOCK_CONFLICT as any);
       mockUpdateConflictStatus.mockResolvedValue(updated);
 

@@ -48,9 +48,7 @@ vi.mock('../../../lib/project-sync.js', () => ({
 
 import * as projectRepo from '../project.repository.js';
 import * as collabRepo from '../collaborator.repository.js';
-import { findUserById } from '../../auth/auth.service.js';
 import {
-  getCollaborators,
   removeCollaborator,
   setMyDirectory,
   generateProjectJoinCode,
@@ -67,15 +65,12 @@ const mockFindProjectById = vi.mocked(projectRepo.findProjectById);
 const mockFindByJoinCode = vi.mocked(projectRepo.findProjectByJoinCode);
 const mockUpdateJoinCode = vi.mocked(projectRepo.updateJoinCode);
 const mockUpdateProject = vi.mocked(projectRepo.updateProject);
-const mockFindCollabs = vi.mocked(collabRepo.findCollaboratorsByProjectId);
 const mockFindCollab = vi.mocked(collabRepo.findCollaboratorByProjectAndUser);
 const mockAddCollab = vi.mocked(collabRepo.addCollaborator);
 const mockRemoveCollab = vi.mocked(collabRepo.removeCollaborator);
 const mockUpdateCollabDir = vi.mocked(collabRepo.updateCollaboratorDirectory);
 const mockDeleteCollabData = vi.mocked(collabRepo.deleteCollaboratorData);
 const mockGetCollabSummary = vi.mocked(collabRepo.getCollaboratorDataSummary);
-const mockFindUserById = vi.mocked(findUserById);
-
 const db = {} as any;
 
 const makeProject = (overrides: Record<string, unknown> = {}) => ({
@@ -96,7 +91,7 @@ const makeCollab = (overrides: Record<string, unknown> = {}) => ({
   id: 'collab-1',
   projectId: 'proj-1',
   userId: 'user-2',
-  role: 'member',
+  role: 'member' as const,
   localDirectory: null,
   addedAt: '2025-01-01T00:00:00.000Z',
   userName: 'User 2',
@@ -155,7 +150,7 @@ describe('joinByCode', () => {
     mockFindByJoinCode.mockResolvedValue(project);
     mockFindCollab.mockResolvedValue(null);
 
-    const result = await joinByCode(db, 'CODE', 'user-2');
+    await joinByCode(db, 'CODE', 'user-2');
     expect(mockAddCollab).toHaveBeenCalledWith(db, 'proj-1', 'user-2', 'member');
   });
 

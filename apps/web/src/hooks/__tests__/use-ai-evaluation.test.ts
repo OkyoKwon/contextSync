@@ -50,7 +50,7 @@ describe('useAiEvaluation hooks', () => {
       const { result } = renderHookWithProviders(() => useTeamEvaluationSummary());
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.data).toHaveLength(1);
-      expect(result.current.data?.data?.[0].userId).toBe('u1');
+      expect(result.current.data?.data?.[0]!.userId).toBe('u1');
     });
 
     it('transitions to error on API failure', async () => {

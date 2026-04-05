@@ -20,6 +20,9 @@ const MOCK_PLAN = {
   title: 'Test Plan',
   content: '# Plan',
   metadata: {},
+  sizeBytes: 0,
+  lastModifiedAt: '2024-01-01',
+  projects: [],
   createdAt: '2025-01-01T00:00:00.000Z',
   updatedAt: '2025-01-01T00:00:00.000Z',
 };

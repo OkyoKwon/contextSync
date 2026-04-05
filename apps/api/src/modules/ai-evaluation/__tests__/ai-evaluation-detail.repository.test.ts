@@ -71,8 +71,8 @@ describe('createDimensions', () => {
     ]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].dimension).toBe('prompt_quality');
-    expect(result[0].score).toBe(85);
+    expect(result[0]!.dimension).toBe('prompt_quality');
+    expect(result[0]!.score).toBe(85);
   });
 });
 
@@ -150,6 +150,6 @@ describe('createEvidence', () => {
     ]);
 
     expect(result).toHaveLength(1);
-    expect(result[0].messageId).toBeNull();
+    expect(result[0]!.messageId).toBeNull();
   });
 });

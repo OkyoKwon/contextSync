@@ -45,7 +45,7 @@ describe('getTokenUsageStats', () => {
     expect(result.totalMessages).toBe(15);
     expect(result.measuredMessages).toBe(12);
     expect(result.modelBreakdown).toHaveLength(2);
-    expect(result.modelBreakdown[0].totalTokens).toBe(5000);
+    expect(result.modelBreakdown[0]!.totalTokens).toBe(5000);
     expect(result.dailyUsage).toHaveLength(2);
     expect(result.periodStart).toBeDefined();
     expect(result.periodEnd).toBeDefined();
@@ -98,7 +98,7 @@ describe('getTokenUsageStats', () => {
 
     const result = await getTokenUsageStats(db, 'proj-1', 'user-1', '7d');
 
-    expect(result.modelBreakdown[0].percentage).toBe(75);
-    expect(result.modelBreakdown[1].percentage).toBe(25);
+    expect(result.modelBreakdown[0]!.percentage).toBe(75);
+    expect(result.modelBreakdown[1]!.percentage).toBe(25);
   });
 });

@@ -89,7 +89,7 @@ describe('findPrdDocumentsByProjectId', () => {
     const result = await findPrdDocumentsByProjectId(db, 'proj-1');
 
     expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('doc-1');
+    expect(result[0]!.id).toBe('doc-1');
   });
 
   it('should return empty array when no documents', async () => {

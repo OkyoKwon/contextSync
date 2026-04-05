@@ -217,7 +217,7 @@ describe('findLearningGuideByGroupId', () => {
     expect(result).not.toBeNull();
     expect(result!.id).toBe('guide-1');
     expect(result!.steps).toHaveLength(1);
-    expect(result!.steps[0].resources).toHaveLength(1);
+    expect(result!.steps[0]!.resources).toHaveLength(1);
   });
 });
 

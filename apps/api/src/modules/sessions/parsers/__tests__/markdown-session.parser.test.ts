@@ -8,9 +8,9 @@ describe('parseMarkdownSession', () => {
     const result = parseMarkdownSession(md);
 
     expect(result.messages).toHaveLength(2);
-    expect(result.messages[0].role).toBe('user');
-    expect(result.messages[0].content).toContain('Hello');
-    expect(result.messages[1].role).toBe('assistant');
+    expect(result.messages[0]!.role).toBe('user');
+    expect(result.messages[0]!.content).toContain('Hello');
+    expect(result.messages[1]!.role).toBe('assistant');
   });
 
   it('should parse Human/AI role variants', () => {
@@ -18,8 +18,8 @@ describe('parseMarkdownSession', () => {
 
     const result = parseMarkdownSession(md);
 
-    expect(result.messages[0].role).toBe('user');
-    expect(result.messages[1].role).toBe('assistant');
+    expect(result.messages[0]!.role).toBe('user');
+    expect(result.messages[1]!.role).toBe('assistant');
   });
 
   it('should parse fallback bold format', () => {
@@ -28,8 +28,8 @@ describe('parseMarkdownSession', () => {
     const result = parseMarkdownSession(md);
 
     expect(result.messages).toHaveLength(2);
-    expect(result.messages[0].role).toBe('user');
-    expect(result.messages[1].role).toBe('assistant');
+    expect(result.messages[0]!.role).toBe('user');
+    expect(result.messages[1]!.role).toBe('assistant');
   });
 
   it('should extract title from H1', () => {
@@ -58,8 +58,8 @@ describe('parseMarkdownSession', () => {
 
     const result = parseMarkdownSession(md);
 
-    expect(result.messages[0].contentType).toBe('prompt');
-    expect(result.messages[1].contentType).toBe('response');
+    expect(result.messages[0]!.contentType).toBe('prompt');
+    expect(result.messages[1]!.contentType).toBe('response');
   });
 
   it('should handle Bot role variant', () => {
@@ -67,6 +67,6 @@ describe('parseMarkdownSession', () => {
 
     const result = parseMarkdownSession(md);
 
-    expect(result.messages[1].role).toBe('assistant');
+    expect(result.messages[1]!.role).toBe('assistant');
   });
 });
