@@ -349,12 +349,12 @@ describe('updateAiAnalysis', () => {
 
     db._executeTakeFirstOrThrow.mockResolvedValue(
       makeConflictRow({
-        ai_verdict: 'conflict',
+        ai_verdict: 'real_conflict',
         ai_confidence: 0.95,
-        ai_overlap_type: 'direct',
+        ai_overlap_type: 'same_function',
         ai_summary: 'Direct conflict found',
         ai_risk_areas: ['src/index.ts'],
-        ai_recommendation: 'merge',
+        ai_recommendation: 'merge_carefully',
         ai_recommendation_detail: 'Merge changes carefully',
         ai_analyzed_at: NOW,
         ai_model_used: 'claude-sonnet-4-20250514',
@@ -366,19 +366,19 @@ describe('updateAiAnalysis', () => {
     expect(db.updateTable).toHaveBeenCalledWith('conflicts');
     expect(db._chain.set).toHaveBeenCalledWith(
       expect.objectContaining({
-        ai_verdict: 'conflict',
+        ai_verdict: 'real_conflict',
         ai_confidence: 0.95,
-        ai_overlap_type: 'direct',
+        ai_overlap_type: 'same_function',
         ai_summary: 'Direct conflict found',
         ai_risk_areas: ['src/index.ts'],
-        ai_recommendation: 'merge',
+        ai_recommendation: 'merge_carefully',
         ai_recommendation_detail: 'Merge changes carefully',
         ai_model_used: 'claude-sonnet-4-20250514',
         ai_input_tokens: 100,
         ai_output_tokens: 200,
       }),
     );
-    expect(result.aiVerdict).toBe('conflict');
+    expect(result.aiVerdict).toBe('real_conflict');
     expect(result.aiConfidence).toBe(0.95);
   });
 });

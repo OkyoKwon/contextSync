@@ -132,8 +132,7 @@ export async function getCollaboratorDataSummary(
     table: T,
     userCol: string,
   ) =>
-    db
-      .selectFrom(table)
+    (db.selectFrom(table) as any)
       .select(db.fn.countAll<number>().as('count'))
       .where('project_id' as never, '=', projectId as never)
       .where(userCol as never, '=', userId as never)

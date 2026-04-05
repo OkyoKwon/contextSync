@@ -34,7 +34,7 @@ describe('useLocalSessionDetail', () => {
   it('transitions to success with session data', async () => {
     setMockAuthState({ token: 'tok' });
     const sessionData = {
-      id: 'session-1',
+      sessionId: 'session-1',
       title: 'Test Session',
       projectPath: '/home/user/project',
       messageCount: 10,
