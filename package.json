@@ -1,6 +1,7 @@
 {
   "name": "context-sync",
   "homepage": "https://okyokwon.github.io/contextSync/",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@9.15.9",

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+const DEV_JWT_SECRET = 'contextsync-dev-jwt-secret-do-not-use-in-production!!';
+
 const envSchema = z.object({
   PORT: z.coerce.number().default(3001),
   HOST: z.string().default('0.0.0.0'),
@@ -7,7 +9,7 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().url(),
 
-  JWT_SECRET: z.string().min(32).default('contextsync-dev-jwt-secret-do-not-use-in-production!!'),
+  JWT_SECRET: z.string().min(32).default(DEV_JWT_SECRET),
   JWT_EXPIRES_IN: z.string().default('7d'),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 
@@ -48,5 +50,14 @@ export function loadEnv(): Env {
       .join('\n');
     throw new Error(`Environment validation failed:\n${messages}`);
   }
-  return result.data;
+  const env = result.data;
+
+  if (env.NODE_ENV === 'production' && env.JWT_SECRET === DEV_JWT_SECRET) {
+    throw new Error(
+      'JWT_SECRET must be set to a unique value in production. ' +
+        'The default dev secret is not allowed.',
+    );
+  }
+
+  return env;
 }

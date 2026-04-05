@@ -1,0 +1,12 @@
+ContextSync
+Copyright 2024–2026 ContextSync Contributors
+Licensed under the MIT License (see LICENSE).
+
+This project includes the following third-party software:
+
+---
+
+DOMPurify
+Copyright 2024 Mario Heiderich
+Licensed under the Apache License, Version 2.0
+https://github.com/cure53/DOMPurify

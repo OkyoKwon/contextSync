@@ -26,8 +26,11 @@ What actually happened.
 
 ## Environment
 
+- Deployment mode: [personal / team-host / team-member]
+- ContextSync version: [e.g., commit hash or release tag]
 - OS: [e.g., macOS 15, Ubuntu 24.04]
 - Node.js version: [e.g., 22.x]
+- pnpm version: [e.g., 9.15.x]
 - Browser: [e.g., Chrome 130]
 
 ## Screenshots / Logs

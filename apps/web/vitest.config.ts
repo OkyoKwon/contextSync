@@ -15,8 +15,7 @@ export default defineConfig({
     passWithNoTests: true,
     coverage: {
       provider: 'v8',
-      // Phase 4a 완료 + MSW 테스트 전환 완료 (2026-03-25)
-      // 목표 80% — Phase 4b-d (레이아웃/기능/페이지 컴포넌트)에서 달성 예정
+      // Target: 80% — tracked in quarterly milestones (Q2→40%, Q3→60%, Q4→80%)
       thresholds: {
         branches: 78,
         functions: 65,

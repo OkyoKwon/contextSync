@@ -10,7 +10,10 @@ We provide security updates for the following versions of ContextSync:
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in ContextSync, please **do not** open a public issue. Instead, report it privately by emailing **security@contextsync.dev** with details about the vulnerability.
+If you discover a security vulnerability in ContextSync, please **do not** open a public issue. Instead, report it privately using one of the following channels:
+
+1. **GitHub Private Security Advisory** (preferred): [Report a vulnerability](https://github.com/OkyoKwon/contextSync/security/advisories/new)
+2. **Email**: **security@contextsync.dev**
 
 ### Response Timeline
 

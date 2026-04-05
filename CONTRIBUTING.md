@@ -24,9 +24,9 @@ pnpm dev
 # Web → http://localhost:5173
 ```
 
-> **Tip:** If you already have Node 22+, you can use `pnpm bootstrap` instead. Run `bash scripts/setup.sh` without `--defaults` for an interactive setup wizard with deployment mode selection.
+> **Tip:** If you already have Node 22+, run `pnpm bootstrap` for a non-interactive setup with all defaults applied (equivalent to `bash scripts/setup.sh --defaults`). Run `bash scripts/setup.sh` without `--defaults` for an interactive setup wizard with deployment mode selection.
 
-Sign in with your name and email at `http://localhost:5173`.
+Sign in with your name at `http://localhost:5173`.
 
 ## Project Structure
 
@@ -63,6 +63,14 @@ modules/<feature>/
 - **Imports**: Backend uses relative paths with `.js` extension. Frontend uses `@/*` alias. Shared types from `@context-sync/shared`
 - **Small files**: 200–400 lines typical, 800 max
 - **Error handling**: Use `AppError` subclasses (`NotFoundError`, `ForbiddenError`, etc.)
+
+### Frontend Conventions
+
+- **Path alias**: Use `@/*` for imports (e.g., `@/hooks/use-projects`, `@/components/ui/Button`)
+- **React Query keys**: Follow the pattern `['resource', id, filter]`. Invalidate with `invalidateQueries` after mutations
+- **Zustand stores**: Access via hooks (`useAuthStore`, `useThemeStore`). Auth state is persisted to localStorage
+- **Components**: Place in `src/components/` by domain. Use `PascalCase.tsx` for files
+- **Shared types**: Import from `@context-sync/shared` — never duplicate type definitions
 
 See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
 

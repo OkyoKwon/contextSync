@@ -40,7 +40,10 @@ an individual is officially representing the community in public spaces.
 ## Enforcement
 
 Instances of unacceptable behavior may be reported to the project maintainers at
-**https://github.com/OkyoKwon/contextSync/issues**.
+**conduct@contextsync.dev**. Alternatively, you can use
+[GitHub's private reporting](https://github.com/OkyoKwon/contextSync/security/advisories/new).
+
+All reports will be handled confidentially.
 
 All complaints will be reviewed and investigated promptly and fairly. All
 community leaders are obligated to respect the privacy and security of the

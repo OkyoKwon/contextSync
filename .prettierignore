@@ -1,0 +1,8 @@
+dist/
+dist-landing/
+coverage/
+node_modules/
+.turbo/
+pnpm-lock.yaml
+*.tsbuildinfo
+_workspace/
