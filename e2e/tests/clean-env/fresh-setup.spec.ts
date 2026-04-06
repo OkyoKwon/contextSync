@@ -9,13 +9,13 @@ const TEST_DB_URL =
   'postgresql://postgres:postgres@localhost:5433/contextsync_clean';
 
 test.describe('Fresh Setup — Infrastructure Verification', () => {
-  test('CLEAN-001: All 27 migrations apply to fresh database', async ({ db }) => {
+  test('CLEAN-001: All 32 migrations apply to fresh database', async ({ db }) => {
     const result = await sql<{ name: string }>`
       SELECT name FROM kysely_migration ORDER BY name
     `.execute(db);
 
-    expect(result.rows).toHaveLength(27);
-    expect(result.rows[result.rows.length - 1]!.name).toBe('027_add_project_database_mode');
+    expect(result.rows).toHaveLength(32);
+    expect(result.rows[result.rows.length - 1]!.name).toBe('032_add_learning_guides');
   });
 
   test('CLEAN-002: All application tables are created', async ({ db }) => {

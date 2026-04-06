@@ -389,16 +389,16 @@
 
 **File:** `e2e/tests/clean-env/fresh-setup.spec.ts` (8 TC)
 
-| #   | TC ID     | Test Name                                 | Description                                         | Assertions                                             |
-| --- | --------- | ----------------------------------------- | --------------------------------------------------- | ------------------------------------------------------ |
-| 127 | CLEAN-001 | All 27 migrations apply to fresh database | 빈 DB에서 마이그레이션 전체 적용 확인               | count === 27, last === '027_add_project_database_mode' |
-| 128 | CLEAN-002 | All application tables are created        | information_schema에서 15개 테이블 전부 존재 확인   | 모든 테이블 존재                                       |
-| 129 | CLEAN-003 | Search vector columns exist               | sessions.search_vector, messages.search_vector 확인 | 두 컬럼 모두 존재                                      |
-| 130 | CLEAN-004 | API health check responds                 | `GET /api/health` → 200                             | status === 200                                         |
-| 131 | CLEAN-005 | Web frontend loads                        | `GET /` → 200, text/html                            | status === 200, content-type: text/html                |
-| 132 | CLEAN-006 | Auth flow works on fresh database         | login → token → GET /me 성공                        | token, user.id 존재, /me 응답 일치                     |
-| 133 | CLEAN-007 | Full CRUD works after fresh setup         | 프로젝트 생성 → 세션 import → 조회 → 삭제           | 각 단계 성공, 삭제 후 404                              |
-| 134 | CLEAN-008 | Seed script runs without errors           | seed 스크립트 실행 → 시드 데이터 DB 조회            | exit code 0, users/projects count > 0                  |
+| #   | TC ID     | Test Name                                 | Description                                         | Assertions                                       |
+| --- | --------- | ----------------------------------------- | --------------------------------------------------- | ------------------------------------------------ |
+| 127 | CLEAN-001 | All 32 migrations apply to fresh database | 빈 DB에서 마이그레이션 전체 적용 확인               | count === 32, last === '032_add_learning_guides' |
+| 128 | CLEAN-002 | All application tables are created        | information_schema에서 15개 테이블 전부 존재 확인   | 모든 테이블 존재                                 |
+| 129 | CLEAN-003 | Search vector columns exist               | sessions.search_vector, messages.search_vector 확인 | 두 컬럼 모두 존재                                |
+| 130 | CLEAN-004 | API health check responds                 | `GET /api/health` → 200                             | status === 200                                   |
+| 131 | CLEAN-005 | Web frontend loads                        | `GET /` → 200, text/html                            | status === 200, content-type: text/html          |
+| 132 | CLEAN-006 | Auth flow works on fresh database         | login → token → GET /me 성공                        | token, user.id 존재, /me 응답 일치               |
+| 133 | CLEAN-007 | Full CRUD works after fresh setup         | 프로젝트 생성 → 세션 import → 조회 → 삭제           | 각 단계 성공, 삭제 후 404                        |
+| 134 | CLEAN-008 | Seed script runs without errors           | seed 스크립트 실행 → 시드 데이터 DB 조회            | exit code 0, users/projects count > 0            |
 
 ### 20-2. Onboarding
 
