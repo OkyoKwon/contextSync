@@ -319,7 +319,8 @@ describe('sessionsApi', () => {
     );
 
     const blob = await sessionsApi.exportMarkdown('proj-1');
-    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.size).toBeGreaterThan(0);
+    expect(blob.type).toBe('text/markdown');
   });
 
   it('exportMarkdown throws on 500', async () => {
