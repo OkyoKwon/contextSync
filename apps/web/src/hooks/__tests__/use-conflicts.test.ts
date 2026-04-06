@@ -16,6 +16,9 @@ import {
   useUpdateConflict,
   useAssignReviewer,
   useAddReviewNotes,
+  useBatchResolveConflicts,
+  useAiVerifyConflict,
+  useConflictOverview,
 } from '../use-conflicts';
 
 setupMsw();
@@ -207,6 +210,109 @@ describe('useConflicts hooks', () => {
       result.current.mutate({ conflictId: 'c-1', reviewNotes: 'LGTM' });
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(capturedBody).toEqual({ reviewNotes: 'LGTM' });
+    });
+  });
+
+  describe('useBatchResolveConflicts', () => {
+    it('returns mutate function', () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      const { result } = renderHookWithProviders(() => useBatchResolveConflicts());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls batch-resolve endpoint with resolved status', async () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      let capturedBody: any = null;
+      server.use(
+        http.patch('/api/projects/p1/conflicts/batch-resolve', async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({
+            success: true,
+            data: { count: 5 },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useBatchResolveConflicts());
+      result.current.mutate('resolved');
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(capturedBody).toEqual({ status: 'resolved' });
+    });
+
+    it('calls batch-resolve endpoint with dismissed status', async () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      let capturedBody: any = null;
+      server.use(
+        http.patch('/api/projects/p1/conflicts/batch-resolve', async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({
+            success: true,
+            data: { count: 3 },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useBatchResolveConflicts());
+      result.current.mutate('dismissed');
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(capturedBody).toEqual({ status: 'dismissed' });
+    });
+  });
+
+  describe('useAiVerifyConflict', () => {
+    it('returns mutate function', () => {
+      const { result } = renderHookWithProviders(() => useAiVerifyConflict());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls ai-verify POST endpoint', async () => {
+      setMockAuthState({ token: 'tok' });
+      let wasCalled = false;
+      server.use(
+        http.post('/api/conflicts/c-1/ai-verify', () => {
+          wasCalled = true;
+          return HttpResponse.json({
+            success: true,
+            data: { id: 'c-1', aiVerified: true },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useAiVerifyConflict());
+      result.current.mutate('c-1');
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(wasCalled).toBe(true);
+    });
+  });
+
+  describe('useConflictOverview', () => {
+    it('returns mutate function', () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      const { result } = renderHookWithProviders(() => useConflictOverview());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls overview-analysis POST endpoint', async () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      let wasCalled = false;
+      server.use(
+        http.post('/api/projects/p1/conflicts/overview-analysis', () => {
+          wasCalled = true;
+          return HttpResponse.json({
+            success: true,
+            data: { summary: 'All clear', totalConflicts: 0 },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useConflictOverview());
+      result.current.mutate();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(wasCalled).toBe(true);
     });
   });
 });

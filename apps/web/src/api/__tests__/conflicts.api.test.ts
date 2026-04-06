@@ -114,6 +114,59 @@ describe('conflictsApi', () => {
     expect(capturedBody).toEqual({ reviewNotes: 'Looks good' });
   });
 
+  it('batchResolve sends PATCH with status', async () => {
+    let capturedBody: any = null;
+    server.use(
+      http.patch('/api/projects/proj-1/conflicts/batch-resolve', async ({ request }) => {
+        capturedBody = await request.json();
+        return HttpResponse.json({
+          success: true,
+          data: { count: 3 },
+          error: null,
+        });
+      }),
+    );
+
+    const result = await conflictsApi.batchResolve('proj-1', 'resolved');
+    expect(capturedBody).toEqual({ status: 'resolved' });
+    expect(result.data).toEqual({ count: 3 });
+  });
+
+  it('aiVerify sends POST to ai-verify endpoint', async () => {
+    let wasCalled = false;
+    server.use(
+      http.post('/api/conflicts/c-1/ai-verify', () => {
+        wasCalled = true;
+        return HttpResponse.json({
+          success: true,
+          data: { id: 'c-1', aiVerified: true },
+          error: null,
+        });
+      }),
+    );
+
+    await conflictsApi.aiVerify('c-1');
+    expect(wasCalled).toBe(true);
+  });
+
+  it('overviewAnalysis sends POST for project overview', async () => {
+    let wasCalled = false;
+    server.use(
+      http.post('/api/projects/proj-1/conflicts/overview-analysis', () => {
+        wasCalled = true;
+        return HttpResponse.json({
+          success: true,
+          data: { summary: 'All clear', totalConflicts: 0 },
+          error: null,
+        });
+      }),
+    );
+
+    const result = await conflictsApi.overviewAnalysis('proj-1');
+    expect(wasCalled).toBe(true);
+    expect(result.data?.summary).toBe('All clear');
+  });
+
   it('throws on server error', async () => {
     server.use(
       http.get('/api/projects/proj-1/conflicts', () =>

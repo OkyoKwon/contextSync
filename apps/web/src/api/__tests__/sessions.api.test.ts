@@ -204,6 +204,147 @@ describe('sessionsApi', () => {
     expect(wasCalled).toBe(true);
   });
 
+  it('browseDirectory returns entries without path', async () => {
+    const entries = [
+      { name: 'src', isDirectory: true },
+      { name: 'README.md', isDirectory: false },
+    ];
+    server.use(
+      http.get('/api/sessions/local/browse', () =>
+        HttpResponse.json({ success: true, data: entries, error: null }),
+      ),
+    );
+
+    const result = await sessionsApi.browseDirectory();
+    expect(result.data).toEqual(entries);
+  });
+
+  it('browseDirectory passes path as query param', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/sessions/local/browse', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
+    await sessionsApi.browseDirectory('/home/user');
+    expect(capturedUrl).toContain('path=%2Fhome%2Fuser');
+  });
+
+  it('listLocalDirectories returns directory list', async () => {
+    const dirs = [{ path: '/home/user/project', name: 'project' }];
+    server.use(
+      http.get('/api/sessions/local/directories', () =>
+        HttpResponse.json({ success: true, data: dirs, error: null }),
+      ),
+    );
+
+    const result = await sessionsApi.listLocalDirectories();
+    expect(result.data).toEqual(dirs);
+  });
+
+  it('listLocal passes projectId and activeOnly params', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/sessions/local', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
+    await sessionsApi.listLocal('proj-1', false);
+    expect(capturedUrl).toContain('projectId=proj-1');
+    expect(capturedUrl).toContain('activeOnly=false');
+  });
+
+  it('getLocal returns local session detail', async () => {
+    const detail = { id: 'local-1', title: 'Local Session', projectPath: '/tmp' };
+    server.use(
+      http.get('/api/sessions/local/local-1', () =>
+        HttpResponse.json({ success: true, data: detail, error: null }),
+      ),
+    );
+
+    const result = await sessionsApi.getLocal('local-1');
+    expect(result.data).toEqual(detail);
+  });
+
+  it('getLocalProjectConversation builds query with projectPath', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/sessions/local/project-conversation', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({
+          success: true,
+          data: { messages: [], sessionCount: 0, totalMessages: 0, hasMore: false },
+          error: null,
+        });
+      }),
+    );
+
+    await sessionsApi.getLocalProjectConversation('/home/user/proj');
+    expect(capturedUrl).toContain('projectPath=%2Fhome%2Fuser%2Fproj');
+    expect(capturedUrl).toContain('limit=100');
+    expect(capturedUrl).not.toContain('cursor=');
+  });
+
+  it('getLocalProjectConversation includes cursor when provided', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/sessions/local/project-conversation', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({
+          success: true,
+          data: { messages: [], sessionCount: 0, totalMessages: 0, hasMore: false },
+          error: null,
+        });
+      }),
+    );
+
+    await sessionsApi.getLocalProjectConversation('/proj', 'cursor-abc', 50);
+    expect(capturedUrl).toContain('cursor=cursor-abc');
+    expect(capturedUrl).toContain('limit=50');
+  });
+
+  it('exportMarkdown returns blob on success', async () => {
+    server.use(
+      http.get(
+        '/api/projects/proj-1/sessions/export/markdown',
+        () =>
+          new HttpResponse('# Markdown content', {
+            headers: { 'Content-Type': 'text/markdown' },
+          }),
+      ),
+    );
+
+    const blob = await sessionsApi.exportMarkdown('proj-1');
+    expect(blob).toBeInstanceOf(Blob);
+  });
+
+  it('exportMarkdown throws on 500', async () => {
+    server.use(
+      http.get('/api/projects/proj-1/sessions/export/markdown', () =>
+        HttpResponse.json({ error: 'Export failed' }, { status: 500 }),
+      ),
+    );
+
+    await expect(sessionsApi.exportMarkdown('proj-1')).rejects.toThrow('Export failed');
+  });
+
+  it('exportMarkdown throws on 401 and logs out', async () => {
+    server.use(
+      http.get(
+        '/api/projects/proj-1/sessions/export/markdown',
+        () => new HttpResponse(null, { status: 401 }),
+      ),
+    );
+
+    await expect(sessionsApi.exportMarkdown('proj-1')).rejects.toThrow(
+      'Session expired. Please log in again.',
+    );
+  });
+
   it('throws on server error', async () => {
     server.use(
       http.get('/api/projects/proj-1/sessions', () =>

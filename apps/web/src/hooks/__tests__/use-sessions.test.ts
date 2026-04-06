@@ -15,6 +15,9 @@ import {
   useSessions,
   useSession,
   useImportSession,
+  useDeleteSession,
+  useUpdateSession,
+  useRecalculateTokens,
   useTimeline,
   useTokenUsage,
   useDashboardStats,
@@ -267,6 +270,104 @@ describe('useSessions hooks', () => {
       const { result } = renderHookWithProviders(() => useTeamStats());
       await waitFor(() => expect(result.current.isSuccess).toBe(true));
       expect(result.current.data?.data).toHaveLength(1);
+    });
+  });
+
+  describe('useDeleteSession', () => {
+    it('returns mutate function', () => {
+      const { result } = renderHookWithProviders(() => useDeleteSession());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls DELETE endpoint', async () => {
+      setMockAuthState({ token: 'tok' });
+      let wasCalled = false;
+      server.use(
+        http.delete('/api/sessions/sess-1', () => {
+          wasCalled = true;
+          return HttpResponse.json({ success: true, data: null, error: null });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useDeleteSession());
+      result.current.mutate('sess-1');
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(wasCalled).toBe(true);
+    });
+  });
+
+  describe('useUpdateSession', () => {
+    it('returns mutate function', () => {
+      const { result } = renderHookWithProviders(() => useUpdateSession());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls PATCH endpoint with title', async () => {
+      setMockAuthState({ token: 'tok' });
+      let capturedBody: any = null;
+      server.use(
+        http.patch('/api/sessions/sess-1', async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({
+            success: true,
+            data: { id: 'sess-1', title: 'Updated' },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useUpdateSession());
+      result.current.mutate({ sessionId: 'sess-1', title: 'Updated' });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(capturedBody).toEqual({ title: 'Updated' });
+    });
+
+    it('calls PATCH endpoint with status', async () => {
+      setMockAuthState({ token: 'tok' });
+      let capturedBody: any = null;
+      server.use(
+        http.patch('/api/sessions/sess-1', async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({
+            success: true,
+            data: { id: 'sess-1', status: 'completed' },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useUpdateSession());
+      result.current.mutate({ sessionId: 'sess-1', status: 'completed' });
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(capturedBody).toEqual({ status: 'completed' });
+    });
+  });
+
+  describe('useRecalculateTokens', () => {
+    it('returns mutate function', () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      const { result } = renderHookWithProviders(() => useRecalculateTokens());
+      expect(result.current.mutate).toBeDefined();
+    });
+
+    it('calls recalculate-tokens POST endpoint', async () => {
+      setMockAuthState({ token: 'tok', currentProjectId: 'p1' });
+      let wasCalled = false;
+      server.use(
+        http.post('/api/projects/p1/sessions/recalculate-tokens', () => {
+          wasCalled = true;
+          return HttpResponse.json({
+            success: true,
+            data: { updatedCount: 3 },
+            error: null,
+          });
+        }),
+      );
+
+      const { result } = renderHookWithProviders(() => useRecalculateTokens());
+      result.current.mutate();
+      await waitFor(() => expect(result.current.isSuccess).toBe(true));
+      expect(wasCalled).toBe(true);
     });
   });
 });

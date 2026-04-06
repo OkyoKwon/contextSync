@@ -117,4 +117,142 @@ describe('aiEvaluationApi', () => {
       aiEvaluationApi.triggerEvaluation('proj-1', { targetUserId: 'u1' } as any),
     ).rejects.toThrow('Evaluation failed');
   });
+
+  it('getLatestEvaluationGroup builds query params', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/projects/:projectId/ai-evaluation/latest-group', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({
+          success: true,
+          data: { groupId: 'g1', claude: null, chatgpt: null, gemini: null },
+          error: null,
+        });
+      }),
+    );
+
+    const result = await aiEvaluationApi.getLatestEvaluationGroup('proj-1', 'user-1');
+    const url = new URL(capturedUrl);
+    expect(url.searchParams.get('targetUserId')).toBe('user-1');
+    expect(result.data).toBeDefined();
+  });
+
+  it('getEvaluationGroup fetches by groupId', async () => {
+    const group = { groupId: 'g1', claude: null, chatgpt: null, gemini: null };
+    server.use(
+      http.get('/api/projects/:projectId/ai-evaluation/group/:groupId', () =>
+        HttpResponse.json({ success: true, data: group, error: null }),
+      ),
+    );
+
+    const result = await aiEvaluationApi.getEvaluationGroup('proj-1', 'g1');
+    expect(result.data).toEqual(group);
+  });
+
+  it('getEvaluationGroupHistory builds query params with pagination', async () => {
+    let capturedUrl = '';
+    server.use(
+      http.get('/api/projects/:projectId/ai-evaluation/group-history', ({ request }) => {
+        capturedUrl = request.url;
+        return HttpResponse.json({ success: true, data: [], error: null });
+      }),
+    );
+
+    await aiEvaluationApi.getEvaluationGroupHistory('proj-1', 'user-1', 3, 15);
+    const url = new URL(capturedUrl);
+    expect(url.searchParams.get('targetUserId')).toBe('user-1');
+    expect(url.searchParams.get('page')).toBe('3');
+    expect(url.searchParams.get('limit')).toBe('15');
+  });
+
+  it('backfillTranslations sends POST with limit', async () => {
+    let capturedBody: any = null;
+    server.use(
+      http.post(
+        '/api/projects/:projectId/ai-evaluation/backfill-translations',
+        async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({
+            success: true,
+            data: { processed: 5, failed: 0 },
+            error: null,
+          });
+        },
+      ),
+    );
+
+    const result = await aiEvaluationApi.backfillTranslations('proj-1', 20);
+    expect(capturedBody).toEqual({ limit: 20 });
+    expect(result.data).toEqual({ processed: 5, failed: 0 });
+  });
+
+  it('backfillTranslations uses default limit of 10', async () => {
+    let capturedBody: any = null;
+    server.use(
+      http.post(
+        '/api/projects/:projectId/ai-evaluation/backfill-translations',
+        async ({ request }) => {
+          capturedBody = await request.json();
+          return HttpResponse.json({
+            success: true,
+            data: { processed: 3, failed: 1 },
+            error: null,
+          });
+        },
+      ),
+    );
+
+    await aiEvaluationApi.backfillTranslations('proj-1');
+    expect(capturedBody).toEqual({ limit: 10 });
+  });
+
+  it('getLearningGuide fetches by groupId', async () => {
+    const guide = { id: 'lg-1', status: 'completed', content: 'Learn more' };
+    server.use(
+      http.get('/api/projects/:projectId/ai-evaluation/group/:groupId/learning-guide', () =>
+        HttpResponse.json({ success: true, data: guide, error: null }),
+      ),
+    );
+
+    const result = await aiEvaluationApi.getLearningGuide('proj-1', 'g1');
+    expect(result.data).toEqual(guide);
+  });
+
+  it('regenerateLearningGuide sends POST', async () => {
+    let wasCalled = false;
+    server.use(
+      http.post(
+        '/api/projects/:projectId/ai-evaluation/group/:groupId/learning-guide/regenerate',
+        () => {
+          wasCalled = true;
+          return HttpResponse.json({
+            success: true,
+            data: { id: 'lg-2', status: 'pending' },
+            error: null,
+          });
+        },
+      ),
+    );
+
+    await aiEvaluationApi.regenerateLearningGuide('proj-1', 'g1');
+    expect(wasCalled).toBe(true);
+  });
+
+  it('deleteEvaluationGroup sends DELETE', async () => {
+    let wasCalled = false;
+    server.use(
+      http.delete('/api/projects/:projectId/ai-evaluation/group/:groupId', () => {
+        wasCalled = true;
+        return HttpResponse.json({
+          success: true,
+          data: { deleted: true },
+          error: null,
+        });
+      }),
+    );
+
+    const result = await aiEvaluationApi.deleteEvaluationGroup('proj-1', 'g1');
+    expect(wasCalled).toBe(true);
+    expect(result.data).toEqual({ deleted: true });
+  });
 });
