@@ -37,6 +37,35 @@ brew install --cask docker
 corepack enable
 ```
 
+### Linux Install (apt/dnf + nvm)
+
+```bash
+# 1. nvm (Node Version Manager)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+source ~/.bashrc
+
+# 2. Node.js 22 (project uses .nvmrc)
+nvm install 22
+nvm use 22
+
+# 3. Docker (Debian/Ubuntu)
+sudo apt update && sudo apt install -y docker.io
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+
+# For Fedora/RHEL:
+# sudo dnf install -y docker
+# sudo systemctl enable --now docker
+
+# 4. Enable pnpm
+corepack enable
+```
+
+> **Note:** Log out and back in after adding yourself to the docker group.
+> Verify with `node -v` (should be v22+).
+
+
+
 > **Note:** After installing Docker Desktop, launch the app once to activate the `docker` CLI.
 > Verify with `node -v` (should be v22+).
 
