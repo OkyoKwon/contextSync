@@ -20,17 +20,17 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
+    "@anthropic-ai/sdk": "^0.88.0",
     "@context-sync/shared": "workspace:*",
-    "@fastify/cors": "^10.0.0",
+    "@fastify/cors": "^11.2.0",
     "@fastify/jwt": "^10.0.0",
-    "@fastify/multipart": "^9.0.0",
+    "@fastify/multipart": "^10.0.0",
     "@slack/webhook": "^7.0.0",
-    "fastify": "^5.2.0",
-    "kysely": "^0.28.14",
+    "fastify": "^5.8.4",
+    "kysely": "^0.28.16",
     "pg": "^8.13.0",
-    "resend": "^4.0.0",
-    "zod": "^3.24.0"
+    "resend": "^6.10.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/pg": "^8.11.0",
